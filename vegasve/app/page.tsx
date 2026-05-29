@@ -1,4 +1,5 @@
 import { SiteNav } from "@/components/site-nav";
+import { Ticker } from "@/components/ticker";
 import { HeroArt } from "@/components/hero-art";
 import { LandingGameCards } from "@/components/game-cards";
 import { ComingSoon } from "@/components/coming-soon";
@@ -17,6 +18,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteNav variant="out" />
+      <Ticker />
 
       <section className="view">
         {/* Hero */}

@@ -1,4 +1,5 @@
 import { SiteNav } from "@/components/site-nav";
+import { Ticker } from "@/components/ticker";
 import { LobbyGameCards } from "@/components/game-cards";
 import { LobbyFilters } from "@/components/lobby-filters";
 import { ComingSoon } from "@/components/coming-soon";
@@ -9,6 +10,7 @@ export default function LobbyPage() {
   return (
     <>
       <SiteNav variant="in" />
+      <Ticker />
 
       <section className="view">
         <div className="wrap">

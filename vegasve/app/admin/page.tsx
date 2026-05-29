@@ -159,6 +159,7 @@ export default function AdminPage() {
                 </div>
                 <button className="btn btn-ghost btn-sm">Ver todos</button>
               </div>
+              <div className="table-scroll">
               <table className="adm">
                 <thead>
                   <tr>
@@ -195,6 +196,7 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             <div className="a-card">
@@ -230,6 +232,7 @@ export default function AdminPage() {
               </div>
               <button className="btn btn-ghost btn-sm">Añadir juego</button>
             </div>
+            <div className="table-scroll">
             <table className="adm">
               <thead>
                 <tr>
@@ -254,6 +257,7 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </main>
       </div>
