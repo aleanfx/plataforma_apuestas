@@ -775,7 +775,7 @@ html, body { overflow-x: clip; max-width: 100%; }
 
 /* ---------- <= 768px (móvil) ---------- */
 @media (max-width: 768px) {
-  .wrap { padding: 0 18px; }
+  .wrap { padding: 0 20px; }
 
   /* Nav */
   .nav-inner { padding: 13px 18px; gap: 12px; }
@@ -794,18 +794,30 @@ html, body { overflow-x: clip; max-width: 100%; }
   .ticker-item { font-size: 12.5px; }
 
   /* Hero */
-  .hero { padding: 44px 0 26px; }
-  .hero-grid { grid-template-columns: 1fr; gap: 22px; }
-  .hero h1 { font-size: 46px; }
-  .hero-sub { font-size: 15px; margin: 18px 0 26px; max-width: 100%; }
+  .hero { padding: 40px 0 24px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 18px; }
+  .hero h1 { font-size: 40px; }
+  .hero-sub { font-size: 14.5px; margin: 16px 0 24px; max-width: 100%; }
   .hero-cta { gap: 10px; }
   .hero-cta .btn { flex: 1; justify-content: center; }
-  .hero-trust { gap: 16px 24px; margin-top: 30px; flex-wrap: wrap; }
+  .hero-trust { gap: 14px 22px; margin-top: 26px; flex-wrap: wrap; }
+  .hero-trust .t { font-size: 12.5px; }
+
+  /* Arte 3D: escenario centrado y estrecho para que las figuras queden
+     agrupadas/solapadas igual que en escritorio */
+  .hero-art { width: min(320px, 86vw); height: 300px; margin: 4px auto 0; }
+  .suit-card { width: 152px; height: 218px; }
+  .suit-card svg { width: 64px; height: 64px; }
+  .suit-card .corner { font-size: 20px; }
+  .suit-card.c1 { left: 8px; top: 46px; }
+  .suit-card.c2 { right: 8px; top: 26px; }
+  .float-domino { width: 78px; height: 120px; left: -4px; bottom: 30px; }
+  .pip { width: 11px; height: 11px; }
 
   /* Section heads */
-  .section { padding: 40px 0; }
-  .section-head { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 24px; }
-  .section-head h2 { font-size: 30px; }
+  .section { padding: 38px 0; }
+  .section-head { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 22px; }
+  .section-head h2 { font-size: 28px; }
 
   /* Games -> carrusel deslizable */
   .games-grid {
@@ -813,18 +825,18 @@ html, body { overflow-x: clip; max-width: 100%; }
     gap: 14px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    margin: 0 -18px;
-    padding: 2px 18px 10px;
+    margin: 0 -20px;
+    padding: 2px 20px 10px;
     scrollbar-width: none;
   }
   .games-grid::-webkit-scrollbar { display: none; }
   .games-grid > * {
-    flex: 0 0 84%;
+    flex: 0 0 82%;
     scroll-snap-align: start;
-    min-height: 250px;
+    min-height: 240px;
   }
-  .game-card { padding: 26px; }
-  .game-card h3 { font-size: 28px; }
+  .game-card { padding: 24px; }
+  .game-card h3 { font-size: 26px; }
 
   /* Próximamente -> 2 por fila */
   .soon-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -835,12 +847,12 @@ html, body { overflow-x: clip; max-width: 100%; }
     gap: 14px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    margin: 0 -18px;
-    padding: 2px 18px 10px;
+    margin: 0 -20px;
+    padding: 2px 20px 10px;
     scrollbar-width: none;
   }
   .feat-grid::-webkit-scrollbar { display: none; }
-  .feat-grid > * { flex: 0 0 82%; scroll-snap-align: start; }
+  .feat-grid > * { flex: 0 0 80%; scroll-snap-align: start; }
 
   /* Footer */
   .footer { padding: 36px 0 50px; }
@@ -862,8 +874,8 @@ html, body { overflow-x: clip; max-width: 100%; }
   .chips-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    margin: 0 -18px 22px;
-    padding: 0 18px 6px;
+    margin: 0 -20px 22px;
+    padding: 0 20px 6px;
     scrollbar-width: none;
   }
   .chips-row::-webkit-scrollbar { display: none; }
@@ -890,14 +902,10 @@ html, body { overflow-x: clip; max-width: 100%; }
 
 /* ---------- <= 560px (móvil pequeño) ---------- */
 @media (max-width: 560px) {
-  .wrap { padding: 0 16px; }
-
-  /* re-alinear el sangrado de los carruseles con el nuevo padding */
-  .games-grid, .feat-grid { margin: 0 -16px; padding: 2px 16px 10px; }
-  .chips-row { margin: 0 -16px 22px; padding: 0 16px 6px; }
+  .wrap { padding: 0 20px; }
 
   /* Nav */
-  .nav-inner { padding: 12px 16px; gap: 10px; }
+  .nav-inner { padding: 12px 20px; gap: 10px; }
   .brand-name { font-size: 18px; }
   .brand-mark { width: 34px; height: 34px; }
   .nav-actions { gap: 8px; }
@@ -908,54 +916,47 @@ html, body { overflow-x: clip; max-width: 100%; }
   .ticker-item { font-size: 12px; gap: 6px; }
   .ticker-track { gap: 28px; }
 
-  /* Hero más compacto */
-  .hero { padding: 34px 0 22px; }
-  .hero h1 { font-size: 35px; }
-  .hero-sub { font-size: 14px; margin: 14px 0 22px; }
-  .hero-trust { gap: 12px 20px; margin-top: 24px; }
-  .hero-trust .t { font-size: 12px; }
-  .hero-art { height: 270px; }
-  .suit-card { width: 144px; height: 208px; }
-  .suit-card svg { width: 62px; height: 62px; }
-  .suit-card .corner { font-size: 20px; }
-  .suit-card.c1 { left: 18px; top: 42px; }
-  .suit-card.c2 { right: 22px; top: 24px; }
-  .float-domino { width: 74px; height: 116px; left: 10px; bottom: 12px; }
-  .pip { width: 11px; height: 11px; }
+  /* Hero más compacto (el escenario 3D se hereda de <=768) */
+  .hero { padding: 30px 0 20px; }
+  .hero h1 { font-size: 34px; }
+  .hero-sub { font-size: 13.5px; margin: 13px 0 20px; }
+  .hero-trust { gap: 11px 18px; margin-top: 22px; }
+  .hero-trust .t { font-size: 11.5px; }
+  .hero-art { width: min(300px, 84vw); height: 280px; }
 
   /* Títulos de sección */
-  .section { padding: 34px 0; }
-  .section-head h2 { font-size: 26px; }
-  .eyebrow { font-size: 11px; letter-spacing: 2.5px; }
+  .section { padding: 32px 0; }
+  .section-head h2 { font-size: 25px; }
+  .eyebrow { font-size: 10.5px; letter-spacing: 2.5px; }
 
   /* Cards */
-  .games-grid > * { flex: 0 0 88%; }
-  .feat-grid > * { flex: 0 0 86%; }
-  .game-card { padding: 22px; min-height: 230px; }
-  .game-card h3 { font-size: 26px; }
-  .gc-icon { width: 56px; height: 56px; margin-bottom: 16px; }
-  .gc-desc { font-size: 13.5px; }
+  .games-grid > * { flex: 0 0 86%; }
+  .feat-grid > * { flex: 0 0 84%; }
+  .game-card { padding: 22px; min-height: 220px; }
+  .game-card h3 { font-size: 25px; }
+  .gc-icon { width: 54px; height: 54px; margin-bottom: 15px; }
+  .gc-desc { font-size: 13px; }
 
   /* Próximamente */
-  .soon-card { padding: 18px 14px; }
-  .soon-card .nm { font-size: 18px; }
+  .soon-card { padding: 16px 12px; }
+  .soon-card .nm { font-size: 17px; }
 
   /* Lobby */
-  .lobby-head h1 { font-size: 30px; }
-  .bal-banner .big { font-size: 28px; }
+  .lobby-head h1 { font-size: 29px; }
+  .bal-banner .big { font-size: 27px; }
   .bal-banner .cell { padding: 16px; }
 
   /* Profile */
   .profile-id .av-lg { width: 72px; height: 72px; font-size: 30px; }
   .profile-id .pname { font-size: 23px; }
   .balance-feature { padding: 22px; }
-  .balance-feature .amount { font-size: 40px; }
-  .tx-title { font-size: 14px; }
+  .balance-feature .amount { font-size: 38px; }
+  .tx-title { font-size: 13.5px; }
   .tx-amt { font-size: 16px; }
 
   /* Admin */
-  .admin-main { padding: 22px 16px 56px; }
-  .admin-head h1 { font-size: 26px; }
+  .admin-main { padding: 22px 18px 56px; }
+  .admin-head h1 { font-size: 25px; }
   .stat .v { font-size: 24px; }
 
   /* Modales */
@@ -970,32 +971,32 @@ html, body { overflow-x: clip; max-width: 100%; }
 
 /* ---------- <= 430px (iPhone 13/14/15 y similares) ---------- */
 @media (max-width: 430px) {
+  .wrap { padding: 0 18px; }
+
   /* Nav que entra con holgura */
-  .nav-inner { padding: 11px 14px; gap: 8px; flex-wrap: nowrap; }
+  .nav-inner { padding: 11px 18px; gap: 8px; flex-wrap: nowrap; }
   .brand { gap: 8px; }
   .brand-name { font-size: 17px; }
   .brand-mark { width: 32px; height: 32px; }
   .nav .btn-sm { padding: 7px 11px; font-size: 11.5px; letter-spacing: 0.2px; }
 
-  .hero h1 { font-size: 32px; }
-  .hero-art { height: 250px; }
-  .suit-card { width: 132px; height: 190px; }
-  .suit-card svg { width: 56px; height: 56px; }
-  .suit-card.c1 { left: 12px; top: 40px; }
-  .suit-card.c2 { right: 16px; top: 22px; }
-  .float-domino { width: 68px; height: 106px; left: 6px; }
+  /* Hero (escenario 3D se mantiene agrupado, solo se ajusta el tamaño) */
+  .hero h1 { font-size: 31px; }
+  .hero-art { width: min(290px, 86vw); height: 264px; }
+  .suit-card { width: 142px; height: 204px; }
+  .suit-card svg { width: 60px; height: 60px; }
+  .float-domino { width: 74px; height: 114px; }
 
-  .section-head h2 { font-size: 24px; }
-  .games-grid > * { flex: 0 0 90%; }
-  .feat-grid > * { flex: 0 0 88%; }
+  .section-head h2 { font-size: 23px; }
+  .games-grid > * { flex: 0 0 88%; }
+  .feat-grid > * { flex: 0 0 86%; }
   .game-card h3 { font-size: 24px; }
 
-  .lobby-head h1 { font-size: 27px; }
+  .lobby-head h1 { font-size: 26px; }
   .bal-banner .big { font-size: 25px; }
-  .balance-feature .amount { font-size: 36px; }
+  .balance-feature .amount { font-size: 35px; }
 
-  /* en pantallas muy estrechas, una sola tarjeta por fila en grids 2-col */
-  .soon-card .nm { font-size: 17px; }
+  .soon-card .nm { font-size: 16px; }
   .footer-pay { gap: 10px; }
   .pay-pill { padding: 4px 9px; }
 }
