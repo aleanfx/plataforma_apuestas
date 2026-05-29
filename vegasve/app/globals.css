@@ -819,24 +819,26 @@ html, body { overflow-x: clip; max-width: 100%; }
   .section-head { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 22px; }
   .section-head h2 { font-size: 28px; }
 
-  /* Games -> carrusel deslizable */
+  /* Games -> carrusel deslizable (sin sangrar a los bordes; tarjetas más
+     pequeñas para que se vea el "peek" de la siguiente) */
   .games-grid {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    margin: 0 -20px;
-    padding: 2px 20px 10px;
+    margin: 0;
+    padding: 2px 0 12px;
     scrollbar-width: none;
   }
   .games-grid::-webkit-scrollbar { display: none; }
   .games-grid > * {
-    flex: 0 0 82%;
+    flex: 0 0 74%;
     scroll-snap-align: start;
-    min-height: 240px;
+    min-height: 208px;
   }
-  .game-card { padding: 24px; }
-  .game-card h3 { font-size: 26px; }
+  .game-card { padding: 20px; }
+  .game-card h3 { font-size: 24px; }
+  .gc-desc { font-size: 13px; }
 
   /* Próximamente -> 2 por fila */
   .soon-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -844,15 +846,16 @@ html, body { overflow-x: clip; max-width: 100%; }
   /* Features -> carrusel deslizable */
   .feat-grid {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    margin: 0 -20px;
-    padding: 2px 20px 10px;
+    margin: 0;
+    padding: 2px 0 12px;
     scrollbar-width: none;
   }
   .feat-grid::-webkit-scrollbar { display: none; }
-  .feat-grid > * { flex: 0 0 80%; scroll-snap-align: start; }
+  .feat-grid > * { flex: 0 0 70%; scroll-snap-align: start; }
+  .feat { padding: 20px; }
 
   /* Footer */
   .footer { padding: 36px 0 50px; }
@@ -874,8 +877,8 @@ html, body { overflow-x: clip; max-width: 100%; }
   .chips-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    margin: 0 -20px 22px;
-    padding: 0 20px 6px;
+    margin: 0 0 22px;
+    padding: 0 0 6px;
     scrollbar-width: none;
   }
   .chips-row::-webkit-scrollbar { display: none; }
@@ -929,13 +932,13 @@ html, body { overflow-x: clip; max-width: 100%; }
   .section-head h2 { font-size: 25px; }
   .eyebrow { font-size: 10.5px; letter-spacing: 2.5px; }
 
-  /* Cards */
-  .games-grid > * { flex: 0 0 86%; }
-  .feat-grid > * { flex: 0 0 84%; }
-  .game-card { padding: 22px; min-height: 220px; }
-  .game-card h3 { font-size: 25px; }
-  .gc-icon { width: 54px; height: 54px; margin-bottom: 15px; }
-  .gc-desc { font-size: 13px; }
+  /* Cards (carruseles más estrechos) */
+  .games-grid > * { flex: 0 0 78%; min-height: 200px; }
+  .feat-grid > * { flex: 0 0 74%; }
+  .game-card { padding: 20px; }
+  .game-card h3 { font-size: 23px; }
+  .gc-icon { width: 50px; height: 50px; margin-bottom: 14px; }
+  .gc-desc { font-size: 12.5px; }
 
   /* Próximamente */
   .soon-card { padding: 16px 12px; }
@@ -988,9 +991,9 @@ html, body { overflow-x: clip; max-width: 100%; }
   .float-domino { width: 74px; height: 114px; }
 
   .section-head h2 { font-size: 23px; }
-  .games-grid > * { flex: 0 0 88%; }
-  .feat-grid > * { flex: 0 0 86%; }
-  .game-card h3 { font-size: 24px; }
+  .games-grid > * { flex: 0 0 80%; }
+  .feat-grid > * { flex: 0 0 76%; }
+  .game-card h3 { font-size: 22px; }
 
   .lobby-head h1 { font-size: 26px; }
   .bal-banner .big { font-size: 25px; }
