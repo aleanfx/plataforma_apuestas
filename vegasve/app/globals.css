@@ -753,6 +753,9 @@
   .balance-chip .usd { display: none; }
   .balance-chip .bal .v { font-size: 17px; }
   .avatar { width: 38px; height: 38px; }
+  .nav .btn-sm { padding: 8px 14px; font-size: 12.5px; }
+  .nav-actions .input-wrap { display: none; }   /* buscador del admin */
+  .nav-actions .icon-btn { display: none; }      /* campana del admin */
 
   /* Ticker */
   .ticker-label { padding: 9px 13px; font-size: 10px; letter-spacing: 1.2px; }
@@ -844,6 +847,7 @@
   .tx-amt { font-size: 17px; }
 
   /* Admin */
+  .admin-side { position: static; top: auto; }
   .admin-head h1 { font-size: 30px; }
   .stat-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .stat { padding: 18px; }
@@ -854,25 +858,105 @@
 
 /* ---------- <= 560px (móvil pequeño) ---------- */
 @media (max-width: 560px) {
-  .hero h1 { font-size: 40px; }
-  .hero-art { height: 300px; }
-  .suit-card { width: 158px; height: 230px; }
-  .suit-card svg { width: 70px; height: 70px; }
-  .suit-card .corner { font-size: 22px; }
-  .suit-card.c1 { left: 24px; top: 46px; }
-  .suit-card.c2 { right: 30px; top: 26px; }
-  .float-domino { width: 82px; height: 128px; left: 14px; bottom: 14px; }
-  .pip { width: 12px; height: 12px; }
+  .wrap { padding: 0 16px; }
 
-  .games-grid > * { flex: 0 0 90%; }
-  .feat-grid > * { flex: 0 0 88%; }
+  /* re-alinear el sangrado de los carruseles con el nuevo padding */
+  .games-grid, .feat-grid { margin: 0 -16px; padding: 2px 16px 10px; }
+  .chips-row { margin: 0 -16px 22px; padding: 0 16px 6px; }
 
-  .modal-top { padding: 26px 22px 0; }
-  .modal-top h2 { font-size: 26px; }
-  .modal-body { padding: 22px 22px 26px; }
+  /* Nav */
+  .nav-inner { padding: 12px 16px; gap: 10px; }
+  .brand-name { font-size: 18px; }
+  .brand-mark { width: 34px; height: 34px; }
+  .nav-actions { gap: 8px; }
+  .nav .btn-sm { padding: 7px 12px; font-size: 12px; }
+
+  /* Ticker */
+  .ticker-label { padding: 8px 11px; }
+  .ticker-item { font-size: 12px; gap: 6px; }
+  .ticker-track { gap: 28px; }
+
+  /* Hero más compacto */
+  .hero { padding: 34px 0 22px; }
+  .hero h1 { font-size: 35px; }
+  .hero-sub { font-size: 14px; margin: 14px 0 22px; }
+  .hero-trust { gap: 12px 20px; margin-top: 24px; }
+  .hero-trust .t { font-size: 12px; }
+  .hero-art { height: 270px; }
+  .suit-card { width: 144px; height: 208px; }
+  .suit-card svg { width: 62px; height: 62px; }
+  .suit-card .corner { font-size: 20px; }
+  .suit-card.c1 { left: 18px; top: 42px; }
+  .suit-card.c2 { right: 22px; top: 24px; }
+  .float-domino { width: 74px; height: 116px; left: 10px; bottom: 12px; }
+  .pip { width: 11px; height: 11px; }
+
+  /* Títulos de sección */
+  .section { padding: 34px 0; }
+  .section-head h2 { font-size: 26px; }
+  .eyebrow { font-size: 11px; letter-spacing: 2.5px; }
+
+  /* Cards */
+  .games-grid > * { flex: 0 0 88%; }
+  .feat-grid > * { flex: 0 0 86%; }
+  .game-card { padding: 22px; min-height: 230px; }
+  .game-card h3 { font-size: 26px; }
+  .gc-icon { width: 56px; height: 56px; margin-bottom: 16px; }
+  .gc-desc { font-size: 13.5px; }
+
+  /* Próximamente */
+  .soon-card { padding: 18px 14px; }
+  .soon-card .nm { font-size: 18px; }
+
+  /* Lobby */
+  .lobby-head h1 { font-size: 30px; }
+  .bal-banner .big { font-size: 28px; }
+  .bal-banner .cell { padding: 16px; }
+
+  /* Profile */
+  .profile-id .av-lg { width: 72px; height: 72px; font-size: 30px; }
+  .profile-id .pname { font-size: 23px; }
+  .balance-feature { padding: 22px; }
+  .balance-feature .amount { font-size: 40px; }
+  .tx-title { font-size: 14px; }
+  .tx-amt { font-size: 16px; }
+
+  /* Admin */
+  .admin-main { padding: 22px 16px 56px; }
+  .admin-head h1 { font-size: 26px; }
+  .stat .v { font-size: 24px; }
+
+  /* Modales */
+  .modal-top { padding: 26px 20px 0; }
+  .modal-top h2 { font-size: 25px; }
+  .modal-body { padding: 20px 20px 24px; }
   .methods { grid-template-columns: 1fr; }
   .amount-field input { font-size: 26px; }
 
-  .nav-actions { gap: 8px; }
-  .btn { padding: 12px 20px; }
+  .btn { padding: 12px 18px; }
+}
+
+/* ---------- <= 430px (iPhone 13/14/15 y similares) ---------- */
+@media (max-width: 430px) {
+  .hero h1 { font-size: 32px; }
+  .hero-art { height: 250px; }
+  .suit-card { width: 132px; height: 190px; }
+  .suit-card svg { width: 56px; height: 56px; }
+  .suit-card.c1 { left: 12px; top: 40px; }
+  .suit-card.c2 { right: 16px; top: 22px; }
+  .float-domino { width: 68px; height: 106px; left: 6px; }
+
+  .section-head h2 { font-size: 24px; }
+  .games-grid > * { flex: 0 0 90%; }
+  .feat-grid > * { flex: 0 0 88%; }
+  .game-card h3 { font-size: 24px; }
+
+  .lobby-head h1 { font-size: 27px; }
+  .bal-banner .big { font-size: 25px; }
+  .balance-feature .amount { font-size: 36px; }
+
+  /* en pantallas muy estrechas, una sola tarjeta por fila en grids 2-col */
+  .soon-card .nm { font-size: 17px; }
+  .footer-pay { gap: 10px; }
+  .pay-pill { padding: 4px 9px; }
 }
