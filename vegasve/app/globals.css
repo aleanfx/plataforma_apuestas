@@ -707,6 +707,11 @@
 .table-scroll::-webkit-scrollbar { height: 6px; }
 .table-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 
+/* iOS Safari: evita el desplazamiento horizontal accidental que "come" el
+   padding izquierdo. `clip` corta el desborde sin romper position:sticky
+   ni crear un contenedor de scroll vertical. */
+html, body { overflow-x: clip; max-width: 100%; }
+
 /* ============================================================
    RESPONSIVE — tablet & móvil
    ============================================================ */
@@ -938,6 +943,13 @@
 
 /* ---------- <= 430px (iPhone 13/14/15 y similares) ---------- */
 @media (max-width: 430px) {
+  /* Nav que entra con holgura */
+  .nav-inner { padding: 11px 14px; gap: 8px; flex-wrap: nowrap; }
+  .brand { gap: 8px; }
+  .brand-name { font-size: 17px; }
+  .brand-mark { width: 32px; height: 32px; }
+  .nav .btn-sm { padding: 7px 11px; font-size: 11.5px; letter-spacing: 0.2px; }
+
   .hero h1 { font-size: 32px; }
   .hero-art { height: 250px; }
   .suit-card { width: 132px; height: 190px; }
