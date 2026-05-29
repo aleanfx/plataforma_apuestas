@@ -17,11 +17,7 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn(
-      "fixed inset-0 z-[90] bg-[rgba(5,5,5,0.78)] backdrop-blur-[6px] p-6",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
+    className={cn("modal-overlay fixed inset-0 z-[90] bg-[rgba(5,5,5,0.8)]", className)}
     {...props}
   />
 ));
@@ -33,23 +29,26 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-1/2 top-1/2 z-[91] w-[calc(100%-48px)] max-w-[440px] -translate-x-1/2 -translate-y-1/2",
-        "overflow-hidden overflow-y-auto max-h-[92vh] rounded-[18px] border border-line shadow-casino",
-        "bg-[linear-gradient(170deg,var(--gray-2),var(--black-2))] focus:outline-none",
-        "data-[state=open]:animate-pop",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-[22px] top-[22px] z-10 grid h-[34px] w-[34px] place-items-center rounded-full border border-line-soft text-ink-2 transition-colors hover:border-line hover:text-ink focus:outline-none">
-        <X className="h-4 w-4" strokeWidth={1.6} />
-        <span className="sr-only">Cerrar</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    {/* Centrado por flexbox para que el transform quede libre y la
+        animación sea fluida (sin saltos al terminar) */}
+    <div className="modal-positioner pointer-events-none fixed inset-0 z-[91] flex justify-center overflow-y-auto p-4 sm:p-6">
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "modal-anim pointer-events-auto relative my-auto w-full max-w-[440px]",
+          "overflow-hidden rounded-[18px] border border-line shadow-casino",
+          "bg-[linear-gradient(170deg,var(--gray-2),var(--black-2))] focus:outline-none",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-[22px] top-[22px] z-10 grid h-[34px] w-[34px] place-items-center rounded-full border border-line-soft text-ink-2 transition-colors hover:border-line hover:text-ink focus:outline-none">
+          <X className="h-4 w-4" strokeWidth={1.6} />
+          <span className="sr-only">Cerrar</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </div>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
