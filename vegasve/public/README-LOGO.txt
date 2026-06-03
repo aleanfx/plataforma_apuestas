@@ -1,11 +1,16 @@
-Coloca aquí el logo de BetmarPlay con el nombre EXACTO:
+Coloca aquí el logo de BetmarPlay con el nombre "logo" y una de estas
+extensiones (se prueba en este orden):
 
-    logo.png
+    logo.png   (recomendado: fondo transparente)
+    logo.webp  (recomendado: fondo transparente)
+    logo.jpeg
+    logo.jpg
 
-Ruta final: vegasve/public/logo.png
+Ruta final, por ejemplo: vegasve/public/logo.png
 
-La navbar y el footer lo usan automáticamente (vía /logo.png).
-Mientras no exista el archivo, se muestra el logo de texto como respaldo.
+La navbar lo usa automáticamente. Mientras no exista, se muestra el
+logo de texto como respaldo.
 
-Recomendado: PNG con fondo transparente, recortado (sin mucho margen),
-ancho aprox. 600–900 px. Se reescala solo a la altura de la barra.
+NOTA: un .jpg/.jpeg NO tiene transparencia, así que se verá con un
+recuadro de fondo sobre la barra oscura. Para que quede recortado,
+usa PNG o WebP con fondo transparente.

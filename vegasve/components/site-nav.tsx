@@ -8,17 +8,21 @@ import { ShieldCheck, Plus } from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
 import { WalletDialog } from "@/components/wallet-dialog";
 
+// prueba estas rutas en orden; usa la primera que cargue
+const LOGO_CANDIDATES = ["/logo.png", "/logo.webp", "/logo.jpeg", "/logo.jpg"];
+
 function Brand({ href }: { href: string }) {
-  const [imgOk, setImgOk] = React.useState(true);
+  const [idx, setIdx] = React.useState(0);
+  const failed = idx >= LOGO_CANDIDATES.length;
   return (
     <Link href={href} className="brand">
-      {imgOk ? (
+      {!failed ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/logo.png"
+          src={LOGO_CANDIDATES[idx]}
           alt="BetmarPlay"
           className="brand-logo"
-          onError={() => setImgOk(false)}
+          onError={() => setIdx((i) => i + 1)}
         />
       ) : (
         <>
