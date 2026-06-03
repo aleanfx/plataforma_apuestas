@@ -26,10 +26,10 @@ export default function LandingPage() {
           <div className="wrap hero-grid">
             <div className="hero-copy">
               <div className="eyebrow">Casino &amp; Apuestas · Venezuela</div>
-              <h1 style={{ marginTop: 18 }}>
+              <h1 className="gold-text" style={{ marginTop: 14 }}>
                 Juega como
                 <br />
-                <em className="gold-text">en Las Vegas</em>
+                en Las Vegas
               </h1>
               <p className="hero-sub">
                 Dominó y Póker en vivo, mesas en bolívares y dólares, depósitos y
@@ -105,7 +105,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <h4>Depósitos al instante</h4>
-                <p>Binance, USDT, Pago Móvil y Zelle. Tu saldo, listo en segundos.</p>
+                <p>NowPayments, Binance, Pago Móvil, Daviplata y Nequi. Tu saldo, listo en segundos.</p>
               </div>
             </div>
             <div className="feat">
@@ -137,21 +137,22 @@ export default function LandingPage() {
                 <div className="brand-mark" style={{ width: 32, height: 32 }}>
                   <ShieldCheck />
                 </div>
-                <div className="brand-name" style={{ fontSize: 19 }}>
-                  Vegas<span className="ve">VE</span>
+                <div className="brand-name" style={{ fontSize: 24 }}>
+                  Betmar<span className="ve">Play</span>
                 </div>
               </div>
               <p className="muted">
-                © 2026 VegasVE. Juega responsablemente. Prohibido para menores de
+                © 2026 BetmarPlay. Juega responsablemente. Prohibido para menores de
                 +18 años.
               </p>
             </div>
             <div className="footer-pay">
               <span>Pagos:</span>
+              <span className="pay-pill">NowPayments</span>
               <span className="pay-pill">Binance</span>
-              <span className="pay-pill">USDT</span>
               <span className="pay-pill">Pago Móvil</span>
-              <span className="pay-pill">Zelle</span>
+              <span className="pay-pill">Daviplata</span>
+              <span className="pay-pill">Nequi</span>
               <span className="age" style={{ fontSize: 10, width: 26, height: 26 }}>
                 +18
               </span>

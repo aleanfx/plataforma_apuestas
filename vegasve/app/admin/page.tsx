@@ -37,8 +37,8 @@ const USERS = [
 const QUEUE = [
   { dir: "dep" as const, title: "Depósito · Binance Pay", sub: "Rafael Méndez · hace 2 min", amt: "Bs. 4.000" },
   { dir: "wd" as const, title: "Retiro · Pago Móvil", sub: "Luisa Pérez · hace 8 min", amt: "Bs. 2.000" },
-  { dir: "dep" as const, title: "Depósito · USDT", sub: "María Díaz · hace 15 min", amt: "Bs. 10.000" },
-  { dir: "wd" as const, title: "Retiro · Zelle", sub: "Carlos Gómez · hace 22 min", amt: "Bs. 1.500" },
+  { dir: "dep" as const, title: "Depósito · NowPayments", sub: "María Díaz · hace 15 min", amt: "Bs. 10.000" },
+  { dir: "wd" as const, title: "Retiro · Nequi", sub: "Carlos Gómez · hace 22 min", amt: "Bs. 1.500" },
 ];
 
 const GAMES = [
@@ -59,7 +59,7 @@ export default function AdminPage() {
               <ShieldCheck />
             </div>
             <div className="brand-name">
-              Vegas<span className="ve">VE</span>
+              Betmar<span className="ve">Play</span>
             </div>
           </Link>
           <span className="pill pending" style={{ marginLeft: 4 }}>
@@ -127,7 +127,7 @@ export default function AdminPage() {
             <div>
               <div className="eyebrow">Panel de control</div>
               <h1 style={{ marginTop: 10 }}>Buenas noches, Admin</h1>
-              <p>Resumen operativo de VegasVE · hoy, 29 de mayo de 2026</p>
+              <p>Resumen operativo de BetmarPlay · hoy, 29 de mayo de 2026</p>
             </div>
             <button className="btn btn-ghost btn-sm">Exportar reporte</button>
           </div>

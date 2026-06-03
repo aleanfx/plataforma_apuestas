@@ -14,7 +14,7 @@ function Brand({ href }: { href: string }) {
         <ShieldCheck />
       </div>
       <div className="brand-name">
-        Vegas<span className="ve">VE</span>
+        Betmar<span className="ve">Play</span>
       </div>
     </Link>
   );
@@ -28,7 +28,7 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
           <Brand href="/" />
           <div className="nav-links">
             <a href="#games-anchor">Juegos</a>
-            <a href="#feat-anchor">Por qué VegasVE</a>
+            <a href="#feat-anchor">Por qué BetmarPlay</a>
             <AuthDialog defaultTab="register">
               <a>Promociones</a>
             </AuthDialog>

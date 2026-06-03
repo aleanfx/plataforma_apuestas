@@ -28,6 +28,13 @@ const config: Config = {
           bright: "var(--gold-bright)",
           deep: "var(--gold-deep)",
         },
+        purple: {
+          DEFAULT: "var(--purple)",
+          bright: "var(--purple-bright)",
+        },
+        cyan: "var(--cyan)",
+        pink: "var(--pink)",
+        orange: "var(--orange)",
         line: {
           DEFAULT: "var(--line)",
           soft: "var(--line-soft)",
@@ -40,8 +47,10 @@ const config: Config = {
         danger: "var(--danger)",
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "Georgia", "serif"],
+        serif: ["var(--font-display)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        script: ["var(--font-script)", "cursive"],
       },
       borderRadius: {
         DEFAULT: "var(--radius)",

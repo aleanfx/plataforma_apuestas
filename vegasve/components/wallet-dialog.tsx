@@ -12,15 +12,75 @@ import {
 } from "@/components/ui/dialog";
 import { CardAccount } from "@/components/icons";
 
-const RATE = 40; // demo rate Bs/USD
+const RATE = 40; // tasa demo Bs/USD
 
-type Method = { id: string; name: string; depSub: string; wdSub: string; ic: string; icStyle: React.CSSProperties };
+type Method = {
+  id: string;
+  name: string;
+  depSub: string;
+  wdSub: string;
+  ic: string;
+  icStyle: React.CSSProperties;
+  /* datos de destino que se muestran al depositar */
+  details: { k: string; v: string }[];
+};
 
 const METHODS: Method[] = [
-  { id: "binance", name: "Binance Pay", depSub: "Instantáneo", wdSub: "Hasta 1 h", ic: "B", icStyle: { background: "rgba(240,185,11,0.14)", color: "#f0b90b" } },
-  { id: "usdt", name: "USDT (TRC-20)", depSub: "Cripto · 1–3 min", wdSub: "Cripto", ic: "₮", icStyle: { background: "rgba(38,161,123,0.14)", color: "#26a17b" } },
-  { id: "pm", name: "Pago Móvil", depSub: "Bancos VE", wdSub: "Bancos VE", ic: "Pm", icStyle: { background: "rgba(201,168,76,0.14)", color: "var(--gold)" } },
-  { id: "zelle", name: "Zelle", depSub: "USD", wdSub: "USD", ic: "Z", icStyle: { background: "rgba(122,72,201,0.16)", color: "#a06ff0" } },
+  {
+    id: "nowpayments",
+    name: "NowPayments",
+    depSub: "Cripto · mín. $5",
+    wdSub: "Cripto",
+    ic: "₿",
+    icStyle: { background: "rgba(6,182,212,0.15)", color: "#06b6d4" },
+    details: [
+      { k: "Red", v: "Cualquier criptomoneda" },
+      { k: "Mínimo", v: "$5 USD" },
+    ],
+  },
+  {
+    id: "binance",
+    name: "Binance",
+    depSub: "Binance Pay",
+    wdSub: "Binance Pay",
+    ic: "B",
+    icStyle: { background: "rgba(245,158,11,0.16)", color: "#f5b30b" },
+    details: [
+      { k: "Binance ID", v: "184656251" },
+      { k: "Acepta", v: "Cualquier cripto" },
+    ],
+  },
+  {
+    id: "pagomovil",
+    name: "Pago Móvil",
+    depSub: "Banco Venezolano de Crédito",
+    wdSub: "Bancos VE",
+    ic: "Pm",
+    icStyle: { background: "rgba(147,51,234,0.16)", color: "#a855f7" },
+    details: [
+      { k: "Teléfono", v: "0426 660 3848" },
+      { k: "C.I.", v: "20.090.138" },
+      { k: "Banco", v: "Venezolano de Crédito" },
+    ],
+  },
+  {
+    id: "daviplata",
+    name: "Daviplata",
+    depSub: "Colombia (COP)",
+    wdSub: "Colombia",
+    ic: "D",
+    icStyle: { background: "rgba(236,72,153,0.16)", color: "#ec4899" },
+    details: [{ k: "Daviplata", v: "301 913 7963" }],
+  },
+  {
+    id: "nequi",
+    name: "Nequi",
+    depSub: "Colombia (COP)",
+    wdSub: "Colombia",
+    ic: "N",
+    icStyle: { background: "rgba(147,51,234,0.16)", color: "#9333ea" },
+    details: [{ k: "Nequi", v: "311 342 5060" }],
+  },
 ];
 
 export function WalletDialog({
@@ -31,12 +91,12 @@ export function WalletDialog({
   kind: "deposit" | "withdraw";
 }) {
   const [open, setOpen] = React.useState(false);
-  const [method, setMethod] = React.useState("binance");
+  const [method, setMethod] = React.useState("nowpayments");
   const [amount, setAmount] = React.useState<number | "">("");
 
   React.useEffect(() => {
     if (!open) {
-      setMethod("binance");
+      setMethod("nowpayments");
       setAmount("");
     }
   }, [open]);
@@ -46,6 +106,8 @@ export function WalletDialog({
   const totalLabel = "Bs. " + value.toLocaleString("es-VE");
 
   const isDep = kind === "deposit";
+  const active = METHODS.find((m) => m.id === method)!;
+
   const quick = isDep
     ? [
         { label: "Bs. 2.000", v: 2000 },
@@ -72,7 +134,7 @@ export function WalletDialog({
       <DialogContent className="max-w-[520px]">
         <div className="modal-top">
           <div className="eyebrow">Cartera</div>
-          <DialogTitle className="serif" style={{ fontSize: 30, fontWeight: 600 }}>
+          <DialogTitle className="serif" style={{ fontSize: 30, fontWeight: 700 }}>
             {isDep ? "Depositar fondos" : "Retirar fondos"}
           </DialogTitle>
           <DialogDescription className="msub">
@@ -105,12 +167,24 @@ export function WalletDialog({
             ))}
           </div>
 
-          {!isDep && (
+          {isDep ? (
+            <div className="pay-details">
+              <div className="pay-details-head">
+                Envía tu pago a <span className="gold">{active.name}</span>
+              </div>
+              {active.details.map((d) => (
+                <div className="pay-row" key={d.k}>
+                  <span className="pay-k">{d.k}</span>
+                  <span className="pay-v">{d.v}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
             <div className="field">
               <label>Cuenta / billetera destino</label>
               <div className="input-wrap">
                 <CardAccount />
-                <input type="text" placeholder="ID de Binance, dirección o teléfono" />
+                <input type="text" placeholder="ID, dirección o teléfono donde recibir" />
               </div>
             </div>
           )}
@@ -121,7 +195,6 @@ export function WalletDialog({
               <span className="cur">Bs.</span>
               <input
                 type="number"
-                className="amount-input"
                 placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
@@ -139,7 +212,7 @@ export function WalletDialog({
           <div style={{ margin: "18px 0 4px" }}>
             <div className="summary-row">
               <span className="lbl">Equivalente</span>
-              <span className="sum-usd">≈ ${usd}</span>
+              <span>≈ ${usd}</span>
             </div>
             <div className="summary-row">
               <span className="lbl">{isDep ? "Comisión" : "Comisión de red"}</span>
@@ -147,7 +220,7 @@ export function WalletDialog({
             </div>
             <div className="summary-row total">
               <span className="lbl">{isDep ? "Total a acreditar" : "Recibes"}</span>
-              <span className="val sum-total">{totalLabel}</span>
+              <span className="val">{totalLabel}</span>
             </div>
           </div>
 

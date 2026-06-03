@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Outfit, Jost, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const serif = Cormorant_Garamond({
+const display = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -18,8 +17,15 @@ const sans = Jost({
   display: "swap",
 });
 
+const script = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-script",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "VegasVE — Casino & Apuestas",
+  title: "BetmarPlay — Casino & Apuestas",
   description:
     "Casino premium en Venezuela. Dominó y Póker en vivo, mesas en bolívares y dólares, depósitos y retiros al instante.",
 };
@@ -28,7 +34,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${serif.variable} ${sans.variable}`}>
+    <html
+      lang="es"
+      className={`${display.variable} ${sans.variable} ${script.variable}`}
+    >
       <body>
         {children}
         <Toaster />

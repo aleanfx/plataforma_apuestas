@@ -56,7 +56,7 @@ export default function LobbyPage() {
 
           <div style={{ margin: "42px 0 70px" }}>
             <div className="eyebrow" style={{ marginBottom: 18 }}>
-              Próximamente en VegasVE
+              Próximamente en BetmarPlay
             </div>
             <ComingSoon />
           </div>

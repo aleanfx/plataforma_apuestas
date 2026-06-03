@@ -42,7 +42,7 @@ export function AuthDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <div className="modal-top">
-          <div className="eyebrow">VegasVE</div>
+          <div className="eyebrow">BetmarPlay</div>
           <DialogTitle className="serif" style={{ fontSize: 30, fontWeight: 600 }}>
             {tab === "login" ? "Bienvenido de vuelta" : "Crea tu cuenta"}
           </DialogTitle>
