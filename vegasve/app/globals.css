@@ -242,6 +242,12 @@
     filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.5));
   }
   .brand-name .ve { -webkit-text-fill-color: initial; color: var(--cyan); }
+  .brand-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.45));
+  }
   .nav-links { display: flex; gap: 30px; margin-left: 8px; }
   .nav-links a {
     font-size: 13.5px; font-weight: 400; color: var(--text-2);
@@ -884,6 +890,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .nav-inner { padding: 13px 18px; gap: 12px; }
   .nav-links { display: none; }
   .brand-name { font-size: 20px; }
+  .brand-logo { height: 38px; }
   .balance-chip { padding: 6px 6px 6px 14px; gap: 10px; }
   .balance-chip .usd { display: none; }
   .balance-chip .bal .v { font-size: 17px; }
@@ -1083,6 +1090,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .nav-inner { padding: 11px 18px; gap: 8px; flex-wrap: nowrap; }
   .brand { gap: 8px; }
   .brand-name { font-size: 17px; }
+  .brand-logo { height: 33px; }
   .brand-mark { width: 32px; height: 32px; }
   .nav .btn-sm { padding: 7px 11px; font-size: 11.5px; letter-spacing: 0.2px; }
 

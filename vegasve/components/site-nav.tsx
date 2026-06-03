@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -8,14 +9,27 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { WalletDialog } from "@/components/wallet-dialog";
 
 function Brand({ href }: { href: string }) {
+  const [imgOk, setImgOk] = React.useState(true);
   return (
     <Link href={href} className="brand">
-      <div className="brand-mark">
-        <ShieldCheck />
-      </div>
-      <div className="brand-name">
-        Betmar<span className="ve">Play</span>
-      </div>
+      {imgOk ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/logo.png"
+          alt="BetmarPlay"
+          className="brand-logo"
+          onError={() => setImgOk(false)}
+        />
+      ) : (
+        <>
+          <div className="brand-mark">
+            <ShieldCheck />
+          </div>
+          <div className="brand-name">
+            Betmar<span className="ve">Play</span>
+          </div>
+        </>
+      )}
     </Link>
   );
 }
