@@ -13,7 +13,6 @@ import {
   Roulette,
   Blackjack,
   Slots,
-  Spade,
 } from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
 
@@ -35,18 +34,18 @@ const GAMES = [
   { slug: "caballos", Icon: Dice, name: "Caballos", desc: "Pollas hípicas · Apuesta y predice a los ganadores.", players: "623", stakes: "desde Bs. 100", href: "/caballos", demo: null },
 ] as const;
 
-/* Próximamente — se ven como juegos, con sello "Pronto" */
+/* Próximamente — se ven como juegos (con foto), atenuados y con sello "Pronto" */
 const SOON = [
-  { name: "Ruleta", Icon: Roulette },
-  { name: "Blackjack", Icon: Blackjack },
-  { name: "Dados", Icon: Dice },
-  { name: "Tragamonedas", Icon: Slots },
-  { name: "Baccarat", Icon: Spade },
+  { slug: "ruleta", name: "Ruleta", Icon: Roulette },
+  { slug: "blackjack", name: "Blackjack", Icon: Blackjack },
+  { slug: "dados", name: "Dados", Icon: Dice },
+  { slug: "tragamonedas", name: "Tragamonedas", Icon: Slots },
+  { slug: "ludo", name: "Ludo", Icon: Gamepad },
 ] as const;
 
 function soonCards() {
-  return SOON.map(({ name, Icon }) => (
-    <div className="game-card soon" key={name} aria-disabled="true">
+  return SOON.map(({ slug, name, Icon }) => (
+    <div className="game-card soon" key={slug} aria-disabled="true" style={cardBg(slug)}>
       <div>
         <div className="gc-icon">
           <Icon />

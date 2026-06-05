@@ -1,14 +1,11 @@
 IMÁGENES DE FONDO DE LAS TARJETAS DE JUEGO
 ==========================================
 
-Las 5 fotos YA están aquí, optimizadas para web (ancho 1280px, ~55-95 KB
-cada una, en lugar de los ~2 MB originales):
+Las fotos YA están aquí, optimizadas para web (ancho 1280px, ~55-95 KB
+cada una). Hay una por cada tarjeta (juegos disponibles y "Pronto"):
 
-    domino.jpg
-    poker.jpg
-    bingo.jpg
-    parley.jpg
-    caballos.jpg
+  Disponibles:  domino.jpg  poker.jpg  bingo.jpg  parley.jpg  caballos.jpg
+  Próximamente: ruleta.jpg  blackjack.jpg  dados.jpg  tragamonedas.jpg  ludo.jpg
 
 CÓMO REEMPLAZAR UNA FOTO
 ------------------------
@@ -20,7 +17,7 @@ CÓMO REEMPLAZAR UNA FOTO
 NOTAS
 -----
 - El código las referencia automáticamente desde components/game-cards.tsx
-  (un slug por juego: domino/poker/bingo/parley/caballos).
+  (un slug por tarjeta).
 - Si una imagen falta, la tarjeta usa un degradado oscuro de respaldo.
-- Un velo oscuro se aplica encima para que el texto blanco siempre se lea
-  bien sobre cualquier foto.
+- Las tarjetas "Pronto" llevan una capa oscura extra para indicar que el
+  juego aún no está disponible.

@@ -463,9 +463,11 @@
     .game-card:active { transform: none; }
   }
   /* Tarjetas "Próximamente": mismo formato de juego, con sello "Pronto" */
-  .game-card.soon { cursor: default; }
+  .game-card.soon { cursor: default; filter: grayscale(0.35); }
   .game-card.soon:hover { transform: none; border-color: var(--line); box-shadow: none; }
   .game-card.soon:hover::after { opacity: 0; }
+  /* capa oscura encima de la foto: comunica "no disponible todavía" */
+  .game-card.soon::before { background: rgba(8, 6, 20, 0.74); }
   .game-card.soon .gc-icon { color: var(--text-2); }
   .gc-badge {
     display: inline-flex; align-items: center;
@@ -1036,18 +1038,26 @@ html, body { overflow-x: clip; max-width: 100%; }
   .soon-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
 
   /* Features -> carrusel deslizable */
+  /* Features: 3 recuadros pequeños en una sola línea (sin carrusel) */
   .feat-grid {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    margin: 0;
-    padding: 2px 0 12px;
-    scrollbar-width: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
-  .feat-grid::-webkit-scrollbar { display: none; }
-  .feat-grid > * { flex: 0 0 66%; scroll-snap-align: start; }
-  .feat { padding: 16px; }
+  .feat {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 13px 8px;
+  }
+  .feat .fi { width: 34px; height: 34px; }
+  .feat .fi svg { width: 18px; height: 18px; }
+  .feat h4 { font-size: 12.5px; line-height: 1.2; }
+  .feat p {
+    font-size: 10px; line-height: 1.35; margin-top: 2px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
 
   /* Footer (más compacto en móvil; texto al lado del logo) */
   .footer { padding: 24px 0 30px; margin-top: 24px; }
