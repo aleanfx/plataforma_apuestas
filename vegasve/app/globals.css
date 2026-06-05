@@ -456,6 +456,12 @@
     box-shadow: 0 0 34px -6px rgba(147, 51, 234, 0.55);
   }
   .game-card:hover::after { opacity: 1; }
+  /* En táctil el "float" se queda pegado al tocar y el carrusel recorta
+     el borde superior: desactivamos el desplazamiento en estos casos. */
+  @media (hover: none) {
+    .game-card:hover { transform: none; }
+    .game-card:active { transform: none; }
+  }
   .gc-icon {
     width: 64px; height: 64px; border-radius: 14px;
     display: grid; place-items: center;
