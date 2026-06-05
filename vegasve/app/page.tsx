@@ -5,7 +5,6 @@ import { LandingGameCards } from "@/components/game-cards";
 import { ComingSoon } from "@/components/coming-soon";
 import { AuthDialog } from "@/components/auth-dialog";
 import {
-  ShieldCheck,
   Shield,
   Clock,
   Check,
@@ -134,12 +133,8 @@ export default function LandingPage() {
           <div className="wrap footer-inner">
             <div>
               <div className="brand" style={{ marginBottom: 10 }}>
-                <div className="brand-mark" style={{ width: 32, height: 32 }}>
-                  <ShieldCheck />
-                </div>
-                <div className="brand-name" style={{ fontSize: 24 }}>
-                  Betmar<span className="ve">Play</span>
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="BetmarPlay" className="brand-logo" style={{ height: 48 }} />
               </div>
               <p className="muted">
                 © 2026 BetmarPlay. Juega responsablemente. Prohibido para menores de

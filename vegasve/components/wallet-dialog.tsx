@@ -122,6 +122,14 @@ export function WalletDialog({
       ];
 
   function confirm() {
+    if (value < 10) {
+      toast.error("Ingresa un monto válido (mínimo Bs. 10).");
+      return;
+    }
+    if (!isDep && value > 10980) {
+      toast.error("El monto supera tu saldo disponible para retiro.");
+      return;
+    }
     setOpen(false);
     toast.success(
       isDep ? "Depósito en proceso — se reflejará en breve" : "Solicitud de retiro enviada",
@@ -196,6 +204,8 @@ export function WalletDialog({
               <input
                 type="number"
                 placeholder="0"
+                min={10}
+                step={10}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
               />

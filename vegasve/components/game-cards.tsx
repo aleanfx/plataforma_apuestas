@@ -116,6 +116,12 @@ export function LobbyGameCards() {
             tabIndex={0}
             style={cardBg(g.slug)}
             onClick={() => g.demo && play(g.demo)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (g.demo) play(g.demo);
+              }
+            }}
           >
             <CardInner g={g} />
           </div>

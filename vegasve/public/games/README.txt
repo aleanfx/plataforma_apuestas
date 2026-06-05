@@ -1,23 +1,26 @@
 IMÁGENES DE FONDO DE LAS TARJETAS DE JUEGO
 ==========================================
 
-Coloca aquí las 5 fotos de fondo con ESTOS nombres EXACTOS
-(todo en minúscula, sin acentos, sin espacios, extensión .jpg):
+Las 5 fotos YA están aquí, optimizadas para web (ancho 1280px, ~55-95 KB
+cada una, en lugar de los ~2 MB originales):
 
-    domino.jpg     <- tu "Dominó.jpeg"
-    poker.jpg      <- tu "Poker.jpeg"
-    bingo.jpg      <- tu "Bingo.jpeg"
-    parley.jpg     <- tu "Parley.jpeg"
-    caballos.jpg   <- tu "Caballos - Pollas Hípicas.jpeg"
+    domino.jpg
+    poker.jpg
+    bingo.jpg
+    parley.jpg
+    caballos.jpg
 
-Ruta final, por ejemplo:  vegasve/public/games/domino.jpg
+CÓMO REEMPLAZAR UNA FOTO
+------------------------
+1. Sustituye el .jpg correspondiente manteniendo el MISMO nombre
+   (minúscula, sin acentos ni espacios).
+2. Recomendado: imagen horizontal, ancho ~1280px, JPG de calidad ~80
+   para que pese poco.
 
 NOTAS
 -----
-- Si una imagen no existe todavía, la tarjeta muestra un degradado
-  oscuro de respaldo. Cuando subas la foto, aparece automáticamente.
-- Recomendado: imágenes horizontales, mínimo 800x600 px, formato JPG.
-- Un velo oscuro se aplica encima para que el texto blanco siempre se
-  lea bien sobre cualquier foto.
-- Si tus archivos son .jpeg, renómbralos a .jpg (o avísame y cambio el
-  código para que acepte .jpeg).
+- El código las referencia automáticamente desde components/game-cards.tsx
+  (un slug por juego: domino/poker/bingo/parley/caballos).
+- Si una imagen falta, la tarjeta usa un degradado oscuro de respaldo.
+- Un velo oscuro se aplica encima para que el texto blanco siempre se lea
+  bien sobre cualquier foto.

@@ -13,7 +13,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Mail, Lock, User, Google, Facebook } from "@/components/icons";
+import { Mail, Lock, User, Google } from "@/components/icons";
 
 export function AuthDialog({
   children,
@@ -35,6 +35,12 @@ export function AuthDialog({
     setOpen(false);
     toast.success("Sesión iniciada — ¡bienvenido!");
     setTimeout(() => router.push("/lobby"), 250);
+  }
+
+  // submit del formulario: respeta la validación nativa (required, type, minLength)
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    doAuth();
   }
 
   return (
@@ -61,56 +67,103 @@ export function AuthDialog({
             </TabsList>
 
             <TabsContent value="login">
-              <div className="field">
-                <label>Correo o usuario</label>
-                <div className="input-wrap">
-                  <Mail />
-                  <input type="text" placeholder="tu@correo.com" />
+              <form onSubmit={onSubmit}>
+                <div className="field">
+                  <label htmlFor="login-email">Correo o usuario</label>
+                  <div className="input-wrap">
+                    <Mail />
+                    <input
+                      id="login-email"
+                      name="email"
+                      type="text"
+                      placeholder="tu@correo.com"
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="field">
-                <label>Contraseña</label>
-                <div className="input-wrap">
-                  <Lock />
-                  <input type="password" placeholder="••••••••" />
+                <div className="field">
+                  <label htmlFor="login-pass">Contraseña</label>
+                  <div className="input-wrap">
+                    <Lock />
+                    <input
+                      id="login-pass"
+                      name="password"
+                      type="password"
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                  <div className="hint" style={{ textAlign: "right" }}>
+                    <button
+                      type="button"
+                      className="gold"
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      onClick={() => toast("Te enviaremos un enlace de recuperación a tu correo.")}
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
                 </div>
-                <div className="hint" style={{ textAlign: "right" }}>
-                  <a className="gold" style={{ cursor: "pointer" }}>
-                    ¿Olvidaste tu contraseña?
-                  </a>
-                </div>
-              </div>
-              <button className="btn btn-gold btn-block" style={{ marginTop: 8 }} onClick={doAuth}>
-                Ingresar
-              </button>
+                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }}>
+                  Ingresar
+                </button>
+              </form>
             </TabsContent>
 
             <TabsContent value="register">
-              <div className="field">
-                <label>Nombre completo</label>
-                <div className="input-wrap">
-                  <User />
-                  <input type="text" placeholder="Rafael Méndez" />
+              <form onSubmit={onSubmit}>
+                <div className="field">
+                  <label htmlFor="reg-name">Nombre completo</label>
+                  <div className="input-wrap">
+                    <User />
+                    <input
+                      id="reg-name"
+                      name="name"
+                      type="text"
+                      placeholder="Rafael Méndez"
+                      autoComplete="name"
+                      required
+                      minLength={3}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="field">
-                <label>Correo electrónico</label>
-                <div className="input-wrap">
-                  <Mail />
-                  <input type="email" placeholder="tu@correo.com" />
+                <div className="field">
+                  <label htmlFor="reg-email">Correo electrónico</label>
+                  <div className="input-wrap">
+                    <Mail />
+                    <input
+                      id="reg-email"
+                      name="email"
+                      type="email"
+                      placeholder="tu@correo.com"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="field">
-                <label>Contraseña</label>
-                <div className="input-wrap">
-                  <Lock />
-                  <input type="password" placeholder="Mínimo 8 caracteres" />
+                <div className="field">
+                  <label htmlFor="reg-pass">Contraseña</label>
+                  <div className="input-wrap">
+                    <Lock />
+                    <input
+                      id="reg-pass"
+                      name="password"
+                      type="password"
+                      placeholder="Mínimo 8 caracteres"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                  <div className="hint">Debes ser mayor de 18 años para registrarte.</div>
                 </div>
-                <div className="hint">Debes ser mayor de 18 años para registrarte.</div>
-              </div>
-              <button className="btn btn-gold btn-block" style={{ marginTop: 8 }} onClick={doAuth}>
-                Crear cuenta y reclamar bono
-              </button>
+                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }}>
+                  Crear cuenta y reclamar bono
+                </button>
+              </form>
             </TabsContent>
           </Tabs>
 
@@ -118,9 +171,6 @@ export function AuthDialog({
           <div className="social-row">
             <button onClick={doAuth}>
               <Google /> Google
-            </button>
-            <button onClick={doAuth}>
-              <Facebook /> Facebook
             </button>
           </div>
         </div>

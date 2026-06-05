@@ -29,25 +29,28 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    {/* Centrado por flexbox para que el transform quede libre y la
-        animación sea fluida (sin saltos al terminar) */}
-    <div className="modal-positioner pointer-events-none fixed inset-0 z-[91] flex justify-center overflow-y-auto p-4 sm:p-6">
-      <DialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          "modal-anim pointer-events-auto relative my-auto w-full max-w-[440px]",
-          "overflow-hidden rounded-[18px] border border-line shadow-casino",
-          "bg-[linear-gradient(170deg,var(--gray-2),var(--black-2))] focus:outline-none",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-        <DialogPrimitive.Close className="absolute right-[22px] top-[22px] z-10 grid h-[34px] w-[34px] place-items-center rounded-full border border-line-soft text-ink-2 transition-colors hover:border-line hover:text-ink focus:outline-none">
-          <X className="h-4 w-4" strokeWidth={1.6} />
-          <span className="sr-only">Cerrar</span>
-        </DialogPrimitive.Close>
-      </DialogPrimitive.Content>
+    {/* El contenedor exterior es el que hace scroll (overflow-y-auto).
+        El interior usa min-h-full + items-center para centrar cuando el
+        contenido cabe y poder hacer scroll (sin cortar el tope) cuando no. */}
+    <div className="modal-positioner fixed inset-0 z-[91] overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+        <DialogPrimitive.Content
+          ref={ref}
+          className={cn(
+            "modal-anim relative w-full max-w-[440px]",
+            "overflow-hidden rounded-[18px] border border-line shadow-casino",
+            "bg-[linear-gradient(170deg,var(--gray-2),var(--black-2))] focus:outline-none",
+            className,
+          )}
+          {...props}
+        >
+          {children}
+          <DialogPrimitive.Close className="absolute right-[22px] top-[22px] z-10 grid h-[34px] w-[34px] place-items-center rounded-full border border-line-soft text-ink-2 transition-colors hover:border-line hover:text-ink focus:outline-none">
+            <X className="h-4 w-4" strokeWidth={1.6} />
+            <span className="sr-only">Cerrar</span>
+          </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
+      </div>
     </div>
   </DialogPortal>
 ));
