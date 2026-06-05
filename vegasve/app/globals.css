@@ -891,6 +891,12 @@ html, body { overflow-x: clip; max-width: 100%; }
   .modal-overlay[data-state], .modal-anim[data-state] { animation-duration: 0.01ms; }
 }
 
+/* Scrollbar fino para el contenido scrolleable del modal */
+.modal-scroll { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.modal-scroll::-webkit-scrollbar { width: 7px; }
+.modal-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+.modal-scroll::-webkit-scrollbar-track { background: transparent; }
+
 /* ============================================================
    RESPONSIVE — tablet & móvil
    ============================================================ */
