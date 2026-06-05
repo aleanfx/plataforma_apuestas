@@ -134,7 +134,7 @@ export default function LandingPage() {
             <div>
               <div className="brand" style={{ marginBottom: 10 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="BetmarPlay" className="brand-logo" style={{ height: 48 }} />
+                <img src="/logo.png" alt="BetmarPlay" className="footer-logo" />
               </div>
               <p className="muted">
                 © 2026 BetmarPlay. Juega responsablemente. Prohibido para menores de

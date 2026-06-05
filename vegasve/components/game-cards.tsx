@@ -11,6 +11,9 @@ import { AuthDialog } from "@/components/auth-dialog";
    Si una imagen falta, la tarjeta usa el degradado oscuro de respaldo. */
 const cardBg = (slug: string): React.CSSProperties => ({
   backgroundImage: `url(/games/${slug}.jpg)`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
 });
 
 /* ---- Landing: las tarjetas invitan a registrarse ---- */

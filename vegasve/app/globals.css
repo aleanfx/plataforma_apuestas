@@ -506,6 +506,7 @@
 
   /* ---------- Footer ---------- */
   .footer { border-top: 1px solid var(--line-soft); padding: 44px 0 60px; margin-top: 40px; }
+  .footer-logo { height: 46px; width: auto; display: block; }
   .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
   .footer .muted { color: var(--text-3); font-size: 12.5px; }
   .footer-pay { display: flex; gap: 18px; align-items: center; color: var(--text-2); font-size: 12px; }
@@ -565,7 +566,8 @@
   .menu-list a { display: flex; align-items: center; gap: 13px; padding: 12px 14px; border-radius: 9px; color: var(--text-2); font-size: 14px; transition: all .2s; cursor: pointer; }
   .menu-list a:hover { background: rgba(255,255,255,0.03); color: var(--text); }
   .menu-list a svg { width: 18px; height: 18px; stroke-width: 1.4; }
-  .menu-list a.danger:hover { color: #d98a6a; }
+  .menu-list a.danger { color: var(--danger); }
+  .menu-list a.danger:hover { color: #fff; background: rgba(248,113,113,0.12); }
 
   .balance-feature {
     border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
@@ -991,13 +993,16 @@ html, body { overflow-x: clip; max-width: 100%; }
   }
   .games-grid::-webkit-scrollbar { display: none; }
   .games-grid > * {
-    flex: 0 0 74%;
+    flex: 0 0 70%;
     scroll-snap-align: start;
-    min-height: 208px;
+    min-height: 0;
   }
-  .game-card { padding: 20px; }
-  .game-card h3 { font-size: 24px; }
-  .gc-desc { font-size: 13px; }
+  .game-card { padding: 16px; min-height: 0; }
+  .gc-icon { width: 46px; height: 46px; border-radius: 11px; margin-bottom: 12px; }
+  .gc-icon svg { width: 24px; height: 24px; }
+  .game-card h3 { font-size: 20px; }
+  .gc-desc { font-size: 12.5px; margin-top: 6px; }
+  .gc-foot { margin-top: 14px; }
 
   /* Próximamente -> 2 por fila */
   .soon-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -1013,13 +1018,17 @@ html, body { overflow-x: clip; max-width: 100%; }
     scrollbar-width: none;
   }
   .feat-grid::-webkit-scrollbar { display: none; }
-  .feat-grid > * { flex: 0 0 70%; scroll-snap-align: start; }
-  .feat { padding: 20px; }
+  .feat-grid > * { flex: 0 0 66%; scroll-snap-align: start; }
+  .feat { padding: 16px; }
 
-  /* Footer */
-  .footer { padding: 36px 0 50px; }
-  .footer-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
-  .footer-pay { flex-wrap: wrap; }
+  /* Footer (más compacto en móvil) */
+  .footer { padding: 26px 0 32px; margin-top: 26px; }
+  .footer-logo { height: 38px; }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .footer .brand { margin-bottom: 4px !important; }
+  .footer .muted { font-size: 11.5px; }
+  .footer-pay { flex-wrap: wrap; gap: 8px; font-size: 11px; }
+  .footer-pay > span:first-child { width: 100%; margin-bottom: 2px; }
 
   /* Lobby */
   .lobby-head { padding: 28px 0 4px; }
@@ -1092,12 +1101,13 @@ html, body { overflow-x: clip; max-width: 100%; }
   .eyebrow { font-size: 10.5px; letter-spacing: 2.5px; }
 
   /* Cards (carruseles más estrechos) */
-  .games-grid > * { flex: 0 0 78%; min-height: 200px; }
+  .games-grid > * { flex: 0 0 72%; min-height: 0; }
   .feat-grid > * { flex: 0 0 74%; }
-  .game-card { padding: 20px; }
-  .game-card h3 { font-size: 23px; }
-  .gc-icon { width: 50px; height: 50px; margin-bottom: 14px; }
-  .gc-desc { font-size: 12.5px; }
+  .game-card { padding: 15px; }
+  .game-card h3 { font-size: 19px; }
+  .gc-icon { width: 42px; height: 42px; margin-bottom: 11px; }
+  .gc-icon svg { width: 22px; height: 22px; }
+  .gc-desc { font-size: 12px; }
 
   /* Próximamente */
   .soon-card { padding: 16px 12px; }
