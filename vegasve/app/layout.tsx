@@ -27,7 +27,7 @@ const script = Dancing_Script({
 export const metadata: Metadata = {
   title: "BetmarPlay — Casino & Apuestas",
   description:
-    "Casino premium en Venezuela. Dominó y Póker en vivo, mesas en bolívares y dólares, depósitos y retiros al instante.",
+    "Casino premium en Venezuela. Dominó, Póker, Bingo, Parley y Pollas Hípicas en vivo. Mesas en bolívares y dólares, depósitos y retiros al instante.",
 };
 
 export default function RootLayout({

@@ -243,7 +243,7 @@
   }
   .brand-name .ve { -webkit-text-fill-color: initial; color: var(--cyan); }
   .brand-logo {
-    height: 44px;
+    height: 52px;
     width: auto;
     display: block;
     filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.45));
@@ -416,7 +416,12 @@
     position: relative;
     border-radius: var(--radius);
     border: 1.5px solid var(--line);
-    background: linear-gradient(165deg, var(--gray-2), var(--black-2));
+    /* color base; si la foto (inline) falta, queda este degradado de respaldo */
+    background-color: var(--gray-2);
+    background-image: linear-gradient(165deg, var(--gray-2), var(--black-2));
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding: 34px;
     overflow: hidden;
     transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
@@ -424,8 +429,24 @@
     display: flex; flex-direction: column; justify-content: space-between;
     cursor: pointer;
   }
+  /* velo oscuro: deja ver la foto pero garantiza contraste del texto
+     (más claro arriba, más oscuro abajo donde van el pie y los botones) */
+  .game-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(13, 11, 30, 0.42) 0%,
+      rgba(13, 11, 30, 0.58) 45%,
+      rgba(13, 11, 30, 0.9) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+  .game-card > * { position: relative; z-index: 2; }
   .game-card::after {
-    content: ""; position: absolute; inset: 0;
+    content: ""; position: absolute; inset: 0; z-index: 1;
     background: radial-gradient(420px 200px at 90% 0%, rgba(147,51,234,0.22), transparent 60%);
     opacity: 0; transition: opacity .3s; pointer-events: none;
   }
@@ -912,7 +933,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .nav-inner { padding: 13px 18px; gap: 12px; }
   .nav-links { display: none; }
   .brand-name { font-size: 20px; }
-  .brand-logo { height: 38px; }
+  .brand-logo { height: 46px; }
   .balance-chip { padding: 6px 6px 6px 14px; gap: 10px; }
   .balance-chip .usd { display: none; }
   .balance-chip .bal .v { font-size: 17px; }
@@ -1112,7 +1133,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .nav-inner { padding: 11px 18px; gap: 8px; flex-wrap: nowrap; }
   .brand { gap: 8px; }
   .brand-name { font-size: 17px; }
-  .brand-logo { height: 33px; }
+  .brand-logo { height: 40px; }
   .brand-mark { width: 32px; height: 32px; }
   .nav .btn-sm { padding: 7px 11px; font-size: 11.5px; letter-spacing: 0.2px; }
 
@@ -1159,4 +1180,84 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-cta .btn-gold { animation: none; }
+}
+
+/* ============================================================
+   Páginas de juego (Bingo / Parley / Caballos)
+   Layout de 2 columnas que colapsa a 1 en móvil
+   ============================================================ */
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 42px;
+  align-items: start;
+}
+.game-panel {
+  background: var(--gray);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--line);
+}
+.game-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.game-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.game-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.game-opt {
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  font-size: 13px;
+  color: #fff;
+  background: var(--purple);
+}
+.game-opt.sel {
+  background: var(--gold);
+  color: #2a1500;
+  font-weight: 600;
+}
+.game-opt .tick {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+}
+.game-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 92px;
+}
+
+@media (max-width: 900px) {
+  .game-layout { grid-template-columns: 1fr; gap: 22px; }
+  .game-side { position: static; }
+}
+@media (max-width: 560px) {
+  .game-layout { gap: 18px; margin-bottom: 30px; }
+  .game-panel { padding: 18px; }
+  .game-grid-5 { gap: 7px; }
+  .game-cell { font-size: 15px; }
 }
