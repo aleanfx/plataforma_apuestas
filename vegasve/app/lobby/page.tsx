@@ -1,7 +1,6 @@
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { LobbyGameCards } from "@/components/game-cards";
-import { ComingSoon } from "@/components/coming-soon";
 import { WalletDialog } from "@/components/wallet-dialog";
 import { Plus } from "@/components/icons";
 
@@ -50,13 +49,6 @@ export default function LobbyPage() {
           </div>
 
           <LobbyGameCards />
-
-          <div style={{ margin: "42px 0 70px" }}>
-            <div className="eyebrow" style={{ marginBottom: 18 }}>
-              Próximamente en BetmarPlay
-            </div>
-            <ComingSoon />
-          </div>
         </div>
       </section>
     </>

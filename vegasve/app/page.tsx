@@ -2,7 +2,6 @@ import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { HeroArt } from "@/components/hero-art";
 import { LandingGameCards } from "@/components/game-cards";
-import { ComingSoon } from "@/components/coming-soon";
 import { AuthDialog } from "@/components/auth-dialog";
 import {
   Shield,
@@ -78,13 +77,6 @@ export default function LandingPage() {
           </div>
 
           <LandingGameCards />
-
-          <div style={{ marginTop: 46 }}>
-            <div className="eyebrow" style={{ marginBottom: 18 }}>
-              Próximamente
-            </div>
-            <ComingSoon />
-          </div>
         </div>
 
         {/* Features */}
@@ -131,11 +123,9 @@ export default function LandingPage() {
         {/* Footer */}
         <footer className="footer">
           <div className="wrap footer-inner">
-            <div>
-              <div className="brand" style={{ marginBottom: 10 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="BetmarPlay" className="footer-logo" />
-              </div>
+            <div className="footer-brand">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="BetmarPlay" className="footer-logo" />
               <p className="muted">
                 © 2026 BetmarPlay. Juega responsablemente. Prohibido para menores de
                 +18 años.

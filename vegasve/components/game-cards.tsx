@@ -4,11 +4,21 @@ import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { DominoIcon, PokerIcon, Gamepad, Dice, Coins } from "@/components/icons";
+import {
+  DominoIcon,
+  PokerIcon,
+  Gamepad,
+  Dice,
+  Coins,
+  Roulette,
+  Blackjack,
+  Slots,
+  Spade,
+} from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
 
-/* Imagen de fondo de cada tarjeta (colócalas en public/games/).
-   Si una imagen falta, la tarjeta usa el degradado oscuro de respaldo. */
+/* Imagen de fondo de cada tarjeta (en public/games/).
+   Fijamos cover/center inline para que no se pierdan en móvil. */
 const cardBg = (slug: string): React.CSSProperties => ({
   backgroundImage: `url(/games/${slug}.jpg)`,
   backgroundSize: "cover",
@@ -16,30 +26,46 @@ const cardBg = (slug: string): React.CSSProperties => ({
   backgroundRepeat: "no-repeat",
 });
 
-/* ---- Landing: las tarjetas invitan a registrarse ---- */
-const LANDING = [
-  {
-    slug: "domino",
-    Icon: DominoIcon,
-    name: "Dominó",
-    desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.",
-    players: "1.240 jugando ahora",
-    stakes: "desde Bs. 50",
-  },
-  {
-    slug: "poker",
-    Icon: PokerIcon,
-    name: "Póker",
-    desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.",
-    players: "860 jugando ahora",
-    stakes: "desde Bs. 200",
-  },
+/* Juegos disponibles — mismos en inicio y lobby */
+const GAMES = [
+  { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.", players: "1.240", stakes: "desde Bs. 50", href: null, demo: "Dominó" },
+  { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.", players: "860", stakes: "desde Bs. 200", href: null, demo: "Póker" },
+  { slug: "bingo", Icon: Gamepad, name: "Bingo", desc: "Cartones progresivos · Premios cada 2 minutos.", players: "456", stakes: "desde Bs. 20", href: "/bingo", demo: null },
+  { slug: "parley", Icon: Coins, name: "Parley", desc: "Pronósticos deportivos · Acumula y gana hasta 100x.", players: "892", stakes: "multiplica x100", href: "/parley", demo: null },
+  { slug: "caballos", Icon: Dice, name: "Caballos", desc: "Pollas hípicas · Apuesta y predice a los ganadores.", players: "623", stakes: "desde Bs. 100", href: "/caballos", demo: null },
 ] as const;
 
+/* Próximamente — se ven como juegos, con sello "Pronto" */
+const SOON = [
+  { name: "Ruleta", Icon: Roulette },
+  { name: "Blackjack", Icon: Blackjack },
+  { name: "Dados", Icon: Dice },
+  { name: "Tragamonedas", Icon: Slots },
+  { name: "Baccarat", Icon: Spade },
+] as const;
+
+function soonCards() {
+  return SOON.map(({ name, Icon }) => (
+    <div className="game-card soon" key={name} aria-disabled="true">
+      <div>
+        <div className="gc-icon">
+          <Icon />
+        </div>
+        <h3 className="serif">{name}</h3>
+        <p className="gc-desc">Muy pronto en BetmarPlay.</p>
+      </div>
+      <div className="gc-foot">
+        <span className="gc-badge">Pronto</span>
+      </div>
+    </div>
+  ));
+}
+
+/* ---- Landing: cada tarjeta invita a registrarse ---- */
 export function LandingGameCards() {
   return (
     <div className="games-grid">
-      {LANDING.map((g) => (
+      {GAMES.map((g) => (
         <AuthDialog key={g.slug} defaultTab="register">
           <div className="game-card" role="button" tabIndex={0} style={cardBg(g.slug)}>
             <div>
@@ -51,65 +77,58 @@ export function LandingGameCards() {
             </div>
             <div className="gc-foot">
               <div className="players">
-                <span className="live-dot" /> {g.players}
+                <span className="live-dot" /> {g.players} jugando ahora
               </div>
               <span className="tag-stakes">{g.stakes}</span>
             </div>
           </div>
         </AuthDialog>
       ))}
+      {soonCards()}
     </div>
   );
 }
 
-/* ---- Lobby: las tarjetas abren un juego ---- */
+/* ---- Lobby: cada tarjeta abre el juego ---- */
 function play(name: string) {
   toast("Abriendo mesas de " + name + "…");
 }
 
-const LOBBY = [
-  { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "12 mesas abiertas a tu nivel ahora mismo.", players: "1.240 en línea", href: null, demo: "Dominó" },
-  { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Torneo «Noche VE» empieza en 18 min · Bote Bs. 80.000.", players: "860 en línea", href: null, demo: "Póker" },
-  { slug: "bingo", Icon: Gamepad, name: "Bingo", desc: "Cartones progresivos · Premios cada 2 minutos.", players: "456 en línea", href: "/bingo", demo: null },
-  { slug: "parley", Icon: Coins, name: "Parley", desc: "Pronósticos deportivos · Acumula y gana hasta 100x.", players: "892 en línea", href: "/parley", demo: null },
-  { slug: "caballos", Icon: Dice, name: "Caballos", desc: "Pollas hípicas · Apuesta y predice a los ganadores.", players: "623 en línea", href: "/caballos", demo: null },
-] as const;
-
-function CardInner({ g }: { g: (typeof LOBBY)[number] }) {
+function LobbyFoot({ g }: { g: (typeof GAMES)[number] }) {
   return (
-    <>
-      <div>
-        <div className="gc-icon">
-          <g.Icon />
-        </div>
-        <h3 className="serif">{g.name}</h3>
-        <p className="gc-desc">{g.desc}</p>
+    <div className="gc-foot">
+      <div className="players">
+        <span className="live-dot" /> {g.players} en línea
       </div>
-      <div className="gc-foot">
-        <div className="players">
-          <span className="live-dot" /> {g.players}
-        </div>
-        <button
-          className="btn btn-gold btn-sm"
-          onClick={(e) => {
+      <button
+        className="btn btn-gold btn-sm"
+        onClick={(e) => {
+          if (g.demo) {
             e.stopPropagation();
-            if (g.demo) play(g.demo);
-          }}
-        >
-          Jugar ahora
-        </button>
-      </div>
-    </>
+            play(g.demo);
+          }
+        }}
+      >
+        Jugar ahora
+      </button>
+    </div>
   );
 }
 
 export function LobbyGameCards() {
   return (
     <div className="games-grid">
-      {LOBBY.map((g) =>
+      {GAMES.map((g) =>
         g.href ? (
           <Link key={g.slug} href={g.href} className="game-card" style={cardBg(g.slug)}>
-            <CardInner g={g} />
+            <div>
+              <div className="gc-icon">
+                <g.Icon />
+              </div>
+              <h3 className="serif">{g.name}</h3>
+              <p className="gc-desc">{g.desc}</p>
+            </div>
+            <LobbyFoot g={g} />
           </Link>
         ) : (
           <div
@@ -126,10 +145,18 @@ export function LobbyGameCards() {
               }
             }}
           >
-            <CardInner g={g} />
+            <div>
+              <div className="gc-icon">
+                <g.Icon />
+              </div>
+              <h3 className="serif">{g.name}</h3>
+              <p className="gc-desc">{g.desc}</p>
+            </div>
+            <LobbyFoot g={g} />
           </div>
         )
       )}
+      {soonCards()}
     </div>
   );
 }

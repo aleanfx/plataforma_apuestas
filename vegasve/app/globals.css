@@ -462,6 +462,17 @@
     .game-card:hover { transform: none; }
     .game-card:active { transform: none; }
   }
+  /* Tarjetas "Próximamente": mismo formato de juego, con sello "Pronto" */
+  .game-card.soon { cursor: default; }
+  .game-card.soon:hover { transform: none; border-color: var(--line); box-shadow: none; }
+  .game-card.soon:hover::after { opacity: 0; }
+  .game-card.soon .gc-icon { color: var(--text-2); }
+  .gc-badge {
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--gold); color: var(--gold);
+    border-radius: 999px; padding: 6px 16px;
+    font-size: 11.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+  }
   .gc-icon {
     width: 64px; height: 64px; border-radius: 14px;
     display: grid; place-items: center;
@@ -512,8 +523,10 @@
 
   /* ---------- Footer ---------- */
   .footer { border-top: 1px solid var(--line-soft); padding: 44px 0 60px; margin-top: 40px; }
-  .footer-logo { height: 46px; width: auto; display: block; }
+  .footer-logo { height: 44px; width: auto; display: block; flex-shrink: 0; }
   .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .footer-brand { display: flex; align-items: center; gap: 16px; max-width: 520px; }
+  .footer-brand .muted { margin: 0; }
   .footer .muted { color: var(--text-3); font-size: 12.5px; }
   .footer-pay { display: flex; gap: 18px; align-items: center; color: var(--text-2); font-size: 12px; }
   .footer-pay > span { display: flex; align-items: center; gap: 7px; }
@@ -1027,12 +1040,12 @@ html, body { overflow-x: clip; max-width: 100%; }
   .feat-grid > * { flex: 0 0 66%; scroll-snap-align: start; }
   .feat { padding: 16px; }
 
-  /* Footer (más compacto en móvil) */
-  .footer { padding: 26px 0 32px; margin-top: 26px; }
-  .footer-logo { height: 38px; }
-  .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
-  .footer .brand { margin-bottom: 4px !important; }
-  .footer .muted { font-size: 11.5px; }
+  /* Footer (más compacto en móvil; texto al lado del logo) */
+  .footer { padding: 24px 0 30px; margin-top: 24px; }
+  .footer-logo { height: 40px; }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .footer-brand { gap: 13px; align-items: center; }
+  .footer .muted { font-size: 11px; line-height: 1.5; }
   .footer-pay { flex-wrap: wrap; gap: 8px; font-size: 11px; }
   .footer-pay > span:first-child { width: 100%; margin-bottom: 2px; }
 
