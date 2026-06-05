@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 
 import { ShieldCheck, Plus } from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
@@ -70,9 +69,7 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
       <div className="nav-inner">
         <Brand href="/lobby" />
         <div className="nav-links">
-          <Link href="/lobby">Lobby</Link>
-          <a onClick={() => toast("Abriendo mesas de Dominó…")}>Dominó</a>
-          <a onClick={() => toast("Abriendo mesas de Póker…")}>Póker</a>
+          <Link href="/lobby">Inicio</Link>
         </div>
         <div className="nav-spacer" />
         <div className="nav-actions">

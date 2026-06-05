@@ -528,9 +528,14 @@
   .footer-brand { display: flex; align-items: center; gap: 16px; max-width: 520px; }
   .footer-brand .muted { margin: 0; }
   .footer .muted { color: var(--text-3); font-size: 12.5px; }
-  .footer-pay { display: flex; gap: 18px; align-items: center; color: var(--text-2); font-size: 12px; }
-  .footer-pay > span { display: flex; align-items: center; gap: 7px; }
-  .pay-pill { border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; font-size: 11px; letter-spacing: 0.5px; color: var(--text-2); }
+  .footer-pay { display: flex; gap: 14px; align-items: center; color: var(--text-2); font-size: 12px; }
+  .pay-lead { flex-shrink: 0; }
+  .pay-viewport { display: flex; }
+  .pay-track { display: inline-flex; gap: 10px; }
+  .pay-group { display: inline-flex; align-items: center; gap: 10px; }
+  .pay-dup { display: none; } /* solo se usa para el marquee en móvil */
+  .footer-pay .age { flex-shrink: 0; }
+  .pay-pill { border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; font-size: 11px; letter-spacing: 0.5px; color: var(--text-2); white-space: nowrap; }
 
   /* ---------- Lobby ---------- */
   .lobby-head { padding: 44px 0 8px; }
@@ -1046,8 +1051,31 @@ html, body { overflow-x: clip; max-width: 100%; }
   .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
   .footer-brand { gap: 13px; align-items: center; }
   .footer .muted { font-size: 11px; line-height: 1.5; }
-  .footer-pay { flex-wrap: wrap; gap: 8px; font-size: 11px; }
-  .footer-pay > span:first-child { width: 100%; margin-bottom: 2px; }
+  /* Métodos de pago: marquee de noticias en una sola línea (solo móvil) */
+  .footer-pay { gap: 10px; font-size: 11px; width: 100%; flex-wrap: nowrap; }
+  .pay-viewport {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+  .pay-track {
+    width: max-content;
+    gap: 0;
+    animation: payMarquee 16s linear infinite;
+    will-change: transform;
+  }
+  .pay-group { gap: 0; }
+  .pay-group .pay-pill { margin-right: 10px; } /* margen incluido para loop perfecto */
+  .pay-dup { display: inline-flex; }
+  @keyframes payMarquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pay-track { animation: none; }
+  }
 
   /* Lobby */
   .lobby-head { padding: 28px 0 4px; }

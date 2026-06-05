@@ -132,12 +132,25 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="footer-pay">
-              <span>Pagos:</span>
-              <span className="pay-pill">NowPayments</span>
-              <span className="pay-pill">Binance</span>
-              <span className="pay-pill">Pago Móvil</span>
-              <span className="pay-pill">Daviplata</span>
-              <span className="pay-pill">Nequi</span>
+              <span className="pay-lead">Pagos:</span>
+              <div className="pay-viewport">
+                <div className="pay-track">
+                  <span className="pay-group">
+                    <span className="pay-pill">NowPayments</span>
+                    <span className="pay-pill">Binance</span>
+                    <span className="pay-pill">Pago Móvil</span>
+                    <span className="pay-pill">Daviplata</span>
+                    <span className="pay-pill">Nequi</span>
+                  </span>
+                  <span className="pay-group pay-dup" aria-hidden="true">
+                    <span className="pay-pill">NowPayments</span>
+                    <span className="pay-pill">Binance</span>
+                    <span className="pay-pill">Pago Móvil</span>
+                    <span className="pay-pill">Daviplata</span>
+                    <span className="pay-pill">Nequi</span>
+                  </span>
+                </div>
+              </div>
               <span className="age" style={{ fontSize: 10, width: 26, height: 26 }}>
                 +18
               </span>
