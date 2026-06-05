@@ -37,7 +37,7 @@ const USERS = [
 const QUEUE = [
   { dir: "dep" as const, title: "Depósito · Binance Pay", sub: "Rafael Méndez · hace 2 min", amt: "Bs. 4.000" },
   { dir: "wd" as const, title: "Retiro · Pago Móvil", sub: "Luisa Pérez · hace 8 min", amt: "Bs. 2.000" },
-  { dir: "dep" as const, title: "Depósito · NowPayments", sub: "María Díaz · hace 15 min", amt: "Bs. 10.000" },
+  { dir: "dep" as const, title: "Depósito · Criptomonedas", sub: "María Díaz · hace 15 min", amt: "Bs. 10.000" },
   { dir: "wd" as const, title: "Retiro · Nequi", sub: "Carlos Gómez · hace 22 min", amt: "Bs. 1.500" },
 ];
 

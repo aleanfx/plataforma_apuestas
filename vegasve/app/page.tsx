@@ -96,7 +96,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <h4>Depósitos al instante</h4>
-                <p>NowPayments, Binance, Pago Móvil, Daviplata y Nequi. Tu saldo, listo en segundos.</p>
+                <p>Criptomonedas, Binance, Pago Móvil, Daviplata y Nequi. Tu saldo, listo en segundos.</p>
               </div>
             </div>
             <div className="feat">
@@ -136,14 +136,14 @@ export default function LandingPage() {
               <div className="pay-viewport">
                 <div className="pay-track">
                   <span className="pay-group">
-                    <span className="pay-pill">NowPayments</span>
+                    <span className="pay-pill">Criptomonedas</span>
                     <span className="pay-pill">Binance</span>
                     <span className="pay-pill">Pago Móvil</span>
                     <span className="pay-pill">Daviplata</span>
                     <span className="pay-pill">Nequi</span>
                   </span>
                   <span className="pay-group pay-dup" aria-hidden="true">
-                    <span className="pay-pill">NowPayments</span>
+                    <span className="pay-pill">Criptomonedas</span>
                     <span className="pay-pill">Binance</span>
                     <span className="pay-pill">Pago Móvil</span>
                     <span className="pay-pill">Daviplata</span>

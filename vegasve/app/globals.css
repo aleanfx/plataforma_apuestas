@@ -961,6 +961,10 @@ html, body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 768px) {
   .wrap { padding: 0 20px; }
 
+  /* iOS hace zoom al enfocar un campo con font-size < 16px: lo forzamos a 16px */
+  input, select, textarea { font-size: 16px; }
+  .field input { font-size: 16px; }
+
   /* Nav */
   .nav-inner { padding: 13px 18px; gap: 12px; }
   .nav-links { display: none; }

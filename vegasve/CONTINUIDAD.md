@@ -26,7 +26,7 @@ falta y cómo continuar. Léelo junto con `README.md`.
   (`.game-layout`, `.game-panel`, `.game-grid-5`, `.game-grid-3`, `.game-opt`, `.game-side`).
 - Modales con animación fluida (entrada `easeOutExpo`, scale + translate, sin saltos) y
   scroll vertical interno cuando el contenido es alto.
-- Métodos de pago en wallet: NowPayments, Binance, Pago Móvil, Daviplata, Nequi.
+- Métodos de pago en wallet: Criptomonedas, Binance, Pago Móvil, Daviplata, Nequi.
 
 ## ⏳ Pendiente / siguientes pasos
 

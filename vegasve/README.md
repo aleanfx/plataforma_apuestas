@@ -18,7 +18,7 @@ Outfit + Jost + Dancing Script.
 | `/admin`     | Panel de operaciones: métricas, usuarios, cola de aprobaciones y juegos.             |
 
 **Login / Registro** son modales (`AuthDialog`). **Depositar / Retirar** son modales
-(`WalletDialog`) con selector de método: **NowPayments, Binance, Pago Móvil, Daviplata y
+(`WalletDialog`) con selector de método: **Criptomonedas, Binance, Pago Móvil, Daviplata y
 Nequi**, con montos rápidos y cálculo de equivalente USD.
 
 > Prototipo **estático/visual** (frontend): los datos (saldos, partidos, carreras, usuarios)

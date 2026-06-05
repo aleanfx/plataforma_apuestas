@@ -28,7 +28,7 @@ type Method = {
 const METHODS: Method[] = [
   {
     id: "nowpayments",
-    name: "NowPayments",
+    name: "Criptomonedas",
     depSub: "Cripto · mín. $5",
     wdSub: "Cripto",
     ic: "₿",
