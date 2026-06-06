@@ -1,6 +1,7 @@
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { LobbyGameCards } from "@/components/game-cards";
+import { SiteFooter } from "@/components/site-footer";
 import { WalletDialog } from "@/components/wallet-dialog";
 import { Plus } from "@/components/icons";
 
@@ -50,6 +51,8 @@ export default function LobbyPage() {
 
           <LobbyGameCards />
         </div>
+
+        <SiteFooter />
       </section>
     </>
   );

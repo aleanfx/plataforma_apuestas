@@ -2,6 +2,7 @@ import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { HeroArt } from "@/components/hero-art";
 import { LandingGameCards } from "@/components/game-cards";
+import { SiteFooter } from "@/components/site-footer";
 import { AuthDialog } from "@/components/auth-dialog";
 import {
   Shield,
@@ -121,42 +122,7 @@ export default function LandingPage() {
         </div>
 
         {/* Footer */}
-        <footer className="footer">
-          <div className="wrap footer-inner">
-            <div className="footer-brand">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="BetmarPlay" className="footer-logo" />
-              <p className="muted">
-                © 2026 BetmarPlay. Juega responsablemente. Prohibido para menores de
-                +18 años.
-              </p>
-            </div>
-            <div className="footer-pay">
-              <span className="pay-lead">Pagos:</span>
-              <div className="pay-viewport">
-                <div className="pay-track">
-                  <span className="pay-group">
-                    <span className="pay-pill">Criptomonedas</span>
-                    <span className="pay-pill">Binance</span>
-                    <span className="pay-pill">Pago Móvil</span>
-                    <span className="pay-pill">Daviplata</span>
-                    <span className="pay-pill">Nequi</span>
-                  </span>
-                  <span className="pay-group pay-dup" aria-hidden="true">
-                    <span className="pay-pill">Criptomonedas</span>
-                    <span className="pay-pill">Binance</span>
-                    <span className="pay-pill">Pago Móvil</span>
-                    <span className="pay-pill">Daviplata</span>
-                    <span className="pay-pill">Nequi</span>
-                  </span>
-                </div>
-              </div>
-              <span className="age" style={{ fontSize: 10, width: 26, height: 26 }}>
-                +18
-              </span>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </section>
     </>
   );

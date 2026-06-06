@@ -956,7 +956,7 @@ html, body { overflow-x: clip; max-width: 100%; }
 
 /* ---------- <= 860px (profile split) ---------- */
 @media (max-width: 860px) {
-  .profile-wrap { grid-template-columns: 1fr; gap: 20px; padding: 26px 0 56px; }
+  .profile-wrap { grid-template-columns: 1fr; gap: 20px; padding: 34px 0 72px; }
 }
 
 /* ---------- <= 768px (móvil) ---------- */
