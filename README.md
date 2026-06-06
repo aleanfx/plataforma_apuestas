@@ -1,5 +1,21 @@
 # CODING AGENTS: READ THIS FIRST
 
+> ## ✅ ESTADO ACTUAL — el diseño YA está implementado
+>
+> Este bundle de diseño ya fue convertido en una app real: **BetmarPlay**, un frontend
+> **Next.js 14** que vive en la carpeta [`vegasve/`](./vegasve/) y se despliega en Vercel desde
+> la rama `main` (https://plataforma-apuestas.vercel.app).
+>
+> **Para retomar/continuar el proyecto, lee en este orden:**
+> 1. [`CLAUDE.md`](./CLAUDE.md) — orientación rápida (comandos, git, dónde editar).
+> 2. [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md) — **documento maestro de contexto**
+>    (arquitectura, decisiones ya resueltas, despliegue, pendientes).
+> 3. [`vegasve/README.md`](./vegasve/README.md) — estructura del proyecto y cómo correrlo.
+>
+> Lo que sigue abajo es la guía del **handoff original** del diseño (contexto histórico).
+
+---
+
 This is a **handoff bundle** from Claude Design (claude.ai/design).
 
 A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.

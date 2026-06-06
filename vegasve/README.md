@@ -5,81 +5,92 @@ shadcn/ui**. Tema **galaxia / neón** sobre fondo morado-oscuro (`#0d0b1e`) con 
 morado, cyan, rosa, naranja y dorado, fondo de nebulosa + estrellas en CSS puro y tipografía
 Outfit + Jost + Dancing Script.
 
+> **¿Retomas el proyecto sin contexto?** Lee primero **[`CONTINUIDAD.md`](./CONTINUIDAD.md)**:
+> tiene el estado completo, la arquitectura, lo ya resuelto, el flujo de despliegue y lo pendiente.
+
+> ⚠️ El proyecto Next.js vive en esta carpeta **`vegasve/`** (no en la raíz del repo).
+> Todos los comandos `npm` se corren aquí.
+
 ## Páginas
 
 | Ruta         | Descripción                                                                          |
 | ------------ | ------------------------------------------------------------------------------------ |
-| `/`          | Landing: hero 3D (cartas + dominó neón), tarjetas de juego, "Próximamente", features. |
-| `/lobby`     | Lobby (sesión iniciada): saldo Bs.+USD, bono, filtros y tarjetas de los 5 juegos.    |
-| `/bingo`     | **Bingo**: cartón 5×5, generar/comprar cartón, números cantados animados, saldo.      |
-| `/parley`    | **Parley**: lista de partidos (fútbol/béisbol/básquet), 3 opciones por partido, acumulador y ganancia potencial. |
-| `/caballos`  | **Caballos / Pollas Hípicas**: carreras del día, selección por puesto (1ro/2do/3ro), sistema de puntos, sellar polla. |
+| `/`          | Landing (sesión cerrada): hero 3D, **5 juegos + 5 "Pronto"**, features, footer. Las tarjetas invitan a registrarse. |
+| `/lobby`     | Lobby (sesión iniciada): saludo, banner de saldo, **los mismos 10 juegos**, footer. |
+| `/bingo`     | **Bingo**: cartón 5×5, generar/comprar cartón, números cantados animados, saldo.     |
+| `/parley`    | **Parley**: 5 partidos con cuotas (Local/Empate/Visitante), acumulador y ganancia potencial. |
+| `/caballos`  | **Caballos / Pollas Hípicas**: carreras del día, selección por puesto (1ro/2do/3ro), puntos, sellar polla. |
 | `/profile`   | Perfil: identidad, estadísticas, saldo destacado e historial de movimientos.         |
 | `/admin`     | Panel de operaciones: métricas, usuarios, cola de aprobaciones y juegos.             |
 
-**Login / Registro** son modales (`AuthDialog`). **Depositar / Retirar** son modales
-(`WalletDialog`) con selector de método: **Criptomonedas, Binance, Pago Móvil, Daviplata y
-Nequi**, con montos rápidos y cálculo de equivalente USD.
+Extras de `app/`: `icon.png` (favicon), `not-found.tsx` (404), `error.tsx` (error boundary),
+`robots.ts` y `sitemap.ts` (SEO).
+
+**Login / Registro** son modales (`AuthDialog`, solo social con Google). **Depositar / Retirar**
+son modales (`WalletDialog`) con métodos: **Criptomonedas, Binance, Pago Móvil, Daviplata y
+Nequi**, con montos rápidos y equivalente en USD.
 
 > Prototipo **estático/visual** (frontend): los datos (saldos, partidos, carreras, usuarios)
-> son de muestra y no hay backend. La navegación, los modales, los juegos nuevos y los avisos
+> son de muestra y **no hay backend**. La navegación, los modales, los juegos y los avisos
 > (toasts) sí funcionan en el cliente.
 
-## Juegos nuevos (frontend interactivo)
+## Juegos
 
-- **Bingo** (`/bingo`): genera un cartón 5×5 con números aleatorios (1–75), "canta" números
-  con animación de pulso, marca aciertos y muestra el potencial según el monto apostado.
-- **Parley** (`/parley`): 5 partidos ficticios con cuotas; eliges Local / Empate / Visitante.
-  El acumulador multiplica las cuotas y calcula la ganancia potencial en vivo.
-- **Caballos** (`/caballos`): 3 carreras del día con 6 caballos cada una; eliges caballo por
-  puesto (1ro = 5 pts, 2do = 3 pts, 3ro = 1 pt). Suma puntos y "sella la polla".
+Definidos en **`components/game-cards.tsx`** (arrays `GAMES` y `SOON`):
+
+- **Disponibles (5):** Dominó, Póker, Bingo, Parley, Caballos.
+- **Próximamente (5):** Ruleta, Blackjack, Dados, Tragamonedas, Ludo — se ven como tarjetas de
+  juego con sello "Pronto" + capa oscura (no disponibles aún).
+- Las 10 tarjetas se muestran **igual en landing y lobby**: rejilla de 2 columnas en PC,
+  carrusel deslizable en móvil. Cada una con foto de fondo desde `public/games/<slug>.jpg`.
+
+Lógica interactiva (sin backend): **Bingo** genera cartón 5×5 y "canta" números; **Parley**
+multiplica cuotas y calcula ganancia; **Caballos** suma puntos por puesto (5/3/1).
 
 ## Estructura
 
 ```
 app/
-  layout.tsx        Fuentes (next/font), metadata, Toaster global
+  layout.tsx        Fuentes (next/font), metadata/SEO, Toaster global
   icon.png          Favicon (generado desde el logo)
-  globals.css       Tokens del tema galaxia/neón + componentes
+  globals.css       Tokens del tema galaxia/neón + componentes + responsive
   page.tsx          Landing
   lobby/page.tsx
-  bingo/page.tsx        ← juego nuevo
-  parley/page.tsx       ← juego nuevo
-  caballos/page.tsx     ← juego nuevo
-  profile/page.tsx
-  admin/page.tsx
+  bingo/ parley/ caballos/   Juegos
+  profile/ admin/            Perfil y panel
+  not-found.tsx error.tsx robots.ts sitemap.ts
 components/
-  site-nav.tsx      Nav (variantes sesión cerrada / abierta) con logo
-  hero-art.tsx      Cartas + dominó con animación 3D neón
-  game-cards.tsx    Tarjetas de juego (landing y lobby), data-driven con fondo por foto
-  coming-soon.tsx   Fila "Próximamente"
-  lobby-filters.tsx Chips de filtro
-  auth-dialog.tsx   Modal login/registro (shadcn Dialog + Tabs)
-  wallet-dialog.tsx Modal depósito/retiro (5 métodos de pago)
-  admin-actions.tsx Acciones de aprobar/rechazar/suspender
-  icons.tsx         Iconos SVG lineales
+  site-nav.tsx      Navbar (variantes out / in con enlace "Inicio")
+  site-footer.tsx   Footer reutilizable (logo + legal + marquee de pagos)
+  game-cards.tsx    Tarjetas de juego (GAMES + SOON) para landing y lobby
+  hero-art.tsx      Cartas + dominó 3D del hero
+  auth-dialog.tsx   Modal login/registro (Google)
+  wallet-dialog.tsx Modal depósito/retiro (5 métodos)
+  admin-actions.tsx Acciones del panel admin
+  ticker.tsx        Cinta de ganancias en vivo (demo)
+  icons.tsx         Iconos SVG
   ui/               Primitivas shadcn/ui (dialog, tabs, sonner)
 lib/utils.ts        helper cn()
 public/
-  logo.png          Logo de la marca (también usado como favicon)
-  games/            Fondos de las tarjetas (domino/poker/bingo/parley/caballos .jpg)
+  logo.png          Logo (también base del favicon)
+  games/            Fondos de tarjetas (.jpg) + README.txt
 ```
 
 ## Recursos / imágenes
 
-- **Logo**: `public/logo.png` (transparente). La navbar lo usa automáticamente; si falta, se
-  muestra el logo de texto. El favicon se genera desde el logo en `app/icon.png`.
-- **Fondos de tarjetas**: coloca las fotos en `public/games/` con nombres exactos
-  `domino.jpg`, `poker.jpg`, `bingo.jpg`, `parley.jpg`, `caballos.jpg`. Si una falta, la
-  tarjeta usa un degradado oscuro de respaldo. Un velo oscuro asegura legibilidad del texto.
-  Ver `public/games/README.txt`.
+- **Logo:** `public/logo.png` (transparente). La navbar lo usa; si falta, muestra el logo de
+  texto. El favicon se genera del logo en `app/icon.png`.
+- **Fondos de tarjetas:** `public/games/<slug>.jpg` — uno por tarjeta: `domino, poker, bingo,
+  parley, caballos, ruleta, blackjack, dados, tragamonedas, ludo`. Si falta una, la tarjeta usa
+  un degradado de respaldo. Ver `public/games/README.txt`.
 
-## Responsive
+## Responsive (puntos ya resueltos)
 
-- Sin scroll horizontal en móvil (`overflow-x: clip` en `html, body`).
-- Carruseles deslizables (tarjetas y features) en `≤768px`.
-- Las páginas de juego usan layout de 2 columnas que colapsa a 1 columna en `≤900px`.
-- Breakpoints: `980px` (tablet/admin), `768px`, `560px`, `430px` (iPhone).
+- Sin scroll horizontal en móvil (`overflow-x: clip`).
+- Tarjetas de juego en carrusel; features en 3 columnas (1 línea) en móvil.
+- Inputs a 16px en móvil (evita el zoom de iOS al enfocar).
+- Modales con scroll interno (`max-h-[88dvh]` + capa `overflow-y-auto`, requisito de Radix).
+- Breakpoints: `980px` (admin/tablet), `768px`, `560px`, `430px` (iPhone).
 
 ## Desarrollo
 
@@ -95,9 +106,14 @@ npm run start    # servir build
 1. Instala **Node.js LTS** desde https://nodejs.org (incluye `npm`).
 2. Abre **PowerShell** y clona el repo:
    ```powershell
-   git clone <URL-del-repo>
-   cd <carpeta>/vegasve
+   git clone https://github.com/aleanfx/plataforma_apuestas.git
+   cd plataforma_apuestas/vegasve
    ```
 3. Instala dependencias: `npm install`
-4. Arranca en desarrollo: `npm run dev`
-5. Abre el navegador en `http://localhost:3000`.
+4. Arranca: `npm run dev`
+5. Abre `http://localhost:3000`.
+
+## Despliegue
+
+Producción en **Vercel** (https://plataforma-apuestas.vercel.app), **desde la rama `main`**.
+Empujar a `main` dispara el deploy. Detalles de git/token en `CONTINUIDAD.md`.
