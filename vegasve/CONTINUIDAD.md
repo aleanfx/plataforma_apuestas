@@ -154,5 +154,29 @@ nombres claros ("Criptomonedas").
 - `public/logo.png` — logo (también base del favicon `app/icon.png`).
 - `public/games/` — fondos de tarjetas + `README.txt` con instrucciones.
 - `README.md` (en `vegasve/`) — descripción del proyecto y pasos en Windows.
-- Raíz del repo: `README.md` (instrucciones del handoff original de Claude Design) y `chats/`
-  (transcripción del diseño original).
+- Raíz del repo: `README.md` (instrucciones del handoff original de Claude Design),
+  `CLAUDE.md` (orientación para sesiones de Claude Code) y `chats/` (transcripción del diseño).
+
+## 12. Registro de cambios recientes (changelog)
+
+Orden cronológico inverso. La punta de `main` en la última sesión documentada fue **`4020a48`**.
+
+- **docs** — `CLAUDE.md`, `CONTINUIDAD.md`, `README.md` reescritos para retomar sin contexto;
+  se eliminaron componentes huérfanos (`coming-soon.tsx`, `lobby-filters.tsx`).
+- **footer + márgenes** — footer extraído a `components/site-footer.tsx` y añadido al **lobby**
+  (móvil y PC); más margen superior/inferior en **perfil** (móvil).
+- **tarjetas "Pronto"** — ahora con foto de fondo (ruleta/blackjack/dados/tragamonedas/**ludo**,
+  Baccarat fue reemplazado por Ludo) + capa oscura/grayscale de "no disponible"; sección de
+  features pasa a **3 recuadros en una línea** en móvil.
+- **nav + pagos** — navbar logueada con un solo enlace **"Inicio"**; métodos de pago del footer
+  en **marquee** de una línea en móvil; "NowPayments" renombrado a **"Criptomonedas"**; fix del
+  **zoom de inputs en iOS** (font-size 16px en móvil).
+- **simetría de juegos** — el **inicio** muestra los 5 juegos igual que el lobby; los 5 "Pronto"
+  se integran en la misma rejilla (10 tarjetas, 2 columnas simétricas en PC).
+- **producción** — imágenes optimizadas, **fix del scroll de modales** (patrón Radix), SEO
+  (OG/robots/sitemap), 404 + error boundary, validación de formularios, favicon, logout en rojo,
+  se quitó el login con Facebook y los filtros del lobby.
+
+> Cuando hagas cambios relevantes, **añade una línea aquí** y actualiza la sección 10 si cambia
+> el estado de "hecho/pendiente".
+
