@@ -13,6 +13,7 @@ import { walletRouter } from "./wallet/routes.js";
 import { adminRouter } from "./admin/routes.js";
 import { initRealtime, hub } from "./realtime/index.js";
 import { CounterEngine } from "./realtime/test-engine.js";
+import { initBingo, createBingoSala } from "./games/bingo/index.js";
 
 const app = express();
 
@@ -51,6 +52,18 @@ if (process.env.NODE_ENV !== "production") {
     });
     res.json({ tableId: id });
   });
+
+  // Sala de bingo con ritmo rápido y sin auto-arranque, para pruebas e2e.
+  app.post("/dev/bingo-table", (req, res) => {
+    const table = createBingoSala(hub, {
+      name: "Bingo de prueba",
+      stake: Number(req.body?.stake ?? 2000),
+      callIntervalMs: 25,
+      resetDelayMs: 400,
+      autoStartMs: 0,
+    });
+    res.json({ tableId: table.id });
+  });
 }
 
 // Error handler global (siempre al final de las rutas).
@@ -68,6 +81,8 @@ export const io = new SocketIOServer(server, {
 
 // Núcleo de tiempo real: auth de handshake, mesas, presencia, reconexión.
 initRealtime(io);
+// Salas de bingo fijas (Módulo 4).
+initBingo(hub);
 
 async function start() {
   // Verifica la conexión a la base de datos antes de aceptar tráfico.

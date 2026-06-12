@@ -1338,3 +1338,26 @@ html, body { overflow-x: clip; max-width: 100%; }
   .game-grid-5 { gap: 7px; }
   .game-cell { font-size: 15px; }
 }
+
+/* ---- Bingo (multijugador en tiempo real) ---- */
+.bingo-salas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.bingo-sala { text-align: left; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; transition: border-color .2s, transform .2s; }
+.bingo-sala:hover { border-color: var(--gold); transform: translateY(-2px); }
+.bingo-sala-name { font-size: 22px; margin-bottom: 8px; }
+.bingo-sala-meta { display: flex; flex-direction: column; gap: 4px; color: var(--text-2); font-size: 14px; }
+.bingo-sala-meta .live { display: inline-flex; align-items: center; gap: 6px; }
+.bingo-cartones { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.bingo-carton { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--gray-2); transition: border-color .2s; }
+.bingo-carton.win { border-color: var(--green-bright); box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
+.bingo-head { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 8px; }
+.bingo-col { text-align: center; font-family: var(--serif); font-weight: 700; color: var(--gold); }
+.bingo-cells { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.bingo-last { font-family: var(--serif); font-size: 56px; font-weight: 700; color: var(--gold); text-align: center; line-height: 1; padding: 8px 0; }
+.bingo-called { display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto; }
+.bingo-ball { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 999px; background: var(--purple-bright); font-size: 13px; font-weight: 600; }
+.bingo-winner { background: linear-gradient(120deg, rgba(34,197,94,0.16), rgba(147,51,234,0.12)); border: 1px solid var(--green-bright); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; font-size: 18px; font-weight: 600; }
+@media (max-width: 768px) {
+  .bingo-salas { grid-template-columns: 1fr; }
+  .bingo-cartones { grid-template-columns: 1fr; }
+  .bingo-last { font-size: 44px; }
+}
