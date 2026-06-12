@@ -12,6 +12,8 @@ un **frontend** Next.js 14 en [`vegasve/`](./vegasve/) y un **backend** Node/TS 
   [`server/`](./server/). Cada uno tiene su `package.json`; corre `npm` dentro de la carpeta
   correspondiente.
 - **Lee [`ESTADO.md`](./ESTADO.md)** — resumen de avance por módulos (qué está hecho y qué falta).
+- **Lee [`BITACORA.md`](./BITACORA.md)** — bitácora completa: arquitectura, **errores y soluciones**,
+  patrones de los tests, gotchas y lecciones. Imprescindible para retomar sin contexto.
 - **Lee [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md)** — documento maestro: arquitectura,
   dónde está cada cosa, decisiones de UX ya resueltas (para no re-romperlas) y el backend.
 - Backend: [`server/README.md`](./server/README.md). Frontend: [`vegasve/README.md`](./vegasve/README.md).

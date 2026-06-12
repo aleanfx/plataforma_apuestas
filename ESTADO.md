@@ -2,7 +2,8 @@
 
 > Estado de avance del proyecto. Última actualización: **12 de junio de 2026**.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
-> Plan de implementación del backend: aprobado, 9 módulos (ver más abajo).
+> **Bitácora completa de construcción (qué se hizo, errores y soluciones, lecciones):**
+> [`BITACORA.md`](./BITACORA.md) — léela si retomas sin contexto.
 
 BetmarPlay pasó de ser un **frontend estático** (datos hardcodeados) a una app con **backend real**.
 El backend nuevo vive en [`server/`](./server/) y el frontend en [`vegasve/`](./vegasve/) se conecta
