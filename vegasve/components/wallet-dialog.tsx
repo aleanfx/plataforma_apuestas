@@ -11,6 +11,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CardAccount } from "@/components/icons";
+import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import { formatBs } from "@/lib/money";
 
 const RATE = 40; // tasa demo Bs/USD
 
@@ -90,14 +93,19 @@ export function WalletDialog({
   children: React.ReactNode;
   kind: "deposit" | "withdraw";
 }) {
+  const { user, refreshUser } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [method, setMethod] = React.useState("nowpayments");
   const [amount, setAmount] = React.useState<number | "">("");
+  const [dest, setDest] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) {
       setMethod("nowpayments");
       setAmount("");
+      setDest("");
+      setBusy(false);
     }
   }, [open]);
 
@@ -107,6 +115,9 @@ export function WalletDialog({
 
   const isDep = kind === "deposit";
   const active = METHODS.find((m) => m.id === method)!;
+
+  const availableCents = user?.balance ?? 0;
+  const availableBs = Math.floor(availableCents / 100);
 
   const quick = isDep
     ? [
@@ -118,22 +129,45 @@ export function WalletDialog({
     : [
         { label: "Bs. 2.000", v: 2000 },
         { label: "Bs. 5.000", v: 5000 },
-        { label: "Todo", v: 10980 },
+        { label: "Todo", v: availableBs },
       ];
 
-  function confirm() {
+  async function confirm() {
+    if (busy) return;
     if (value < 10) {
       toast.error("Ingresa un monto válido (mínimo Bs. 10).");
       return;
     }
-    if (!isDep && value > 10980) {
+    const cents = Math.round(value * 100);
+    if (!isDep && cents > availableCents) {
       toast.error("El monto supera tu saldo disponible para retiro.");
       return;
     }
-    setOpen(false);
-    toast.success(
-      isDep ? "Depósito en proceso — se reflejará en breve" : "Solicitud de retiro enviada",
-    );
+    if (!isDep && dest.trim().length < 3) {
+      toast.error("Indica la cuenta o billetera donde recibir.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      if (isDep) {
+        await api("/wallet/deposit", { method: "POST", body: { method, amount: cents } });
+        setOpen(false);
+        toast.success("Depósito en revisión — se acreditará al confirmar tu pago.");
+      } else {
+        await api("/wallet/withdraw", {
+          method: "POST",
+          body: { method, amount: cents, destination: dest.trim() },
+        });
+        setOpen(false);
+        toast.success("Solicitud de retiro enviada — la procesaremos en breve.");
+      }
+      await refreshUser();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo completar la operación.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -150,7 +184,7 @@ export function WalletDialog({
               "Elige tu método y monto. El saldo se acredita al confirmar."
             ) : (
               <>
-                Disponible para retiro: <span className="gold">Bs. 10.980</span> (excl. bono)
+                Disponible para retiro: <span className="gold">{formatBs(availableCents)}</span>
               </>
             )}
           </DialogDescription>
@@ -192,7 +226,12 @@ export function WalletDialog({
               <label>Cuenta / billetera destino</label>
               <div className="input-wrap">
                 <CardAccount />
-                <input type="text" placeholder="ID, dirección o teléfono donde recibir" />
+                <input
+                  type="text"
+                  placeholder="ID, dirección o teléfono donde recibir"
+                  value={dest}
+                  onChange={(e) => setDest(e.target.value)}
+                />
               </div>
             </div>
           )}
@@ -238,8 +277,13 @@ export function WalletDialog({
             className={`btn ${isDep ? "btn-gold" : "btn-green"} btn-block`}
             style={{ marginTop: 14 }}
             onClick={confirm}
+            disabled={busy}
           >
-            {isDep ? "Confirmar depósito" : "Solicitar retiro"}
+            {busy
+              ? "Procesando…"
+              : isDep
+                ? "Confirmar depósito"
+                : "Solicitar retiro"}
           </button>
         </div>
       </DialogContent>

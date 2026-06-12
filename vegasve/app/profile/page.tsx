@@ -1,7 +1,15 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { SiteNav } from "@/components/site-nav";
 import { WalletDialog } from "@/components/wallet-dialog";
+import { AuthGuard } from "@/components/auth-guard";
+import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import { formatBs, formatUsd, initialOf } from "@/lib/money";
 import {
   Grid,
   User,
@@ -13,11 +21,12 @@ import {
   ArrowUpLine,
   ArrowDownLine,
   ArrowUpAlt,
-  DominoSimple,
-  PokerSimple,
 } from "@/components/icons";
 
+type LedgerDTO = { id: string; type: string; delta: number; note: string | null; createdAt: string };
+
 type Tx = {
+  id: string;
   ic: "in" | "out" | "game";
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   title: string;
@@ -27,16 +36,61 @@ type Tx = {
   usd: string;
 };
 
-const HISTORY: Tx[] = [
-  { ic: "in", Icon: ArrowDownLine, title: "Depósito · Binance Pay", sub: "Hoy, 9:42 PM · Completado", sign: "pos", amt: "+ Bs. 4.000", usd: "+$100,00" },
-  { ic: "game", Icon: DominoSimple, title: "Dominó · Mesa #4821", sub: "Hoy, 8:15 PM · Victoria", sign: "pos", amt: "+ Bs. 850", usd: "+$21,25" },
-  { ic: "game", Icon: PokerSimple, title: "Póker · Cash game", sub: "Ayer, 11:30 PM · Sin suerte", sign: "neg", amt: "− Bs. 1.200", usd: "−$30,00" },
-  { ic: "out", Icon: ArrowUpAlt, title: "Retiro · Pago Móvil", sub: "26 may, 4:02 PM · Procesado", sign: "neg", amt: "− Bs. 2.000", usd: "−$50,00" },
-  { ic: "in", Icon: ArrowDownLine, title: "Bono de bienvenida", sub: "24 may, 1:18 PM · Acreditado", sign: "pos", amt: "+ Bs. 1.500", usd: "+$37,50" },
-  { ic: "game", Icon: DominoSimple, title: "Dominó · Torneo nocturno", sub: "24 may, 12:05 AM · 2.º lugar", sign: "pos", amt: "+ Bs. 3.200", usd: "+$80,00" },
-];
+// Etiqueta + estilo por tipo de movimiento del ledger.
+const TYPE_LABEL: Record<string, string> = {
+  deposit: "Depósito",
+  withdraw: "Retiro",
+  bet_stake: "Apuesta",
+  bet_payout: "Premio",
+  bonus: "Bono",
+  adjust: "Ajuste",
+};
 
-export default function ProfilePage() {
+function mapTx(e: LedgerDTO): Tx {
+  const pos = e.delta >= 0;
+  const abs = Math.abs(e.delta);
+  const isGame = e.type === "bet_stake" || e.type === "bet_payout";
+  const date = new Date(e.createdAt).toLocaleString("es-VE", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return {
+    id: e.id,
+    ic: isGame ? "game" : pos ? "in" : "out",
+    Icon: pos ? ArrowDownLine : ArrowUpAlt,
+    title: e.note || TYPE_LABEL[e.type] || "Movimiento",
+    sub: date,
+    sign: pos ? "pos" : "neg",
+    amt: (pos ? "+ " : "− ") + formatBs(abs),
+    usd: (pos ? "+" : "−") + formatUsd(abs),
+  };
+}
+
+function ProfileContent() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [txs, setTxs] = React.useState<Tx[] | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    api<{ transactions: LedgerDTO[] }>("/wallet/transactions")
+      .then((r) => active && setTxs(r.transactions.map(mapTx)))
+      .catch(() => active && setTxs([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
+
+  const total = (user?.balance ?? 0) + (user?.bonus ?? 0);
+  const handle = user ? "@" + user.email.split("@")[0] : "";
+
   return (
     <>
       <SiteNav variant="in" />
@@ -46,20 +100,20 @@ export default function ProfilePage() {
           {/* left column */}
           <aside>
             <div className="pcard profile-id">
-              <div className="av-lg">R</div>
-              <div className="pname">Rafael Méndez</div>
-              <div className="pmeta">@rafamendez · Caracas</div>
+              <div className="av-lg">{user ? initialOf(user.name) : "·"}</div>
+              <div className="pname">{user?.name}</div>
+              <div className="pmeta">{handle}</div>
               <div className="verified">
                 <Check strokeWidth={2} /> Cuenta verificada
               </div>
 
               <div className="pstats">
                 <div className="ps">
-                  <div className="n">248</div>
+                  <div className="n">0</div>
                   <div className="l">Partidas</div>
                 </div>
                 <div className="ps">
-                  <div className="n">61%</div>
+                  <div className="n">—</div>
                   <div className="l">Victorias</div>
                 </div>
               </div>
@@ -77,9 +131,9 @@ export default function ProfilePage() {
                 <a>
                   <Cog /> Preferencias
                 </a>
-                <Link href="/" className="danger">
+                <button type="button" className="danger" onClick={handleLogout}>
                   <Logout /> Cerrar sesión
-                </Link>
+                </button>
               </nav>
             </div>
           </aside>
@@ -89,8 +143,11 @@ export default function ProfilePage() {
             {/* balance feature */}
             <div className="balance-feature">
               <div className="k">Saldo total disponible</div>
-              <div className="amount">Bs. 12.480</div>
-              <div className="usd-line">≈ $312,00 USD · incluye Bs. 1.500 de bono</div>
+              <div className="amount">{formatBs(total)}</div>
+              <div className="usd-line">
+                ≈ {formatUsd(total)} USD
+                {(user?.bonus ?? 0) > 0 ? ` · incluye ${formatBs(user!.bonus)} de bono` : ""}
+              </div>
               <div className="bf-actions">
                 <WalletDialog kind="deposit">
                   <button className="btn btn-gold">
@@ -116,24 +173,42 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {HISTORY.map((t, i) => (
-                <div className="tx" key={i}>
-                  <div className={`tx-ic ${t.ic}`}>
-                    <t.Icon />
-                  </div>
-                  <div className="tx-main">
-                    <div className="tx-title">{t.title}</div>
-                    <div className="tx-sub">{t.sub}</div>
-                  </div>
-                  <div className={`tx-amt ${t.sign}`}>
-                    {t.amt} <span className="sm">{t.usd}</span>
-                  </div>
+              {txs === null ? (
+                <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
+                  Cargando movimientos…
                 </div>
-              ))}
+              ) : txs.length === 0 ? (
+                <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
+                  Aún no tienes movimientos. Haz tu primer depósito para empezar.
+                </div>
+              ) : (
+                txs.map((t) => (
+                  <div className="tx" key={t.id}>
+                    <div className={`tx-ic ${t.ic}`}>
+                      <t.Icon />
+                    </div>
+                    <div className="tx-main">
+                      <div className="tx-title">{t.title}</div>
+                      <div className="tx-sub">{t.sub}</div>
+                    </div>
+                    <div className={`tx-amt ${t.sign}`}>
+                      {t.amt} <span className="sm">{t.usd}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <AuthGuard>
+      <ProfileContent />
+    </AuthGuard>
   );
 }

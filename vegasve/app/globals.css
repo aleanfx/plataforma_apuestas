@@ -589,11 +589,11 @@
   .pstats .ps .n { font-family: var(--serif); font-size: 24px; color: var(--gold); font-weight: 600; }
   .pstats .ps .l { font-size: 11px; color: var(--text-3); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
   .menu-list { margin-top: 22px; display: flex; flex-direction: column; gap: 2px; }
-  .menu-list a { display: flex; align-items: center; gap: 13px; padding: 12px 14px; border-radius: 9px; color: var(--text-2); font-size: 14px; transition: all .2s; cursor: pointer; }
-  .menu-list a:hover { background: rgba(255,255,255,0.03); color: var(--text); }
-  .menu-list a svg { width: 18px; height: 18px; stroke-width: 1.4; }
-  .menu-list a.danger { color: var(--danger); }
-  .menu-list a.danger:hover { color: #fff; background: rgba(248,113,113,0.12); }
+  .menu-list a, .menu-list button { display: flex; align-items: center; gap: 13px; padding: 12px 14px; border-radius: 9px; color: var(--text-2); font-size: 14px; transition: all .2s; cursor: pointer; width: 100%; text-align: left; background: none; border: none; font-family: inherit; }
+  .menu-list a:hover, .menu-list button:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+  .menu-list a svg, .menu-list button svg { width: 18px; height: 18px; stroke-width: 1.4; }
+  .menu-list a.danger, .menu-list button.danger { color: var(--danger); }
+  .menu-list a.danger:hover, .menu-list button.danger:hover { color: #fff; background: rgba(248,113,113,0.12); }
 
   .balance-feature {
     border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;

@@ -1,16 +1,44 @@
 # CLAUDE.md — Orientación para sesiones de Claude Code
 
-Este repo contiene **BetmarPlay**, un **frontend** (Next.js 14) de una plataforma de casino y
-apuestas para Venezuela. Es un prototipo visual/interactivo **sin backend** (datos hardcodeados).
+Este repo contiene **BetmarPlay**, una plataforma de casino y apuestas para Venezuela:
+un **frontend** Next.js 14 en [`vegasve/`](./vegasve/) y un **backend** Node/TS en
+[`server/`](./server/). El frontend ya **no** es solo un prototipo estático: auth y billetera
+son reales (ver estado abajo). Los 3 juegos en tiempo real están en construcción.
 
 ## Lo primero que debes saber
 
-- **El proyecto Next.js está en la subcarpeta [`vegasve/`](./vegasve/)**, no en la raíz.
-  Corre todos los comandos `npm` dentro de `vegasve/`.
-- **Lee [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md)** — es el documento maestro con el
-  estado completo: arquitectura, dónde está cada cosa, decisiones de UX ya resueltas (para no
-  re-romperlas), flujo de despliegue y lo que falta (todo lo pendiente requiere backend).
-- También está [`vegasve/README.md`](./vegasve/README.md) con la estructura y los pasos.
+- **Hay dos proyectos:** el frontend en [`vegasve/`](./vegasve/) y el backend en
+  [`server/`](./server/). Cada uno tiene su `package.json`; corre `npm` dentro de la carpeta
+  correspondiente.
+- **Lee [`ESTADO.md`](./ESTADO.md)** — resumen de avance por módulos (qué está hecho y qué falta).
+- **Lee [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md)** — documento maestro: arquitectura,
+  dónde está cada cosa, decisiones de UX ya resueltas (para no re-romperlas) y el backend.
+- Backend: [`server/README.md`](./server/README.md). Frontend: [`vegasve/README.md`](./vegasve/README.md).
+
+## Backend (`server/`) — lo esencial
+
+- Stack: Node 20 + TypeScript (ESM), Express + Socket.IO, Prisma, **Postgres en Neon**.
+- **⚠️ El puerto 5432 está BLOQUEADO en este entorno** (solo sale HTTP/HTTPS 443). La DB se usa con
+  el **driver serverless de Neon** (`@neondatabase/serverless` + `@prisma/adapter-neon`) sobre 443.
+  Consecuencias:
+  - `prisma db push` / `migrate dev` **NO funcionan aquí**. Para cambios de esquema:
+    `npm run db:diff` (genera `prisma/init.sql`) y `npm run db:apply` (lo ejecuta por 443).
+  - Versiones acopladas: `@prisma/client` y `@prisma/adapter-neon` ambos **5.22**;
+    `@neondatabase/serverless` en **0.10.x** (el 1.x rompe el peer del adapter v5).
+  - Para conectarse a la DB desde Bash en este entorno hay que usar `dangerouslyDisableSandbox`.
+- **Dinero en céntimos** (`BigInt`), nunca floats. Todo movimiento pasa por `applyLedger`
+  (`src/wallet/ledger.ts`) dentro de una transacción.
+- Comandos:
+  ```bash
+  cd server
+  npm install
+  npm run dev          # http://localhost:4000  (health: /health)
+  npm run typecheck    # tsc --noEmit (debe quedar en verde)
+  npx tsx scripts/test-auth.ts     # con el server vivo: pruebas e2e de auth
+  npx tsx scripts/test-wallet.ts   # con el server vivo: pruebas e2e de billetera
+  ```
+- `server/.env` (gitignored) ya tiene `DATABASE_URL` (Neon), `JWT_*`, `ADMIN_EMAIL=betmarplay@gmail.com`.
+- Admin: el usuario con ese email recibe rol admin al registrarse.
 
 ## Comandos
 
@@ -33,8 +61,14 @@ npm run build    # debe quedar SIEMPRE en verde antes de subir
 ## Git y despliegue (clave en sesiones remotas)
 
 - El **git root es la raíz del repo** (no `vegasve/`).
-- Producción (Vercel: https://plataforma-apuestas.vercel.app) **despliega desde `main`**.
+- **Frontend** (Vercel: https://plataforma-apuestas.vercel.app) **despliega desde `main`**.
   Empujar a `main` un commit fast-forward dispara el deploy automático.
+- **⚠️ Antes de empujar cambios del frontend a `main`:** el front llama al backend vía
+  `NEXT_PUBLIC_API_URL` (por defecto `http://localhost:4000`). Si Vercel no tiene esa variable
+  apuntando al backend desplegado, la producción quedará sin poder loguear. No empujes el frontend
+  a producción hasta que el backend esté en Fly.io y la variable esté configurada en Vercel.
+- **Backend** (`server/`) se despliega a **Fly.io** (`fly deploy`, hay `Dockerfile` y `fly.toml`).
+  Es always-on (`min_machines_running = 1`) para no cortar partidas en vivo.
 - En el entorno remoto **no hay credenciales de escritura**: para `git push` se necesita un
   **GitHub Personal Access Token** (scope `public_repo`). Úsalo de una sola vez en la URL y no
   lo guardes en la config:

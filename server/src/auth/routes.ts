@@ -1,0 +1,67 @@
+import { Router } from "express";
+import { z } from "zod";
+import { asyncHandler, parseBody } from "../http.js";
+import { requireAuth, type AuthedRequest } from "./middleware.js";
+import * as auth from "./service.js";
+
+export const authRouter = Router();
+
+const registerSchema = z.object({
+  email: z.string().email("Correo inválido"),
+  name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+});
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Ingresa tu correo"),
+  password: z.string().min(1, "Ingresa tu contraseña"),
+});
+
+const refreshSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+authRouter.post(
+  "/register",
+  asyncHandler(async (req, res) => {
+    const data = parseBody(registerSchema, req.body);
+    const result = await auth.register(data);
+    res.status(201).json(result);
+  }),
+);
+
+authRouter.post(
+  "/login",
+  asyncHandler(async (req, res) => {
+    const data = parseBody(loginSchema, req.body);
+    const result = await auth.login(data);
+    res.json(result);
+  }),
+);
+
+authRouter.post(
+  "/refresh",
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = parseBody(refreshSchema, req.body);
+    const result = await auth.refresh(refreshToken);
+    res.json(result);
+  }),
+);
+
+authRouter.post(
+  "/logout",
+  asyncHandler(async (req, res) => {
+    const parsed = refreshSchema.safeParse(req.body);
+    if (parsed.success) await auth.logout(parsed.data.refreshToken);
+    res.json({ ok: true });
+  }),
+);
+
+authRouter.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const user = await auth.getMe(req.user!.sub);
+    res.json({ user });
+  }),
+);

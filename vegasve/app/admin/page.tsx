@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-import { QueueActions, UserRowActions } from "@/components/admin-actions";
+import { AuthGuard } from "@/components/auth-guard";
+import { UserRowActions } from "@/components/admin-actions";
+import { AdminQueue } from "@/components/admin-queue";
 import {
   ShieldCheck,
   Search,
@@ -15,8 +17,6 @@ import {
   Coins,
   TrendingUp,
   TrendingDown,
-  ArrowDownLine,
-  ArrowUpAlt,
 } from "@/components/icons";
 
 const STATS = [
@@ -34,13 +34,6 @@ const USERS = [
   { in: "J", nm: "José Ramírez", em: "jramirez@correo.com", st: "banned", stl: "Suspendido", bal: "Bs. 540" },
 ];
 
-const QUEUE = [
-  { dir: "dep" as const, title: "Depósito · Binance Pay", sub: "Rafael Méndez · hace 2 min", amt: "Bs. 4.000" },
-  { dir: "wd" as const, title: "Retiro · Pago Móvil", sub: "Luisa Pérez · hace 8 min", amt: "Bs. 2.000" },
-  { dir: "dep" as const, title: "Depósito · Criptomonedas", sub: "María Díaz · hace 15 min", amt: "Bs. 10.000" },
-  { dir: "wd" as const, title: "Retiro · Nequi", sub: "Carlos Gómez · hace 22 min", amt: "Bs. 1.500" },
-];
-
 const GAMES = [
   { nm: "Dominó", players: "1.240", stakes: "desde Bs. 50", st: "ok", stl: "Activo" },
   { nm: "Póker", players: "860", stakes: "desde Bs. 200", st: "ok", stl: "Activo" },
@@ -50,7 +43,7 @@ const GAMES = [
 
 export default function AdminPage() {
   return (
-    <>
+    <AuthGuard admin>
       {/* Admin top bar */}
       <nav className="nav">
         <div className="nav-inner">
@@ -199,28 +192,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="a-card">
-              <div className="a-card-head">
-                <div>
-                  <h3 className="serif">Solicitudes pendientes</h3>
-                  <div className="sub">Aprueba o rechaza pagos</div>
-                </div>
-                <span className="pill pending">{QUEUE.length} en cola</span>
-              </div>
-              {QUEUE.map((q, i) => (
-                <div className="q-item" key={i}>
-                  <div className={`q-ic ${q.dir}`}>
-                    {q.dir === "dep" ? <ArrowDownLine /> : <ArrowUpAlt />}
-                  </div>
-                  <div className="q-main">
-                    <div className="q-title">{q.title}</div>
-                    <div className="q-sub">{q.sub}</div>
-                  </div>
-                  <div className="q-amt">{q.amt}</div>
-                  <QueueActions label={`${q.title} (${q.amt})`} />
-                </div>
-              ))}
-            </div>
+            <AdminQueue />
           </div>
 
           {/* Games table */}
@@ -261,6 +233,6 @@ export default function AdminPage() {
           </div>
         </main>
       </div>
-    </>
+    </AuthGuard>
   );
 }

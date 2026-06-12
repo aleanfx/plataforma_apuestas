@@ -1,0 +1,183 @@
+// BetmarPlay — esquema de datos.
+// Regla de oro: todo el dinero se guarda en CÉNTIMOS de Bs como BigInt. Nunca floats.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+// Tipos de movimiento del ledger. El signo va en `delta` (+ acredita, - debita).
+enum LedgerType {
+  deposit // depósito aprobado
+  withdraw // retiro aprobado (delta negativo)
+  bet_stake // apuesta/buy-in al entrar a una mesa (delta negativo)
+  bet_payout // premio/devolución al terminar (delta positivo)
+  bonus // bono otorgado
+  adjust // ajuste manual de un admin
+}
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
+
+enum GameKind {
+  bingo
+  domino
+  poker
+}
+
+enum TableStatus {
+  waiting // esperando jugadores
+  playing // partida en curso
+  finished // terminada
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         Role       @default(user)
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  account        Account?
+  refreshTokens  RefreshToken[]
+  deposits       DepositRequest[]
+  withdrawals    WithdrawRequest[]
+  ledgerEntries  LedgerEntry[]
+
+  @@index([email])
+}
+
+// Saldo del usuario. Todos los valores en céntimos de Bs.
+model Account {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance   BigInt   @default(0) // saldo real disponible
+  bonus     BigInt   @default(0) // bono (liberable jugando)
+  locked    BigInt   @default(0) // en juego (apuestas en mesas activas)
+  updatedAt DateTime @updatedAt
+
+  entries LedgerEntry[]
+}
+
+// Libro contable de doble entrada. La suma de deltas de una cuenta == su balance.
+model LedgerEntry {
+  id        String     @id @default(cuid())
+  accountId String
+  account   Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     BigInt // +acredita / -debita, en céntimos
+  type      LedgerType
+  refId     String? // id de mesa/ronda/solicitud relacionada
+  note      String?
+  createdAt DateTime   @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model DepositRequest {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method     String // nowpayments | binance | pagomovil | daviplata | nequi
+  amount     BigInt // céntimos solicitados
+  reference  String? // referencia/comprobante que el usuario reporta
+  status     RequestStatus @default(pending)
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@index([status, createdAt])
+}
+
+model WithdrawRequest {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method      String
+  amount      BigInt // céntimos solicitados
+  destination String // cuenta/billetera destino que reporta el usuario
+  status      RequestStatus @default(pending)
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([status, createdAt])
+}
+
+model GameTable {
+  id         String      @id @default(cuid())
+  game       GameKind
+  name       String
+  stake      BigInt // apuesta/buy-in en céntimos
+  currency   String      @default("BS") // BS | USD (solo etiqueta de presentación)
+  maxPlayers Int
+  status     TableStatus @default(waiting)
+  createdAt  DateTime    @default(now())
+
+  rounds GameRound[]
+
+  @@index([game, status])
+}
+
+model GameRound {
+  id        String    @id @default(cuid())
+  tableId   String
+  table     GameTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  pot       BigInt    @default(0) // pozo total en céntimos
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  snapshot  Json? // estado final/resumen para auditoría
+
+  results GameResult[]
+
+  @@index([tableId, startedAt])
+}
+
+model GameResult {
+  id        String    @id @default(cuid())
+  roundId   String
+  round     GameRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  userId    String
+  amount    BigInt // neto ganado(+)/perdido(-) en céntimos
+  position  Int? // puesto final (1 = ganador)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // hash del refresh token (no se guarda en claro)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

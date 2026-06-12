@@ -2,7 +2,13 @@
 
 > **Léeme primero.** Este documento es el "estado de la verdad" para retomar el proyecto en
 > una sesión nueva sin contexto previo. Resume QUÉ es, CÓMO está construido, DÓNDE está cada
-> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **6 de junio de 2026**.
+> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **12 de junio de 2026**.
+>
+> **🔧 NOVEDAD (jun 2026): ya hay BACKEND.** El proyecto dejó de ser solo-frontend. Hay un
+> backend real en [`../server/`](../server/) (Node/TS + Express + Socket.IO + Prisma + Neon).
+> **Auth y billetera ya son reales** (Módulos 0-2 completos); los 3 juegos en vivo están en
+> construcción. Resumen de avance en [`../ESTADO.md`](../ESTADO.md). Las secciones de abajo que
+> dicen "sin backend / hardcodeado" describen el punto de partida; ver §13 para lo nuevo.
 
 ---
 
@@ -141,13 +147,20 @@ modales con scroll correcto; validación de formularios; SEO (OG/robots/sitemap)
 boundary; favicon; fix de zoom iOS; responsive afinado; logout en rojo; métodos de pago con
 nombres claros ("Criptomonedas").
 
-**⏳ Pendiente — requiere BACKEND (no es posible solo con frontend):**
-1. **Autenticación real** + sesiones (hoy el login entra a `/lobby` sin validar).
-2. **Protección de rutas** (`/admin`, `/lobby`, `/profile` son accesibles por URL; falta middleware).
-3. **Base de datos / datos reales** (saldos, "Rafael", usuarios, partidos y carreras están hardcodeados).
-4. **Lógica de juego y dinero real** (Bingo/Parley/Caballos solo validan y muestran toasts).
-5. **Pagos reales** (los métodos muestran datos fijos).
-6. **Mesas reales de Dominó y Póker** (hoy solo un toast "Abriendo mesas…").
+**✅ Hecho (backend, Módulos 0-2 — ver `../ESTADO.md` y §13):**
+1. **Autenticación real** + sesiones (JWT bearer + refresh, bcrypt). Login/registro reales.
+2. **Protección de rutas** (`AuthGuard` en `/lobby`, `/profile`, `/admin`; admin exige rol).
+3. **Billetera real:** ledger contable, depósitos/retiros con **aprobación manual** en `/admin`,
+   saldo real en navbar/lobby/perfil, historial real, cola de aprobaciones funcional.
+
+**⏳ Pendiente:**
+4. **Juegos en tiempo real** (Dominó, Póker, Bingo) — Módulos 3-6, requieren el núcleo Socket.IO.
+5. **Resto del panel admin** (métricas, tabla de usuarios, juegos) sigue con datos de muestra — Módulo 7.
+6. **Deploy** del backend a Fly.io + `NEXT_PUBLIC_API_URL` en Vercel — Módulo 8.
+7. **Parley y Caballos:** Fase 2 (no se tocan).
+
+> Los saldos/usuarios/partidos que aún se ven hardcodeados están en las páginas que faltan por
+> conectar (parley/caballos y partes del admin). Auth, billetera, lobby y perfil ya usan datos reales.
 
 ## 11. Otros archivos
 
@@ -161,6 +174,12 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso. La punta de `main` en la última sesión documentada fue **`4020a48`**.
 
+- **backend M2 (billetera)** — ledger de doble entrada (`server/src/wallet/`), depósitos/retiros con
+  aprobación manual en `/admin`, `wallet-dialog.tsx` real, historial del perfil real, `components/admin-queue.tsx`.
+- **backend M1 (auth)** — JWT bearer + refresh, bcrypt (`server/src/auth/`), `lib/auth-context.tsx`,
+  `components/auth-guard.tsx`, `auth-dialog.tsx` conectado, rutas protegidas.
+- **backend M0 (infra)** — proyecto `server/` (Express + Socket.IO + Prisma + Neon vía driver
+  serverless por 443), `lib/api.ts` y `lib/socket.ts` en el front, `Dockerfile` + `fly.toml`.
 - **docs** — `CLAUDE.md`, `CONTINUIDAD.md`, `README.md` reescritos para retomar sin contexto;
   se eliminaron componentes huérfanos (`coming-soon.tsx`, `lobby-filters.tsx`).
 - **footer + márgenes** — footer extraído a `components/site-footer.tsx` y añadido al **lobby**
@@ -179,4 +198,46 @@ Orden cronológico inverso. La punta de `main` en la última sesión documentada
 
 > Cuando hagas cambios relevantes, **añade una línea aquí** y actualiza la sección 10 si cambia
 > el estado de "hecho/pendiente".
+
+---
+
+## 13. Backend (`../server/`) — nuevo
+
+Carpeta hermana de `vegasve/`. Node 20 + TypeScript (ESM): **Express** (REST) + **Socket.IO**
+(tiempo real) + **Prisma** + **Postgres (Neon)**. Documentación propia en `../server/README.md`.
+
+### Conexión a la base — detalle CRÍTICO
+El **puerto 5432 está bloqueado** en el entorno de desarrollo (solo sale HTTP/HTTPS 443). La DB se
+usa con el **driver serverless de Neon** (`@neondatabase/serverless` + `@prisma/adapter-neon`) sobre
+443 — funciona en dev y en producción. Por eso `prisma db push`/`migrate` no corren aquí: para
+cambios de esquema se usa `npm run db:diff` (genera `prisma/init.sql`) + `npm run db:apply`.
+
+### Dinero
+Todo en **céntimos** (`BigInt`), nunca floats. Ledger de doble entrada; la primitiva atómica
+`applyLedger` (`src/wallet/ledger.ts`) hace cada movimiento dentro de una transacción y evita
+sobregiros con un `updateMany` condicional. Depósito = pendiente → admin aprueba → acredita.
+Retiro = debita al solicitar (retención); rechazar reintegra.
+
+### Estructura
+```
+server/src/
+  index.ts     Arranque (Express + Socket.IO)
+  env.ts db.ts json.ts http.ts errors.ts
+  auth/        register/login/refresh/logout/me, JWT, middleware  (Módulo 1)
+  wallet/      ledger + depósitos/retiros                          (Módulo 2)
+  admin/       cola de aprobaciones                                (Módulo 2; se amplía en M7)
+  realtime/ games/   (Módulos 3-6, en construcción)
+server/prisma/schema.prisma   modelo de datos (User, Account, LedgerEntry, *Request, GameTable…)
+server/scripts/   test-auth.ts (16), test-wallet.ts (20)  — correr con el server vivo
+```
+
+### Cómo conecta el frontend
+`vegasve/lib/api.ts` (REST + token + auto-refresh) y `vegasve/lib/socket.ts` (Socket.IO).
+Variables: `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_SOCKET_URL` (en `vegasve/.env.local`, por defecto
+`http://localhost:4000`). Contexto de sesión: `vegasve/lib/auth-context.tsx`.
+
+### Despliegue
+Backend a **Fly.io** (`Dockerfile` + `fly.toml` listos, always-on). Frontend a Vercel. **Ojo:** no
+empujar el frontend a `main`/producción hasta que el backend esté desplegado y `NEXT_PUBLIC_API_URL`
+configurada en Vercel, o la producción quedará sin poder loguear.
 

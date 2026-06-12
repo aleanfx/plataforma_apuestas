@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Mail, Lock, User, Google } from "@/components/icons";
+import { useAuth } from "@/lib/auth-context";
 
 export function AuthDialog({
   children,
@@ -24,23 +25,47 @@ export function AuthDialog({
 }) {
   const [open, setOpen] = React.useState(false);
   const [tab, setTab] = React.useState<"login" | "register">(defaultTab);
+  const [busy, setBusy] = React.useState(false);
   const router = useRouter();
+  const { login, register } = useAuth();
 
   // reset to the requested tab each time it opens
   React.useEffect(() => {
     if (open) setTab(defaultTab);
   }, [open, defaultTab]);
 
-  function doAuth() {
+  function enter(name: string) {
     setOpen(false);
-    toast.success("Sesión iniciada — ¡bienvenido!");
+    toast.success(`¡Bienvenido${name ? ", " + name.split(" ")[0] : ""}!`);
     setTimeout(() => router.push("/lobby"), 250);
   }
 
   // submit del formulario: respeta la validación nativa (required, type, minLength)
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    doAuth();
+    if (busy) return;
+    const form = new FormData(e.currentTarget);
+    setBusy(true);
+    try {
+      if (tab === "login") {
+        const user = await login(
+          String(form.get("email")),
+          String(form.get("password")),
+        );
+        enter(user.name);
+      } else {
+        const user = await register(
+          String(form.get("name")),
+          String(form.get("email")),
+          String(form.get("password")),
+        );
+        enter(user.name);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo completar la operación");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -107,8 +132,8 @@ export function AuthDialog({
                     </button>
                   </div>
                 </div>
-                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }}>
-                  Ingresar
+                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }} disabled={busy}>
+                  {busy ? "Ingresando…" : "Ingresar"}
                 </button>
               </form>
             </TabsContent>
@@ -160,8 +185,8 @@ export function AuthDialog({
                   </div>
                   <div className="hint">Debes ser mayor de 18 años para registrarte.</div>
                 </div>
-                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }}>
-                  Crear cuenta y reclamar bono
+                <button type="submit" className="btn btn-gold btn-block" style={{ marginTop: 8 }} disabled={busy}>
+                  {busy ? "Creando cuenta…" : "Crear cuenta y reclamar bono"}
                 </button>
               </form>
             </TabsContent>
@@ -169,7 +194,10 @@ export function AuthDialog({
 
           <div className="divider-or">o continúa con</div>
           <div className="social-row">
-            <button onClick={doAuth}>
+            <button
+              type="button"
+              onClick={() => toast("El acceso con Google llegará pronto.")}
+            >
               <Google /> Google
             </button>
           </div>

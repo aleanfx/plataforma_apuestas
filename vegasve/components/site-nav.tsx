@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ShieldCheck, Plus } from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
 import { WalletDialog } from "@/components/wallet-dialog";
+import { useAuth } from "@/lib/auth-context";
+import { formatBs, formatUsdShort, initialOf } from "@/lib/money";
 
 // prueba estas rutas en orden; usa la primera que cargue
 const LOGO_CANDIDATES = ["/logo.png", "/logo.webp", "/logo.jpeg", "/logo.jpg"];
@@ -64,6 +66,13 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
     );
   }
 
+  return <NavIn />;
+}
+
+function NavIn() {
+  const { user } = useAuth();
+  const total = user ? user.balance + user.bonus : 0;
+
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -76,9 +85,9 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
           <div className="balance-chip">
             <div className="bal">
               <span className="k">Saldo</span>
-              <span className="v">Bs. 12.480</span>
+              <span className="v">{user ? formatBs(total) : "—"}</span>
             </div>
-            <span className="usd">$312</span>
+            <span className="usd">{user ? formatUsdShort(total) : ""}</span>
             <WalletDialog kind="deposit">
               <button className="chip-add" title="Depositar">
                 <Plus strokeWidth={2} />
@@ -86,7 +95,7 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
             </WalletDialog>
           </div>
           <Link href="/profile" className="avatar">
-            R
+            {user ? initialOf(user.name) : "·"}
           </Link>
         </div>
       </div>
