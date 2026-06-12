@@ -27,7 +27,7 @@ const cardBg = (slug: string): React.CSSProperties => ({
 
 /* Juegos disponibles — mismos en inicio y lobby */
 const GAMES = [
-  { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.", players: "1.240", stakes: "desde Bs. 50", href: null, demo: "Dominó" },
+  { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.", players: "1.240", stakes: "desde Bs. 50", href: "/domino", demo: null },
   { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.", players: "860", stakes: "desde Bs. 200", href: null, demo: "Póker" },
   { slug: "bingo", Icon: Gamepad, name: "Bingo", desc: "Cartones progresivos · Premios cada 2 minutos.", players: "456", stakes: "desde Bs. 20", href: "/bingo", demo: null },
   { slug: "parley", Icon: Coins, name: "Parley", desc: "Pronósticos deportivos · Acumula y gana hasta 100x.", players: "892", stakes: "multiplica x100", href: "/parley", demo: null },

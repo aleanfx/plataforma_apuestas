@@ -14,6 +14,7 @@ import { adminRouter } from "./admin/routes.js";
 import { initRealtime, hub } from "./realtime/index.js";
 import { CounterEngine } from "./realtime/test-engine.js";
 import { initBingo, createBingoSala } from "./games/bingo/index.js";
+import { initDomino, createDominoMesa } from "./games/domino/index.js";
 
 const app = express();
 
@@ -64,6 +65,17 @@ if (process.env.NODE_ENV !== "production") {
     });
     res.json({ tableId: table.id });
   });
+
+  // Mesa de dominó para pruebas e2e.
+  app.post("/dev/domino-table", (req, res) => {
+    const table = createDominoMesa(hub, {
+      name: "Dominó de prueba",
+      stake: Number(req.body?.stake ?? 5000),
+      seats: (Number(req.body?.seats) === 4 ? 4 : 2) as 2 | 4,
+      resetDelayMs: 400,
+    });
+    res.json({ tableId: table.id });
+  });
 }
 
 // Error handler global (siempre al final de las rutas).
@@ -83,6 +95,8 @@ export const io = new SocketIOServer(server, {
 initRealtime(io);
 // Salas de bingo fijas (Módulo 4).
 initBingo(hub);
+// Mesas de dominó fijas (Módulo 5).
+initDomino(hub);
 
 async function start() {
   // Verifica la conexión a la base de datos antes de aceptar tráfico.

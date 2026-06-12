@@ -1361,3 +1361,28 @@ html, body { overflow-x: clip; max-width: 100%; }
   .bingo-cartones { grid-template-columns: 1fr; }
   .bingo-last { font-size: 44px; }
 }
+
+/* ---- Dominó (multijugador en tiempo real) ---- */
+.domino-mesas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.domino-mesa { text-align: left; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; transition: border-color .2s, transform .2s; }
+.domino-mesa:hover { border-color: var(--gold); transform: translateY(-2px); }
+.domino-mesa-meta { display: flex; flex-direction: column; gap: 4px; color: var(--text-2); font-size: 14px; }
+.domino-mesa-meta .live { display: inline-flex; align-items: center; gap: 6px; }
+.domino-seats { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+.domino-seat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: var(--gray); min-width: 140px; transition: all .2s; }
+.domino-seat.turn { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245,179,11,0.25); }
+.domino-seat-name { font-weight: 600; }
+.domino-seat-sub { color: var(--text-2); font-size: 13px; margin-top: 2px; }
+.domino-board { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 56px; padding: 6px; }
+.domino-hand { display: flex; flex-wrap: wrap; gap: 10px; }
+.domino-piece { display: inline-flex; align-items: center; background: #f4f1e8; color: #1a1726; border-radius: 7px; padding: 0; height: 38px; min-width: 64px; box-shadow: 0 2px 6px rgba(0,0,0,0.35); border: 2px solid transparent; }
+.domino-piece.vert { min-width: 38px; flex-direction: column; height: 64px; }
+.domino-half { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; min-width: 30px; }
+.domino-div { width: 2px; align-self: stretch; background: rgba(26,23,38,0.25); }
+.domino-piece.vert .domino-div { width: auto; height: 2px; align-self: stretch; }
+.domino-piece.legal { border-color: var(--gold); }
+.domino-piece.clickable { cursor: pointer; transition: transform .15s; }
+.domino-piece.clickable:hover { transform: translateY(-3px); }
+@media (max-width: 768px) {
+  .domino-mesas { grid-template-columns: 1fr; }
+}
