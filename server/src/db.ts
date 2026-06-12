@@ -8,7 +8,7 @@ import { env } from "./env.js";
 // El entorno solo permite egress HTTP/HTTPS (puerto 443). El protocolo Postgres
 // nativo (5432) está bloqueado, así que usamos el driver serverless de Neon, que
 // habla con la base por WebSocket/HTTPS sobre 443. Esto funciona igual en local,
-// en este entorno y en producción (Fly.io).
+// en este entorno y en producción (Render).
 neonConfig.webSocketConstructor = ws;
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });

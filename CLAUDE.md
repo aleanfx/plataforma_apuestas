@@ -77,9 +77,13 @@ npm run build    # debe quedar SIEMPRE en verde antes de subir
 - **⚠️ Antes de empujar cambios del frontend a `main`:** el front llama al backend vía
   `NEXT_PUBLIC_API_URL` (por defecto `http://localhost:4000`). Si Vercel no tiene esa variable
   apuntando al backend desplegado, la producción quedará sin poder loguear. No empujes el frontend
-  a producción hasta que el backend esté en Fly.io y la variable esté configurada en Vercel.
-- **Backend** (`server/`) se despliega a **Fly.io** (`fly deploy`, hay `Dockerfile` y `fly.toml`).
-  Es always-on (`min_machines_running = 1`) para no cortar partidas en vivo.
+  a producción hasta que el backend esté en Render y la variable esté configurada en Vercel.
+- **Backend** (`server/`) se despliega a **Render** (free tier, sin tarjeta) vía el **Blueprint**
+  `render.yaml` (raíz del repo) que usa el `Dockerfile`. `autoDeploy: true` → cada push a `main`
+  redepliega. ⚠️ El plan free **duerme tras 15 min sin tráfico** (~1 min en despertar), pero los
+  mensajes WebSocket lo mantienen vivo mientras haya partidas; el dinero está a salvo en Neon.
+  Guía paso a paso: [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md). (Fly.io se descartó: en 2026
+  quitó el free tier.)
 - En el entorno remoto **no hay credenciales de escritura**: para `git push` se necesita un
   **GitHub Personal Access Token** (scope `public_repo`). Úsalo de una sola vez en la URL y no
   lo guardes en la config:

@@ -4,5 +4,4 @@ dist
 .env.local
 .git
 *.log
-.fly
 prisma/init.sql

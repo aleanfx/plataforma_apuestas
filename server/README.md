@@ -16,7 +16,7 @@ billetera con ledger contable y los juegos en vivo (Bingo, Dominó, Póker).
 El protocolo Postgres nativo (puerto 5432) está bloqueado en algunos entornos (egress solo
 HTTP/HTTPS). Por eso usamos `@neondatabase/serverless` + `@prisma/adapter-neon`, que hablan
 con Neon por **puerto 443**. Funciona igual en local, en este entorno de desarrollo y en
-Fly.io. Las migraciones se aplican generando el DDL con `prisma migrate diff` y ejecutándolo
+Render. Las migraciones se aplican generando el DDL con `prisma migrate diff` y ejecutándolo
 por HTTPS (ver abajo), porque `prisma migrate`/`db push` usan 5432.
 
 ## Desarrollo
@@ -64,7 +64,10 @@ prisma/
   seed.ts        Seed (asegura el rol admin)
 ```
 
-## Deploy (Fly.io)
-Hay `Dockerfile` y `fly.toml` listos. Los pasos detallados para Windows se documentan en la
-fase de deploy. Resumen: `fly launch` (usa el Dockerfile), `fly secrets set DATABASE_URL=… JWT_ACCESS_SECRET=… …`,
-`fly deploy`. El backend queda always-on (`min_machines_running = 1`) para no cortar partidas.
+## Deploy (Render)
+Hay `Dockerfile` y `render.yaml` (Blueprint, en la raíz del repo) listos. Plan **free, sin tarjeta**.
+Resumen: crear cuenta en render.com con GitHub → **New + → Blueprint** → elegir este repo → Render
+lee `render.yaml` y crea el servicio con el Dockerfile → pegar los secretos (`DATABASE_URL`,
+`JWT_*`, `CORS_ORIGINS`, `ADMIN_EMAIL`). `autoDeploy: true` redepliega en cada push a `main`.
+Guía completa para Windows: [`DESPLIEGUE.md`](./DESPLIEGUE.md). (Fly.io se descartó: quitó el free
+tier en 2026.)

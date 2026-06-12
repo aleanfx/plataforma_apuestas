@@ -14,7 +14,7 @@ a él vía REST + Socket.IO.
 ```
 plataforma_apuestas/
   vegasve/   Frontend Next.js 14 (Vercel)  →  se conecta por NEXT_PUBLIC_API_URL / _SOCKET_URL
-  server/    Backend Node 20 + TS (Express + Socket.IO + Prisma + Postgres Neon)  →  Fly.io
+  server/    Backend Node 20 + TS (Express + Socket.IO + Prisma + Postgres Neon)  →  Render
 ```
 
 - **Dinero:** ledger de doble entrada, montos en **céntimos** (`BigInt`), aprobación **manual** en `/admin`.
@@ -37,7 +37,7 @@ plataforma_apuestas/
 | 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Hardening hecho · deploy lo corres tú |
 
 > **MVP completo.** Suite: **110 pruebas e2e en verde**. Parley y Caballos = **Fase 2**.
-> Para desplegar: sigue [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md) (Fly.io + Vercel).
+> Para desplegar: sigue [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md) (Render + Vercel).
 
 ## Lo que YA funciona (probado end-to-end contra Neon real — 110 pruebas)
 
@@ -56,7 +56,7 @@ plataforma_apuestas/
 
 ## Lo que falta (acción tuya)
 
-- **Desplegar:** backend a Fly.io + variables en Vercel — guía en [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
+- **Desplegar:** backend a Render (free, sin tarjeta) + variables en Vercel — guía en [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
   ⚠️ Hasta entonces, el frontend en producción apunta a `localhost` y el login no funcionará allí.
 - **Fase 2:** Parley y Caballos (siguen como prototipo).
 - **Producto regulado:** licencia, KYC/AML, juego responsable (fuera de código).
@@ -85,6 +85,6 @@ npx tsx scripts/test-wallet.ts
 
 ## Pendientes del usuario (fuera de código)
 
-- Deploy a **Fly.io** cuando lleguemos al Módulo 8 (hay `Dockerfile` y `fly.toml` listos).
+- Deploy a **Render** (hay `Dockerfile` y `render.yaml` listos; free tier sin tarjeta).
 - **Rotar** la contraseña de Neon (se compartió en chat).
 - Temas regulatorios: licencia de juego, KYC/AML, términos, juego responsable.

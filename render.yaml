@@ -1,0 +1,41 @@
+# Blueprint de Render para el backend de BetmarPlay (server/).
+# Render lee este archivo desde la raíz del repo. Al crear un "Blueprint" en
+# render.com y conectar este repo, se crea el servicio web automáticamente.
+#
+# Los SECRETOS (DATABASE_URL, JWT_*, etc.) NO van aquí: llevan `sync: false`,
+# así que los pegas una sola vez en el panel de Render (Environment).
+#
+# ⚠️ El estado de las partidas vive EN MEMORIA en la instancia. El plan free
+# duerme tras 15 min SIN tráfico y tarda ~1 min en despertar; mientras haya
+# gente jugando (mensajes WebSocket) NO se duerme. El dinero está a salvo en el
+# ledger de Neon, así que un reinicio nunca pierde saldo.
+
+services:
+  - type: web
+    name: betmarplay-server
+    runtime: docker
+    repo: https://github.com/aleanfx/plataforma_apuestas
+    branch: main
+    region: virginia            # us-east, cercano a Venezuela
+    plan: free
+    rootDir: server             # el Dockerfile y el código están en server/
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true            # cada push a main redepliega
+    envVars:
+      # PORT lo inyecta Render automáticamente; la app lo lee de process.env.PORT.
+      - key: NODE_ENV
+        value: production
+      - key: BS_PER_USD
+        value: "40"
+      # --- Secretos: se cargan en el panel de Render, no en el repo ---
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

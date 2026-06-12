@@ -158,7 +158,7 @@ nombres claros ("Criptomonedas").
 7. **110 pruebas e2e en verde** contra Neon.
 
 **⏳ Pendiente:**
-- **Deploy** (lo corre el usuario): backend a Fly.io + `NEXT_PUBLIC_API_URL` en Vercel —
+- **Deploy** (lo corre el usuario): backend a Render (free) + `NEXT_PUBLIC_API_URL` en Vercel —
   guía en [`../server/DESPLIEGUE.md`](../server/DESPLIEGUE.md). ⚠️ Hasta entonces, producción apunta a `localhost`.
 - **Parley y Caballos:** Fase 2 (siguen como prototipo).
 
@@ -178,7 +178,7 @@ nombres claros ("Criptomonedas").
 Orden cronológico inverso. La punta de `main` en la última sesión documentada fue **`4020a48`**.
 
 - **backend M8 (hardening+deploy)** — rate-limit (`server/src/middleware/rateLimit.ts`), helmet, morgan,
-  `trust proxy`, límite de body. `fly.toml`/`Dockerfile` listos. Guía `server/DESPLIEGUE.md`.
+  `trust proxy`, límite de body. `render.yaml`/`Dockerfile` listos (Render free). Guía `server/DESPLIEGUE.md`.
 - **backend M7 (admin)** — `/admin/metrics|users|tables`, suspender/reactivar; `components/admin-metrics|users|tables.tsx`.
 - **backend M6 (póker)** — Texas Hold'em (`server/src/games/poker/`, usa `pokersolver`), side pots, showdown; página `/poker`.
 - **backend M5 (dominó)** — block dominoes 2-4 (`server/src/games/domino/`), tranque; página `/domino`.
@@ -189,7 +189,7 @@ Orden cronológico inverso. La punta de `main` en la última sesión documentada
 - **backend M1 (auth)** — JWT bearer + refresh, bcrypt (`server/src/auth/`), `lib/auth-context.tsx`,
   `components/auth-guard.tsx`, `auth-dialog.tsx` conectado, rutas protegidas.
 - **backend M0 (infra)** — proyecto `server/` (Express + Socket.IO + Prisma + Neon vía driver
-  serverless por 443), `lib/api.ts` y `lib/socket.ts` en el front, `Dockerfile` + `fly.toml`.
+  serverless por 443), `lib/api.ts` y `lib/socket.ts` en el front, `Dockerfile` + `render.yaml`.
 - **docs** — `CLAUDE.md`, `CONTINUIDAD.md`, `README.md` reescritos para retomar sin contexto;
   se eliminaron componentes huérfanos (`coming-soon.tsx`, `lobby-filters.tsx`).
 - **footer + márgenes** — footer extraído a `components/site-footer.tsx` y añadido al **lobby**
@@ -247,7 +247,7 @@ Variables: `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_SOCKET_URL` (en `vegasve/.env.lo
 `http://localhost:4000`). Contexto de sesión: `vegasve/lib/auth-context.tsx`.
 
 ### Despliegue
-Backend a **Fly.io** (`Dockerfile` + `fly.toml` listos, always-on). Frontend a Vercel. **Ojo:** no
+Backend a **Render** (free, sin tarjeta; `Dockerfile` + `render.yaml` listos). Frontend a Vercel. **Ojo:** no
 empujar el frontend a `main`/producción hasta que el backend esté desplegado y `NEXT_PUBLIC_API_URL`
 configurada en Vercel, o la producción quedará sin poder loguear.
 

@@ -15,14 +15,15 @@ BetmarPlay pasó de ser un **frontend Next.js estático** (todo hardcodeado) a u
 auth, billetera con ledger contable, **3 juegos multijugador en tiempo real** (Bingo, Dominó, Póker)
 y panel admin. Todo el dinero es saldo interno real (céntimos), con depósitos/retiros por **aprobación
 manual**. **110 pruebas e2e en verde** contra la base real (Neon). Lo único pendiente es que el dueño
-**corra el deploy** (Fly.io + Vercel) siguiendo `server/DESPLIEGUE.md`.
+**corra el deploy** (Render + Vercel) siguiendo `server/DESPLIEGUE.md`.
 
 - **Repo:** https://github.com/aleanfx/plataforma_apuestas — todo en `main` (commit `89d949a`).
-- **Frontend:** `vegasve/` (Next.js 14, Vercel). **Backend:** `server/` (Node 20 + TS, Fly.io).
+- **Frontend:** `vegasve/` (Next.js 14, Vercel). **Backend:** `server/` (Node 20 + TS, Render).
 
 ### Decisiones de producto (tomadas con el dueño, NO re-litigar)
 - **Dinero:** ledger doble entrada + **aprobación manual** en `/admin`. Sin APIs de pago.
-- **Hosting:** frontend Vercel; backend Fly.io free; Postgres Neon.
+- **Hosting:** frontend Vercel; backend **Render** (free, sin tarjeta — Fly.io se descartó porque
+  en 2026 quitó el free tier); Postgres Neon.
 - **Juegos:** orden Bingo → Dominó → Póker. **Parley y Caballos = Fase 2** (no tocar).
 - **Reuso:** solo libs MIT puntuales (`pokersolver`); la lógica de juego se escribió a mano.
 - **Auth:** JWT bearer (access 7d + refresh con rotación, 30d), no cookies (cross-domain).
@@ -40,7 +41,7 @@ el sandbox de Bash, es la red del entorno.
 **Solución (clave del proyecto):** usar el **driver serverless de Neon** (`@neondatabase/serverless`)
 con el adaptador `@prisma/adapter-neon`, que habla con la base por **WebSocket/HTTPS sobre 443**.
 Configurado en `server/src/db.ts` (`neonConfig.webSocketConstructor = ws`). Funciona en este entorno,
-en local y en Fly.io.
+en local y en Render.
 
 **Consecuencias prácticas:**
 - `prisma db push` y `prisma migrate dev` **NO funcionan aquí** (usan 5432). Para el esquema:
@@ -75,7 +76,7 @@ plataforma_apuestas/
     app/{bingo,domino,poker}/       Juegos server-driven por Socket.IO
     app/globals.css                 + estilos .bingo-* .domino-* .poker-* .pcard
 
-  server/                  Backend Node 20 + TS (ESM) — Fly.io
+  server/                  Backend Node 20 + TS (ESM) — Render
     src/index.ts           Arranque: Express + Socket.IO; helmet, morgan, cors, rate-limit;
                            monta /auth /wallet /admin; initRealtime + initBingo/Domino/Poker.
                            Endpoints /dev/* SOLO si NODE_ENV != production.
@@ -98,7 +99,7 @@ plataforma_apuestas/
     prisma/schema.prisma   Modelo de datos
     prisma/{init.sql,apply.ts,seed.ts}
     scripts/test-*.ts      7 suites e2e (110 pruebas)
-    Dockerfile, fly.toml, DESPLIEGUE.md
+    Dockerfile, DESPLIEGUE.md   (+ render.yaml en la raíz del repo)
 ```
 
 **Principio rector:** *server-authoritative*. El cliente nunca decide saldo, cartas, fichas ni
@@ -218,7 +219,15 @@ guardan una referencia `notify = () => hub.broadcast(table)` para emitir fuera d
     `game-cards.tsx` para usar siempre `<Link>`.
 11. **Rate limit rompía la suite de tests** (corren desde una IP) → los limiters tienen
     `skip: () => NODE_ENV !== 'production'` (solo aplican en prod).
-12. **fly.toml memoria 256→512MB** (Node+Prisma+Socket.IO+pokersolver arriesga OOM con 256).
+12. **Memoria 256→512MB** (Node+Prisma+Socket.IO+pokersolver arriesga OOM con 256). El plan free de
+    Render ya da 512MB.
+13. **Cambio de host Fly.io → Render** (jun 2026): Fly.io eliminó el free tier (pide tarjeta + trial
+    de horas); además la tarjeta prepagada del dueño (Zinli) fue rechazada — Fly/Stripe no aceptan
+    prepagadas. Se migró a **Render** (free, sin tarjeta, soporta WebSockets). Se reemplazó `fly.toml`
+    por `render.yaml` (Blueprint en la raíz) y se reescribió `DESPLIEGUE.md`. Render free **duerme tras
+    15 min sin tráfico** pero los mensajes WS lo mantienen vivo mientras haya partidas; el dinero está
+    a salvo en Neon. La app ya escuchaba en `process.env.PORT` (Render lo inyecta solo), así que no
+    hubo cambios de código salvo comentarios.
 
 ---
 
@@ -267,15 +276,15 @@ en cada commit que no entraran `.env`/`node_modules`/`dist`).
 
 ## 11. Pendientes y acción del usuario
 
-- **Desplegar** (lo hace el dueño): `server/DESPLIEGUE.md` (flyctl → secrets → `fly deploy`; luego
-  Vercel `NEXT_PUBLIC_API_URL`/`NEXT_PUBLIC_SOCKET_URL` + Redeploy).
+- **Desplegar** (lo hace el dueño): `server/DESPLIEGUE.md` (Render: New+ → Blueprint → repo → pegar
+  secretos; luego Vercel `NEXT_PUBLIC_API_URL`/`NEXT_PUBLIC_SOCKET_URL` + Redeploy).
 - 🔒 **Rotar** el token de GitHub usado en la sesión (quedó en el chat) y la **contraseña de Neon**
-  (también se compartió). Tras rotar Neon: actualizar `server/.env` y el secreto en Fly.
+  (también se compartió). Tras rotar Neon: actualizar `server/.env` y el secreto en Render.
 - **Fase 2:** Parley y Caballos (siguen como prototipo hardcodeado).
 - **Producto regulado (fuera de código):** licencia de juego, KYC/AML, juego responsable, RNG
   certificado. El software está; lo legal/regulatorio no.
 - **Mejoras técnicas anotadas:** llenar `GameRound/GameResult` para estadísticas; adaptador Redis si
-  se escala Socket.IO a varias instancias (hoy el estado vive en memoria, 1 sola máquina en Fly);
+  se escala Socket.IO a varias instancias (hoy el estado vive en memoria, 1 sola instancia en Render);
   endurecer auth a cookies httpOnly; auto-pass por timeout si un jugador se desconecta en su turno.
 
 ---

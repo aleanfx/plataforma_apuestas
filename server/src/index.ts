@@ -22,7 +22,7 @@ import { initPoker, createPokerMesa } from "./games/poker/index.js";
 
 const app = express();
 
-// Detrás del proxy de Fly.io: necesario para ver la IP real (rate limit) y HTTPS.
+// Detrás del proxy de Render: necesario para ver la IP real (rate limit) y HTTPS.
 app.set("trust proxy", 1);
 
 // Cabeceras de seguridad. Es una API JSON, sin CSP de HTML.
@@ -40,7 +40,7 @@ app.use(
 );
 app.use(express.json({ limit: "100kb" }));
 
-// Health check (lo usa Fly.io). Va antes del rate limit para no limitarlo.
+// Health check (lo usa Render). Va antes del rate limit para no limitarlo.
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "betmarplay-server", time: new Date().toISOString() });
 });
