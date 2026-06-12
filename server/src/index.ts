@@ -3,9 +3,12 @@ import http from "node:http";
 import crypto from "node:crypto";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import { Server as SocketIOServer } from "socket.io";
 
 import { env } from "./env.js";
+import { generalLimiter } from "./middleware/rateLimit.js";
 import { prisma } from "./db.js";
 import { errorHandler } from "./http.js";
 import { authRouter } from "./auth/routes.js";
@@ -19,6 +22,15 @@ import { initPoker, createPokerMesa } from "./games/poker/index.js";
 
 const app = express();
 
+// Detrás del proxy de Fly.io: necesario para ver la IP real (rate limit) y HTTPS.
+app.set("trust proxy", 1);
+
+// Cabeceras de seguridad. Es una API JSON, sin CSP de HTML.
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
+
+// Logging de peticiones.
+app.use(morgan(process.env.NODE_ENV === "production" ? "tiny" : "dev"));
+
 // CORS: solo orígenes en la whitelist (front local / Vercel).
 app.use(
   cors({
@@ -26,9 +38,9 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 
-// Health check (lo usa Fly.io para saber si el server está vivo).
+// Health check (lo usa Fly.io). Va antes del rate limit para no limitarlo.
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "betmarplay-server", time: new Date().toISOString() });
 });
@@ -36,6 +48,9 @@ app.get("/health", (_req, res) => {
 app.get("/", (_req, res) => {
   res.json({ name: "BetmarPlay API", status: "online" });
 });
+
+// Límite general de la API (después del health check).
+app.use(generalLimiter);
 
 // --- Rutas REST ---
 app.use("/auth", authRouter);

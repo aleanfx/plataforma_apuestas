@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler, parseBody } from "../http.js";
 import { requireAuth, type AuthedRequest } from "./middleware.js";
+import { authLimiter } from "../middleware/rateLimit.js";
 import * as auth from "./service.js";
 
 export const authRouter = Router();
@@ -23,6 +24,7 @@ const refreshSchema = z.object({
 
 authRouter.post(
   "/register",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const data = parseBody(registerSchema, req.body);
     const result = await auth.register(data);
@@ -32,6 +34,7 @@ authRouter.post(
 
 authRouter.post(
   "/login",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const data = parseBody(loginSchema, req.body);
     const result = await auth.login(data);

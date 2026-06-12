@@ -147,20 +147,23 @@ modales con scroll correcto; validación de formularios; SEO (OG/robots/sitemap)
 boundary; favicon; fix de zoom iOS; responsive afinado; logout en rojo; métodos de pago con
 nombres claros ("Criptomonedas").
 
-**✅ Hecho (backend, Módulos 0-2 — ver `../ESTADO.md` y §13):**
-1. **Autenticación real** + sesiones (JWT bearer + refresh, bcrypt). Login/registro reales.
-2. **Protección de rutas** (`AuthGuard` en `/lobby`, `/profile`, `/admin`; admin exige rol).
-3. **Billetera real:** ledger contable, depósitos/retiros con **aprobación manual** en `/admin`,
-   saldo real en navbar/lobby/perfil, historial real, cola de aprobaciones funcional.
+**✅ Hecho (backend, Módulos 0-8 — MVP completo; ver `../ESTADO.md` y §13):**
+1. **Auth real** (JWT bearer + refresh, bcrypt) + protección de rutas (`AuthGuard`).
+2. **Billetera real:** ledger contable, depósitos/retiros con **aprobación manual** en `/admin`,
+   saldo/historial reales, cola de aprobaciones funcional.
+3. **Tiempo real** (Socket.IO): auth, mesas, presencia, reconexión, escrow.
+4. **Los 3 juegos server-driven:** **Bingo** (`/bingo`), **Dominó** (`/domino`), **Póker** (`/poker`).
+5. **Admin real:** métricas, usuarios (suspender/reactivar), mesas en vivo.
+6. **Hardening:** rate-limit, helmet, logging.
+7. **110 pruebas e2e en verde** contra Neon.
 
 **⏳ Pendiente:**
-4. **Juegos en tiempo real** (Dominó, Póker, Bingo) — Módulos 3-6, requieren el núcleo Socket.IO.
-5. **Resto del panel admin** (métricas, tabla de usuarios, juegos) sigue con datos de muestra — Módulo 7.
-6. **Deploy** del backend a Fly.io + `NEXT_PUBLIC_API_URL` en Vercel — Módulo 8.
-7. **Parley y Caballos:** Fase 2 (no se tocan).
+- **Deploy** (lo corre el usuario): backend a Fly.io + `NEXT_PUBLIC_API_URL` en Vercel —
+  guía en [`../server/DESPLIEGUE.md`](../server/DESPLIEGUE.md). ⚠️ Hasta entonces, producción apunta a `localhost`.
+- **Parley y Caballos:** Fase 2 (siguen como prototipo).
 
-> Los saldos/usuarios/partidos que aún se ven hardcodeados están en las páginas que faltan por
-> conectar (parley/caballos y partes del admin). Auth, billetera, lobby y perfil ya usan datos reales.
+> Auth, billetera, lobby, perfil, admin y los 3 juegos ya usan datos reales. Solo parley/caballos
+> siguen hardcodeados (Fase 2).
 
 ## 11. Otros archivos
 
@@ -174,6 +177,13 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso. La punta de `main` en la última sesión documentada fue **`4020a48`**.
 
+- **backend M8 (hardening+deploy)** — rate-limit (`server/src/middleware/rateLimit.ts`), helmet, morgan,
+  `trust proxy`, límite de body. `fly.toml`/`Dockerfile` listos. Guía `server/DESPLIEGUE.md`.
+- **backend M7 (admin)** — `/admin/metrics|users|tables`, suspender/reactivar; `components/admin-metrics|users|tables.tsx`.
+- **backend M6 (póker)** — Texas Hold'em (`server/src/games/poker/`, usa `pokersolver`), side pots, showdown; página `/poker`.
+- **backend M5 (dominó)** — block dominoes 2-4 (`server/src/games/domino/`), tranque; página `/domino`.
+- **backend M4 (bingo)** — 75 bolas server-driven (`server/src/games/bingo/`); página `/bingo`.
+- **backend M3 (tiempo real)** — núcleo Socket.IO (`server/src/realtime/`): hub, presencia, reconexión, escrow.
 - **backend M2 (billetera)** — ledger de doble entrada (`server/src/wallet/`), depósitos/retiros con
   aprobación manual en `/admin`, `wallet-dialog.tsx` real, historial del perfil real, `components/admin-queue.tsx`.
 - **backend M1 (auth)** — JWT bearer + refresh, bcrypt (`server/src/auth/`), `lib/auth-context.tsx`,

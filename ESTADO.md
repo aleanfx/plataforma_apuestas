@@ -28,33 +28,37 @@ plataforma_apuestas/
 | 0 | Infra & scaffolding (server/, DB, Express+Socket.IO, deploy skeleton) | ✅ Completo |
 | 1 | Auth real (registro/login/refresh/logout/me, rutas protegidas) | ✅ Completo |
 | 2 | Billetera + Ledger (depósitos/retiros, aprobación admin) | ✅ Completo |
-| 3 | Núcleo tiempo real (Socket.IO: rooms, escrow/payout) | ⏳ Siguiente |
-| 4 | Bingo (sala multi-jugador, canto automático) | ⏳ Pendiente |
-| 5 | Dominó (mesa 2-4, turnos, tranque) | ⏳ Pendiente |
-| 6 | Póker (Texas Hold'em, side pots, showdown) | ⏳ Pendiente |
-| 7 | Admin real (métricas, usuarios, mesas) | ⏳ Pendiente |
-| 8 | Hardening & deploy (Fly.io + Vercel) | ⏳ Pendiente |
+| 3 | Núcleo tiempo real (Socket.IO: rooms, escrow/payout) | ✅ Completo |
+| 4 | Bingo (sala multi-jugador, canto automático) | ✅ Completo |
+| 5 | Dominó (mesa 2-4, turnos, tranque) | ✅ Completo |
+| 6 | Póker (Texas Hold'em, side pots, showdown) | ✅ Completo |
+| 7 | Admin real (métricas, usuarios, mesas) | ✅ Completo |
+| 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Hardening hecho · deploy lo corres tú |
 
-> Parley y Caballos = **Fase 2**, no se tocan.
+> **MVP completo.** Suite: **110 pruebas e2e en verde**. Parley y Caballos = **Fase 2**.
+> Para desplegar: sigue [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md) (Fly.io + Vercel).
 
-## Lo que YA funciona (probado end-to-end contra Neon real)
+## Lo que YA funciona (probado end-to-end contra Neon real — 110 pruebas)
 
-- **Auth:** registrarse crea la cuenta con saldo 0; `betmarplay@gmail.com` es admin automáticamente.
-  Login, sesión persistente (`/me`), refresh con rotación, logout. Rutas `/lobby`, `/profile`,
-  `/admin` protegidas (admin exige rol). → `server/scripts/test-auth.ts` (16/16).
-- **Billetera:** depósito → aprobación en `/admin` → saldo acreditado; retiro con retención
-  inmediata (rechazo reintegra); **invariante contable** (ledger == balance) y **sin doble gasto**
-  bajo concurrencia. → `server/scripts/test-wallet.ts` (20/20).
-- **Frontend:** navbar/lobby/perfil muestran saldo real; modal de billetera real; historial real;
-  cola de aprobaciones del admin funcional. Build de `vegasve/` en verde.
+- **Auth:** registro/login/refresh con rotación/logout/`me`; rutas `/lobby`,`/profile`,`/admin`
+  protegidas. `betmarplay@gmail.com` es admin. → test-auth (16/16).
+- **Billetera:** depósito→aprobación→acreditado; retiro con retención; **invariante contable** y
+  **sin doble gasto** bajo concurrencia. → test-wallet (20/20).
+- **Tiempo real:** Socket.IO con auth, mesas, presencia, reconexión, escrow. → test-realtime (16/16).
+- **Bingo:** salas, compra de cartones, canto automático, línea, reparto. → test-bingo (18/18).
+- **Dominó:** 2-4 jugadores (parejas), turnos validados, tranque, reparto. → test-domino (17/17).
+- **Póker:** Texas Hold'em, buy-in/cash-out, side pots, showdown. → test-poker (12/12).
+- **Admin:** métricas, usuarios (suspender/reactivar), mesas en vivo. → test-admin (11/11).
+- **Hardening:** rate-limit (anti fuerza bruta), helmet, logging, límite de body, `trust proxy`.
+- **Frontend:** todas las páginas conectadas a datos reales; `/bingo`,`/domino`,`/poker` server-driven.
+  Build de `vegasve/` en verde.
 
-## Lo que falta
+## Lo que falta (acción tuya)
 
-- Los **3 juegos en tiempo real** (Módulos 3-6) — requieren el núcleo Socket.IO.
-- El **resto del panel admin** (métricas, tabla de usuarios, juegos) sigue con datos de muestra
-  (Módulo 7). La cola de pagos ya es real.
-- **Deploy** del backend a Fly.io y configurar `NEXT_PUBLIC_API_URL` en Vercel (Módulo 8).
-  ⚠️ Hasta entonces, el frontend apunta a `http://localhost:4000` por defecto.
+- **Desplegar:** backend a Fly.io + variables en Vercel — guía en [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
+  ⚠️ Hasta entonces, el frontend en producción apunta a `localhost` y el login no funcionará allí.
+- **Fase 2:** Parley y Caballos (siguen como prototipo).
+- **Producto regulado:** licencia, KYC/AML, juego responsable (fuera de código).
 
 ## Cómo arrancar (desarrollo)
 

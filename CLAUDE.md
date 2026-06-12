@@ -2,8 +2,9 @@
 
 Este repo contiene **BetmarPlay**, una plataforma de casino y apuestas para Venezuela:
 un **frontend** Next.js 14 en [`vegasve/`](./vegasve/) y un **backend** Node/TS en
-[`server/`](./server/). El frontend ya **no** es solo un prototipo estático: auth y billetera
-son reales (ver estado abajo). Los 3 juegos en tiempo real están en construcción.
+[`server/`](./server/). **MVP completo:** auth, billetera con ledger, los **3 juegos en tiempo real**
+(Bingo/Dominó/Póker) y panel admin son reales y están probados (110 pruebas e2e). Falta solo el
+**deploy** (lo corre el usuario; ver [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md)).
 
 ## Lo primero que debes saber
 
@@ -34,9 +35,17 @@ son reales (ver estado abajo). Los 3 juegos en tiempo real están en construcci�
   npm install
   npm run dev          # http://localhost:4000  (health: /health)
   npm run typecheck    # tsc --noEmit (debe quedar en verde)
-  npx tsx scripts/test-auth.ts     # con el server vivo: pruebas e2e de auth
-  npx tsx scripts/test-wallet.ts   # con el server vivo: pruebas e2e de billetera
+  # Con el server vivo (otra terminal), suite e2e (110 pruebas, contra Neon real):
+  npx tsx scripts/test-auth.ts      # auth (16)
+  npx tsx scripts/test-wallet.ts    # billetera/ledger (20)
+  npx tsx scripts/test-realtime.ts  # núcleo Socket.IO (16)
+  npx tsx scripts/test-bingo.ts     # bingo (18)
+  npx tsx scripts/test-domino.ts    # dominó (17)
+  npx tsx scripts/test-poker.ts     # póker (12)
+  npx tsx scripts/test-admin.ts     # admin (11)
   ```
+- Juegos en `src/games/{bingo,domino,poker}/` sobre el núcleo `src/realtime/` (Hub + `GameEngine`).
+  El dinero de las apuestas entra/sale por `src/realtime/escrow.ts` (sobre el ledger).
 - `server/.env` (gitignored) ya tiene `DATABASE_URL` (Neon), `JWT_*`, `ADMIN_EMAIL=betmarplay@gmail.com`.
 - Admin: el usuario con ese email recibe rol admin al registrarse.
 
