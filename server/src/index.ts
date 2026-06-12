@@ -1,5 +1,6 @@
 import "./json.js"; // parche BigInt -> JSON (debe ir primero)
 import http from "node:http";
+import crypto from "node:crypto";
 import express from "express";
 import cors from "cors";
 import { Server as SocketIOServer } from "socket.io";
@@ -10,6 +11,8 @@ import { errorHandler } from "./http.js";
 import { authRouter } from "./auth/routes.js";
 import { walletRouter } from "./wallet/routes.js";
 import { adminRouter } from "./admin/routes.js";
+import { initRealtime, hub } from "./realtime/index.js";
+import { CounterEngine } from "./realtime/test-engine.js";
 
 const app = express();
 
@@ -36,6 +39,20 @@ app.use("/auth", authRouter);
 app.use("/wallet", walletRouter);
 app.use("/admin", adminRouter);
 
+// Endpoint SOLO de desarrollo: crea una mesa de prueba para validar el tiempo real.
+if (process.env.NODE_ENV !== "production") {
+  app.post("/dev/test-table", (req, res) => {
+    const id = crypto.randomUUID();
+    hub.createTable({
+      id,
+      name: "Mesa de prueba",
+      stake: Number(req.body?.stake ?? 0),
+      engine: new CounterEngine(),
+    });
+    res.json({ tableId: id });
+  });
+}
+
 // Error handler global (siempre al final de las rutas).
 app.use(errorHandler);
 
@@ -49,12 +66,8 @@ export const io = new SocketIOServer(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log(`🔌 socket conectado: ${socket.id}`);
-  socket.on("disconnect", (reason) => {
-    console.log(`🔌 socket desconectado: ${socket.id} (${reason})`);
-  });
-});
+// Núcleo de tiempo real: auth de handshake, mesas, presencia, reconexión.
+initRealtime(io);
 
 async function start() {
   // Verifica la conexión a la base de datos antes de aceptar tráfico.
