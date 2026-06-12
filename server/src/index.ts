@@ -15,6 +15,7 @@ import { initRealtime, hub } from "./realtime/index.js";
 import { CounterEngine } from "./realtime/test-engine.js";
 import { initBingo, createBingoSala } from "./games/bingo/index.js";
 import { initDomino, createDominoMesa } from "./games/domino/index.js";
+import { initPoker, createPokerMesa } from "./games/poker/index.js";
 
 const app = express();
 
@@ -76,6 +77,19 @@ if (process.env.NODE_ENV !== "production") {
     });
     res.json({ tableId: table.id });
   });
+
+  // Mesa de póker para pruebas e2e (manos encadenadas rápido).
+  app.post("/dev/poker-table", (req, res) => {
+    const table = createPokerMesa(hub, {
+      name: "Póker de prueba",
+      seats: Number(req.body?.seats ?? 3),
+      buyIn: Number(req.body?.buyIn ?? 10000),
+      smallBlind: Number(req.body?.smallBlind ?? 50),
+      bigBlind: Number(req.body?.bigBlind ?? 100),
+      handDelayMs: 150,
+    });
+    res.json({ tableId: table.id });
+  });
 }
 
 // Error handler global (siempre al final de las rutas).
@@ -97,6 +111,8 @@ initRealtime(io);
 initBingo(hub);
 // Mesas de dominó fijas (Módulo 5).
 initDomino(hub);
+// Mesas de póker fijas (Módulo 6).
+initPoker(hub);
 
 async function start() {
   // Verifica la conexión a la base de datos antes de aceptar tráfico.

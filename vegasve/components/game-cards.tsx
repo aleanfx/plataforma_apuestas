@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 
 import {
   DominoIcon,
@@ -28,7 +27,7 @@ const cardBg = (slug: string): React.CSSProperties => ({
 /* Juegos disponibles — mismos en inicio y lobby */
 const GAMES = [
   { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.", players: "1.240", stakes: "desde Bs. 50", href: "/domino", demo: null },
-  { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.", players: "860", stakes: "desde Bs. 200", href: null, demo: "Póker" },
+  { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.", players: "860", stakes: "desde Bs. 200", href: "/poker", demo: null },
   { slug: "bingo", Icon: Gamepad, name: "Bingo", desc: "Cartones progresivos · Premios cada 2 minutos.", players: "456", stakes: "desde Bs. 20", href: "/bingo", demo: null },
   { slug: "parley", Icon: Coins, name: "Parley", desc: "Pronósticos deportivos · Acumula y gana hasta 100x.", players: "892", stakes: "multiplica x100", href: "/parley", demo: null },
   { slug: "caballos", Icon: Dice, name: "Caballos", desc: "Pollas hípicas · Apuesta y predice a los ganadores.", players: "623", stakes: "desde Bs. 100", href: "/caballos", demo: null },
@@ -89,27 +88,13 @@ export function LandingGameCards() {
 }
 
 /* ---- Lobby: cada tarjeta abre el juego ---- */
-function play(name: string) {
-  toast("Abriendo mesas de " + name + "…");
-}
-
 function LobbyFoot({ g }: { g: (typeof GAMES)[number] }) {
   return (
     <div className="gc-foot">
       <div className="players">
         <span className="live-dot" /> {g.players} en línea
       </div>
-      <button
-        className="btn btn-gold btn-sm"
-        onClick={(e) => {
-          if (g.demo) {
-            e.stopPropagation();
-            play(g.demo);
-          }
-        }}
-      >
-        Jugar ahora
-      </button>
+      <span className="btn btn-gold btn-sm">Jugar ahora</span>
     </div>
   );
 }
@@ -117,44 +102,18 @@ function LobbyFoot({ g }: { g: (typeof GAMES)[number] }) {
 export function LobbyGameCards() {
   return (
     <div className="games-grid">
-      {GAMES.map((g) =>
-        g.href ? (
-          <Link key={g.slug} href={g.href} className="game-card" style={cardBg(g.slug)}>
-            <div>
-              <div className="gc-icon">
-                <g.Icon />
-              </div>
-              <h3 className="serif">{g.name}</h3>
-              <p className="gc-desc">{g.desc}</p>
+      {GAMES.map((g) => (
+        <Link key={g.slug} href={g.href} className="game-card" style={cardBg(g.slug)}>
+          <div>
+            <div className="gc-icon">
+              <g.Icon />
             </div>
-            <LobbyFoot g={g} />
-          </Link>
-        ) : (
-          <div
-            key={g.slug}
-            className="game-card"
-            role="button"
-            tabIndex={0}
-            style={cardBg(g.slug)}
-            onClick={() => g.demo && play(g.demo)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                if (g.demo) play(g.demo);
-              }
-            }}
-          >
-            <div>
-              <div className="gc-icon">
-                <g.Icon />
-              </div>
-              <h3 className="serif">{g.name}</h3>
-              <p className="gc-desc">{g.desc}</p>
-            </div>
-            <LobbyFoot g={g} />
+            <h3 className="serif">{g.name}</h3>
+            <p className="gc-desc">{g.desc}</p>
           </div>
-        )
-      )}
+          <LobbyFoot g={g} />
+        </Link>
+      ))}
       {soonCards()}
     </div>
   );
