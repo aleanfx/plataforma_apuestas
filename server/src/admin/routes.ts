@@ -1,12 +1,47 @@
 import { Router } from "express";
-import { asyncHandler } from "../http.js";
+import { z } from "zod";
+import { asyncHandler, parseBody } from "../http.js";
 import { requireAuth, requireAdmin, type AuthedRequest } from "../auth/middleware.js";
 import * as wallet from "../wallet/service.js";
+import * as admin from "./service.js";
+import { hub } from "../realtime/index.js";
 
-// Rutas de administración. La cola de aprobaciones (Módulo 2) vive aquí;
-// métricas y gestión de usuarios se amplían en el Módulo 7.
+// Rutas de administración: cola de aprobaciones (Módulo 2) + métricas, usuarios
+// y mesas en vivo (Módulo 7).
 export const adminRouter = Router();
 adminRouter.use(requireAuth, requireAdmin);
+
+adminRouter.get(
+  "/metrics",
+  asyncHandler(async (_req, res) => {
+    const metrics = await admin.getMetrics();
+    res.json({ ...metrics, online: hub.onlineCount(), tables: hub.listTables().length });
+  }),
+);
+
+adminRouter.get(
+  "/users",
+  asyncHandler(async (_req, res) => {
+    res.json({ users: await admin.listUsers() });
+  }),
+);
+
+const statusSchema = z.object({ status: z.enum(["active", "suspended"]) });
+adminRouter.post(
+  "/users/:id/status",
+  asyncHandler(async (req, res) => {
+    const { status } = parseBody(statusSchema, req.body);
+    await admin.setUserStatus(req.params.id, status);
+    res.json({ ok: true });
+  }),
+);
+
+adminRouter.get(
+  "/tables",
+  asyncHandler(async (_req, res) => {
+    res.json({ tables: hub.listTables() });
+  }),
+);
 
 adminRouter.get(
   "/requests",

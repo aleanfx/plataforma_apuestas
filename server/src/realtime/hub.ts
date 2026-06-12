@@ -103,6 +103,11 @@ export class Hub {
     return [...(this.userSockets.get(userId) ?? [])];
   }
 
+  /** Cantidad de usuarios con al menos un socket conectado (para métricas admin). */
+  onlineCount(): number {
+    return this.userSockets.size;
+  }
+
   // --- Conexión / desconexión -------------------------------------------
 
   handleConnection(socket: Socket) {
