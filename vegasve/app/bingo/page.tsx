@@ -144,6 +144,17 @@ function BingoContent() {
     );
   }
 
+  function practice() {
+    socketRef.current?.emit(
+      "table:practice",
+      { game: "bingo" },
+      (res: { ok: boolean; tableId?: string; reason?: string }) => {
+        if (res?.ok && res.tableId) join(res.tableId);
+        else toast.error(res?.reason ?? "No se pudo crear la práctica");
+      },
+    );
+  }
+
   function start() {
     socketRef.current?.emit(
       "table:action",
@@ -167,6 +178,9 @@ function BingoContent() {
               <p style={{ color: "var(--text-2)", marginTop: 8 }}>
                 Elige una sala, compra tu cartón y el primero en hacer línea gana el pozo.
               </p>
+              <button className="btn btn-ghost btn-sm practice-cta" onClick={practice}>
+                🤖 Practicar vs CPU · gratis
+              </button>
             </div>
 
             <div className="bal-banner" style={{ marginBottom: 28 }}>

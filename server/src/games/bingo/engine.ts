@@ -3,7 +3,7 @@ import type { GameEngine, GameAction } from "../../realtime/engine.js";
 import type { Table } from "../../realtime/hub.js";
 import type { SocketUser } from "../../realtime/auth.js";
 import { badRequest } from "../../errors.js";
-import { chargeStake, payout } from "../../realtime/escrow.js";
+import { realEscrow, type Escrow } from "../../realtime/escrow.js";
 import { genCarton, hasLine, markGrid, ballLetter, MAX_BALL, type Carton } from "./cards.js";
 
 type Phase = "buying" | "playing" | "finished";
@@ -13,6 +13,7 @@ export type BingoOptions = {
   callIntervalMs?: number; // ritmo del canto automático
   resetDelayMs?: number; // pausa antes de la siguiente ronda
   autoStartMs?: number; // arranque automático tras la 1.ª compra (0 = desactivado)
+  escrow?: Escrow; // real por defecto; práctica = dinero de juguete
 };
 
 // Motor de Bingo (75 bolas, gana la primera LÍNEA). Una instancia por sala.
@@ -40,11 +41,21 @@ export class BingoEngine implements GameEngine {
   private readonly callIntervalMs: number;
   private readonly resetDelayMs: number;
   private readonly autoStartMs: number;
+  private readonly escrow: Escrow;
 
   constructor(opts: BingoOptions = {}) {
     this.callIntervalMs = opts.callIntervalMs ?? 2500;
     this.resetDelayMs = opts.resetDelayMs ?? 8000;
     this.autoStartMs = opts.autoStartMs ?? 20000;
+    this.escrow = opts.escrow ?? realEscrow;
+  }
+
+  /** Limpia timers (al destruir una mesa de práctica). */
+  dispose() {
+    if (this.callTimer) clearInterval(this.callTimer);
+    if (this.resetTimer) clearTimeout(this.resetTimer);
+    if (this.autoStartTimer) clearTimeout(this.autoStartTimer);
+    this.callTimer = this.resetTimer = this.autoStartTimer = null;
   }
 
   /** Conecta el motor a su mesa y a la función de difusión del Hub. */
@@ -88,7 +99,7 @@ export class BingoEngine implements GameEngine {
       throw badRequest(`Máximo ${MAX_CARTONES_PER_PLAYER} cartones por ronda`);
     }
     // Cobra la apuesta (lanza "Saldo insuficiente" si no alcanza) ANTES del cartón.
-    await chargeStake(user.id, this.table.stake, this.table.id);
+    await this.escrow.chargeStake(user.id, this.table.stake, this.table.id);
     mine.push(genCarton());
     this.cartones.set(user.id, mine);
     this.names.set(user.id, user.name);
@@ -155,7 +166,7 @@ export class BingoEngine implements GameEngine {
     for (const id of winnerIds) {
       const amount = share + (remainder > 0 ? 1 : 0); // el céntimo sobrante al primero
       if (remainder > 0) remainder--;
-      await payout(id, amount, this.table.id, "Premio de Bingo");
+      await this.escrow.payout(id, amount, this.table.id, "Premio de Bingo");
       this.winners.push({ id, name: this.names.get(id) ?? "Jugador", amount });
     }
     this.phase = "finished";

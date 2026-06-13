@@ -25,4 +25,7 @@ export interface GameEngine {
 
   /** Estado que ve un jugador concreto (puede ocultar info privada por `forUserId`). */
   publicState(table: Table, forUserId: string): unknown;
+
+  /** Limpieza opcional (timers) al destruir la mesa. Lo usan las mesas de práctica. */
+  dispose?(): void;
 }

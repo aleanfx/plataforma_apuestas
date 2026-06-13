@@ -2,7 +2,7 @@ import type { GameEngine, GameAction } from "../../realtime/engine.js";
 import type { Table } from "../../realtime/hub.js";
 import type { SocketUser } from "../../realtime/auth.js";
 import { badRequest } from "../../errors.js";
-import { chargeStake, payout, refundStake, balanceOf } from "../../realtime/escrow.js";
+import { realEscrow, type Escrow } from "../../realtime/escrow.js";
 import {
   fullSet,
   shuffle,
@@ -46,13 +46,27 @@ export class DominoEngine implements GameEngine {
   private notify: () => void = () => {};
   private readonly resetDelayMs: number;
   private readonly turnTimeoutMs: number;
+  private readonly escrow: Escrow;
 
-  constructor(opts: { seats: 2 | 3 | 4; resetDelayMs?: number; turnTimeoutMs?: number }) {
+  constructor(opts: {
+    seats: 2 | 3 | 4;
+    resetDelayMs?: number;
+    turnTimeoutMs?: number;
+    escrow?: Escrow;
+  }) {
     this.maxPlayers = opts.seats;
     this.resetDelayMs = opts.resetDelayMs ?? 8000;
     // Tiempo máximo por turno; al agotarse, el servidor juega/pasa automáticamente.
     // Evita que un jugador AFK o desconectado congele la mesa. 0 = desactivado.
     this.turnTimeoutMs = opts.turnTimeoutMs ?? 25000;
+    this.escrow = opts.escrow ?? realEscrow;
+  }
+
+  /** Limpia timers (al destruir una mesa de práctica). */
+  dispose() {
+    if (this.resetTimer) clearTimeout(this.resetTimer);
+    if (this.turnTimer) clearTimeout(this.turnTimer);
+    this.resetTimer = this.turnTimer = null;
   }
 
   attach(table: Table, notify: () => void) {
@@ -106,7 +120,7 @@ export class DominoEngine implements GameEngine {
     const players = [...this.seated];
     // Verifica saldo de todos antes de cobrar a nadie.
     for (const p of players) {
-      if ((await balanceOf(p.userId)) < this.table.stake) {
+      if ((await this.escrow.balanceOf(p.userId)) < this.table.stake) {
         throw badRequest(`${p.name} no tiene saldo suficiente para la apuesta`);
       }
     }
@@ -114,11 +128,11 @@ export class DominoEngine implements GameEngine {
     const charged: string[] = [];
     try {
       for (const p of players) {
-        await chargeStake(p.userId, this.table.stake, this.table.id);
+        await this.escrow.chargeStake(p.userId, this.table.stake, this.table.id);
         charged.push(p.userId);
       }
     } catch (err) {
-      for (const id of charged) await refundStake(id, this.table.stake, this.table.id);
+      for (const id of charged) await this.escrow.refundStake(id, this.table.stake, this.table.id);
       throw err;
     }
 
@@ -310,7 +324,7 @@ export class DominoEngine implements GameEngine {
     for (const id of winnerIds) {
       const amount = share + (remainder > 0 ? 1 : 0);
       if (remainder > 0) remainder--;
-      await payout(id, amount, this.table.id, reason === "domino" ? "Dominó ganado" : "Dominó (tranque)");
+      await this.escrow.payout(id, amount, this.table.id, reason === "domino" ? "Dominó ganado" : "Dominó (tranque)");
       this.winners.push({ id, name: this.names.get(id) ?? "Jugador", amount });
     }
     this.phase = "finished";

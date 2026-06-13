@@ -2,7 +2,7 @@ import type { GameEngine, GameAction } from "../../realtime/engine.js";
 import type { Table } from "../../realtime/hub.js";
 import type { SocketUser } from "../../realtime/auth.js";
 import { badRequest } from "../../errors.js";
-import { chargeStake, payout, balanceOf } from "../../realtime/escrow.js";
+import { realEscrow, type Escrow } from "../../realtime/escrow.js";
 import { fullDeck, shuffle, type Card } from "./cards.js";
 import { computeSidePots } from "./sidepots.js";
 import { winnersAmong, handName } from "./handeval.js";
@@ -32,6 +32,7 @@ export type PokerOptions = {
   bigBlind: number;
   handDelayMs?: number;
   turnTimeoutMs?: number;
+  escrow?: Escrow;
 };
 
 // Texas Hold'em (cash game). El buy-in debita la billetera y entrega fichas;
@@ -65,6 +66,7 @@ export class PokerEngine implements GameEngine {
   private readonly bigBlind: number;
   private readonly handDelayMs: number;
   private readonly turnTimeoutMs: number;
+  private readonly escrow: Escrow;
 
   constructor(opts: PokerOptions) {
     this.maxPlayers = opts.seats;
@@ -75,6 +77,14 @@ export class PokerEngine implements GameEngine {
     // Tiempo máximo por turno; al agotarse: auto-check si puede, si no auto-fold.
     // Evita que un jugador AFK/desconectado congele la mano. 0 = desactivado.
     this.turnTimeoutMs = opts.turnTimeoutMs ?? 25000;
+    this.escrow = opts.escrow ?? realEscrow;
+  }
+
+  /** Limpia timers (al destruir una mesa de práctica). */
+  dispose() {
+    if (this.handTimer) clearTimeout(this.handTimer);
+    if (this.turnTimer) clearTimeout(this.turnTimer);
+    this.handTimer = this.turnTimer = null;
   }
 
   attach(table: Table, notify: () => void) {
@@ -131,7 +141,7 @@ export class PokerEngine implements GameEngine {
     if (p.chips > 0) {
       const amount = p.chips;
       p.chips = 0;
-      await payout(p.userId, amount, this.table.id, "Retiro de fichas de póker");
+      await this.escrow.payout(p.userId, amount, this.table.id, "Retiro de fichas de póker");
     }
   }
 
@@ -170,8 +180,8 @@ export class PokerEngine implements GameEngine {
     const p = this.players.find((x) => x.userId === user.id);
     if (!p) throw badRequest("No estás en la mesa");
     if (p.chips > 0) throw badRequest("Ya tienes fichas en la mesa");
-    if ((await balanceOf(user.id)) < this.buyIn) throw badRequest("Saldo insuficiente para el buy-in");
-    await chargeStake(user.id, this.buyIn, this.table.id);
+    if ((await this.escrow.balanceOf(user.id)) < this.buyIn) throw badRequest("Saldo insuficiente para el buy-in");
+    await this.escrow.chargeStake(user.id, this.buyIn, this.table.id);
     p.chips = this.buyIn;
     p.leaving = false;
     this.notify();

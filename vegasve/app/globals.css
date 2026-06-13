@@ -1502,3 +1502,6 @@ html, body { overflow-x: clip; max-width: 100%; }
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
+
+/* Botón "Practicar vs CPU" en los lobbies de juego */
+.practice-cta { margin-top: 14px; }

@@ -9,7 +9,14 @@ export type Member = {
   name: string;
   connected: boolean;
   joinedAt: number;
+  bot?: boolean; // jugador CPU (modo práctica): no tiene socket
 };
+
+/** Controlador de bots de una mesa de práctica (lo implementa BotController). */
+export interface TableBots {
+  onState(): void;
+  destroy(): void;
+}
 
 export interface Table {
   id: string;
@@ -22,6 +29,8 @@ export interface Table {
   engine: GameEngine;
   state: Record<string, unknown>; // estado interno del juego (lo maneja el motor)
   roundId?: string;
+  practice?: boolean; // mesa "Practicar vs CPU": dinero de juguete, se destruye al irse el humano
+  bots?: TableBots; // controlador de los jugadores CPU
 }
 
 function roomOf(tableId: string) {
@@ -60,7 +69,37 @@ export class Hub {
   }
 
   removeTable(id: string) {
+    const table = this.tables.get(id);
+    if (table) {
+      table.bots?.destroy();
+      table.engine.dispose?.();
+    }
     this.tables.delete(id);
+  }
+
+  /** Añade un jugador CPU a una mesa de práctica (sin socket). */
+  addBot(table: Table, bot: { id: string; name: string }) {
+    table.members.set(bot.id, {
+      id: bot.id,
+      name: bot.name,
+      connected: true,
+      joinedAt: Date.now(),
+      bot: true,
+    });
+    void table.engine.onJoin(table, bot as SocketUser);
+  }
+
+  /** ¿Queda algún humano (no-bot) conectado en la mesa? */
+  private hasConnectedHuman(table: Table): boolean {
+    for (const m of table.members.values()) if (!m.bot && m.connected) return true;
+    return false;
+  }
+
+  /** Destruye una mesa de práctica si ya no le quedan humanos. */
+  private cleanupPractice(table: Table) {
+    if (!table.practice) return;
+    const anyHuman = [...table.members.values()].some((m) => !m.bot);
+    if (!anyHuman || !this.hasConnectedHuman(table)) this.removeTable(table.id);
   }
 
   listTables(game?: GameKind) {
@@ -132,6 +171,7 @@ export class Hub {
       if (m) {
         m.connected = false;
         this.broadcast(table);
+        this.cleanupPractice(table); // si era práctica y se fue el humano, se destruye
       }
     }
   }
@@ -150,6 +190,7 @@ export class Hub {
       socket.join(roomOf(tableId));
       this.sendState(table, user.id);
       this.broadcast(table);
+      table.bots?.onState(); // reanuda a los CPU si toca
       return { ok: true };
     }
 
@@ -161,6 +202,7 @@ export class Hub {
     socket.join(roomOf(tableId));
     void table.engine.onJoin(table, user);
     this.broadcast(table);
+    table.bots?.onState(); // arranca a los CPU (comprar/sentarse) ahora que hay humano
     return { ok: true };
   }
 
@@ -174,6 +216,7 @@ export class Hub {
     socket.leave(roomOf(tableId));
     void table.engine.onLeave(table, user.id);
     this.broadcast(table);
+    this.cleanupPractice(table); // mesa de práctica sin humanos -> se destruye
   }
 
   async action(socket: Socket, tableId: string, action: GameAction): Promise<{ ok: boolean; reason?: string }> {

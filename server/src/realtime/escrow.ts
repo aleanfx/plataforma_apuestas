@@ -62,3 +62,29 @@ export async function balanceOf(userId: string): Promise<number> {
   const acc = await prisma.account.findUnique({ where: { userId } });
   return acc ? Number(acc.balance) : 0;
 }
+
+// --- Escrow inyectable -------------------------------------------------------
+// Los motores reciben un `Escrow`; el real mueve dinero por el ledger. El de
+// práctica (modo "Practicar vs CPU") es un no-op con saldo infinito: nada toca
+// la billetera real ni la base de datos. Así los bots y el jugador practican con
+// dinero de juguete.
+
+export interface Escrow {
+  chargeStake(userId: string, amountCents: number, refId: string): Promise<void>;
+  payout(userId: string, amountCents: number, refId: string, note?: string): Promise<void>;
+  refundStake(userId: string, amountCents: number, refId: string): Promise<void>;
+  balanceOf(userId: string): Promise<number>;
+}
+
+/** Escrow real: el dinero entra/sale por el ledger (producción). */
+export const realEscrow: Escrow = { chargeStake, payout, refundStake, balanceOf };
+
+/** Escrow de práctica: no mueve dinero. Saldo "infinito" para que pasen los checks. */
+export const practiceEscrow: Escrow = {
+  async chargeStake() {},
+  async payout() {},
+  async refundStake() {},
+  async balanceOf() {
+    return Number.MAX_SAFE_INTEGER;
+  },
+};

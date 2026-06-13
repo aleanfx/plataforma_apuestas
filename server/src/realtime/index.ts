@@ -3,6 +3,7 @@ import type { GameKind } from "@prisma/client";
 import { socketAuth } from "./auth.js";
 import { Hub } from "./hub.js";
 import type { GameAction } from "./engine.js";
+import { createPracticeTable } from "../games/practice.js";
 
 // Hub singleton: los módulos de juego (Bingo/Dominó/Póker) crean mesas con él.
 export let hub: Hub;
@@ -30,6 +31,16 @@ export function initRealtime(io: Server): Hub {
 
     socket.on("table:leave", (data: { tableId?: string } = {}) => {
       hub.leave(socket, data?.tableId ?? "");
+    });
+
+    // Crea una mesa de práctica vs CPU (dinero de juguete) y devuelve su id.
+    socket.on("table:practice", (data: { game?: GameKind } = {}, ack?: Ack) => {
+      try {
+        const table = createPracticeTable(hub, data?.game ?? "bingo");
+        ack?.({ ok: true, tableId: table.id });
+      } catch (err) {
+        ack?.({ ok: false, reason: err instanceof Error ? err.message : "No se pudo crear la práctica" });
+      }
     });
 
     socket.on(

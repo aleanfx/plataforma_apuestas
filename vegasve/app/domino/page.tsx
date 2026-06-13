@@ -107,6 +107,16 @@ function DominoContent() {
       } else toast.error(res?.reason ?? "No se pudo unir");
     });
   }
+  function practice() {
+    socketRef.current?.emit(
+      "table:practice",
+      { game: "domino" },
+      (res: { ok: boolean; tableId?: string; reason?: string }) => {
+        if (res?.ok && res.tableId) join(res.tableId);
+        else toast.error(res?.reason ?? "No se pudo crear la práctica");
+      },
+    );
+  }
   function leave() {
     if (tableRef.current) socketRef.current?.emit("table:leave", { tableId: tableRef.current });
     tableRef.current = null;
@@ -154,6 +164,9 @@ function DominoContent() {
               <p style={{ color: "var(--text-2)", marginTop: 8 }}>
                 Mesas 1v1 y por parejas. Apuesta, juega tus fichas y llévate el pozo.
               </p>
+              <button className="btn btn-ghost btn-sm practice-cta" onClick={practice}>
+                🤖 Practicar vs CPU · gratis
+              </button>
             </div>
             <div className="bal-banner" style={{ marginBottom: 28 }}>
               <div className="cell">
