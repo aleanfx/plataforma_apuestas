@@ -4,6 +4,7 @@
 
 import { io, type Socket } from "socket.io-client";
 import { getToken } from "@/lib/api";
+import { markServerOnline, reportConnectionError } from "@/lib/server-status";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
 
@@ -16,6 +17,12 @@ export function getSocket(): Socket {
       autoConnect: false,
       transports: ["websocket"],
       auth: (cb) => cb({ token: getToken() }),
+    });
+    // Salud del servidor: conectar = vivo; fallo de conexión = (tras confirmar con
+    // /health) probablemente dormido → dispara el overlay "preparando la mesa".
+    socket.on("connect", markServerOnline);
+    socket.on("connect_error", () => {
+      void reportConnectionError();
     });
   }
   return socket;

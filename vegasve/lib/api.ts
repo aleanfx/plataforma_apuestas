@@ -1,6 +1,8 @@
 // Cliente REST del frontend hacia el backend de BetmarPlay.
 // Maneja la URL base, el token JWT (bearer) y el parseo de errores.
 
+import { markServerWaking, markServerOnline } from "@/lib/server-status";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 const ACCESS_KEY = "bmp_access";
@@ -73,11 +75,23 @@ export async function api<T = unknown>(path: string, opts: ApiOptions = {}): Pro
     if (token) h.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...rest,
-    headers: h,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  // Si la respuesta tarda demasiado, el servidor (Render free) probablemente está
+  // despertando: avisamos para mostrar el overlay, pero NO abortamos la petición.
+  let res: Response;
+  const slowTimer = setTimeout(markServerWaking, 4000);
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...rest,
+      headers: h,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    markServerWaking(); // error de red: servidor inalcanzable / arrancando
+    throw err;
+  } finally {
+    clearTimeout(slowTimer);
+  }
+  markServerOnline(); // el servidor respondió (aunque sea un error HTTP): está vivo
 
   // Token expirado: renueva una vez y reintenta.
   if (res.status === 401 && auth && !_retried && getRefreshToken()) {

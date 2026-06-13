@@ -1413,3 +1413,66 @@ html, body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 768px) {
   .poker-community .pcard { width: 38px; height: 54px; }
 }
+
+/* ============================================================
+   Overlay "Servidor despertando" (Render free duerme tras 15 min)
+   ============================================================ */
+.wake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 40%, rgba(26, 16, 53, 0.86), rgba(13, 11, 30, 0.96));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: wake-fade 0.3s ease;
+}
+@keyframes wake-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.wake-card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  padding: 38px 30px 30px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--gray-2), var(--gray));
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.wake-spinner {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  border: 4px solid rgba(168, 150, 255, 0.18);
+  border-top-color: var(--gold);
+  animation: wake-spin 0.9s linear infinite;
+}
+@keyframes wake-spin { to { transform: rotate(360deg); } }
+
+.wake-title { font-size: 24px; margin-bottom: 10px; color: var(--text); }
+.wake-sub { color: var(--text-2); font-size: 14px; line-height: 1.55; margin-bottom: 22px; }
+
+.wake-bar {
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(168, 150, 255, 0.12);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.wake-bar span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  animation: wake-slide 1.3s ease-in-out infinite;
+}
+@keyframes wake-slide {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+.wake-elapsed { color: var(--text-3); font-size: 12px; letter-spacing: 0.04em; }

@@ -3,6 +3,7 @@ import { Outfit, Jost, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { ServerWakeOverlay } from "@/components/server-wake-overlay";
 
 const display = Outfit({
   subsets: ["latin"],
@@ -66,6 +67,7 @@ export default function RootLayout({
     >
       <body>
         <AuthProvider>{children}</AuthProvider>
+        <ServerWakeOverlay />
         <Toaster />
       </body>
     </html>
