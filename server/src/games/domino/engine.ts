@@ -40,13 +40,19 @@ export class DominoEngine implements GameEngine {
   private winners: { id: string; name: string; amount: number }[] = [];
 
   private resetTimer: NodeJS.Timeout | null = null;
+  private turnTimer: NodeJS.Timeout | null = null;
+  private turnDeadline: number | null = null;
   private table!: Table;
   private notify: () => void = () => {};
   private readonly resetDelayMs: number;
+  private readonly turnTimeoutMs: number;
 
-  constructor(opts: { seats: 2 | 3 | 4; resetDelayMs?: number }) {
+  constructor(opts: { seats: 2 | 3 | 4; resetDelayMs?: number; turnTimeoutMs?: number }) {
     this.maxPlayers = opts.seats;
     this.resetDelayMs = opts.resetDelayMs ?? 8000;
+    // Tiempo máximo por turno; al agotarse, el servidor juega/pasa automáticamente.
+    // Evita que un jugador AFK o desconectado congele la mesa. 0 = desactivado.
+    this.turnTimeoutMs = opts.turnTimeoutMs ?? 25000;
   }
 
   attach(table: Table, notify: () => void) {
@@ -139,6 +145,7 @@ export class DominoEngine implements GameEngine {
     this.phase = "playing";
     this.table.status = "playing";
     this.notify();
+    this.syncTurnTimer();
   }
 
   // --- Jugar / pasar ------------------------------------------------------
@@ -150,7 +157,12 @@ export class DominoEngine implements GameEngine {
 
   private play(user: SocketUser, tileId: string, end: "left" | "right") {
     this.requireTurn(user);
-    const hand = this.hands.get(user.id)!;
+    this.doPlay(user.id, tileId, end);
+  }
+
+  // Coloca una ficha por userId (sin validar el turno: lo usa también el auto-juego).
+  private doPlay(userId: string, tileId: string, end: "left" | "right") {
+    const hand = this.hands.get(userId)!;
     const tile = hand.find((t) => t.id === tileId);
     if (!tile) throw badRequest("No tienes esa ficha");
 
@@ -165,18 +177,19 @@ export class DominoEngine implements GameEngine {
     }
 
     this.hands.set(
-      user.id,
+      userId,
       hand.filter((t) => t.id !== tileId),
     );
     this.passes = 0;
 
-    if (this.hands.get(user.id)!.length === 0) {
+    if (this.hands.get(userId)!.length === 0) {
       // ¡Dominó! Gana quien se pega (y su pareja).
-      void this.finish(this.winningSide(user.id), "domino");
+      void this.finish(this.winningSide(userId), "domino");
       return;
     }
     this.advanceTurn();
     this.notify();
+    this.syncTurnTimer();
   }
 
   private placeOnEnd(tile: Tile, end: "left" | "right") {
@@ -204,7 +217,12 @@ export class DominoEngine implements GameEngine {
 
   private pass(user: SocketUser) {
     this.requireTurn(user);
-    const hand = this.hands.get(user.id)!;
+    this.doPass(user.id);
+  }
+
+  // Pasa por userId (sin validar el turno: lo usa también el auto-juego).
+  private doPass(userId: string) {
+    const hand = this.hands.get(userId)!;
     const hasMove =
       this.board.length === 0
         ? hand.some((t) => t.id === this.starterTileId)
@@ -219,10 +237,45 @@ export class DominoEngine implements GameEngine {
     }
     this.advanceTurn();
     this.notify();
+    this.syncTurnTimer();
   }
 
   private advanceTurn() {
     this.turn = (this.turn + 1) % this.order.length;
+  }
+
+  // --- Temporizador de turno ---------------------------------------------
+
+  // (Re)arma el contador del turno actual. Al agotarse, el servidor juega solo.
+  private syncTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+    if (this.phase === "playing" && this.turnTimeoutMs > 0) {
+      this.turnDeadline = Date.now() + this.turnTimeoutMs;
+      this.turnTimer = setTimeout(() => this.onTurnTimeout(), this.turnTimeoutMs);
+      this.turnTimer.unref?.(); // no mantener vivo el proceso por este timer
+    } else {
+      this.turnDeadline = null;
+    }
+  }
+
+  // Al agotarse el turno: juega la primera ficha legal; si no hay, pasa.
+  private onTurnTimeout() {
+    if (this.phase !== "playing") return;
+    const uid = this.order[this.turn];
+    const hand = this.hands.get(uid) ?? [];
+    if (this.board.length === 0) {
+      const starter = hand.find((t) => t.id === this.starterTileId);
+      if (starter) return this.doPlay(uid, starter.id, "left");
+    } else {
+      for (const t of hand) {
+        const ends = playableEnds(t, this.leftEnd!, this.rightEnd!);
+        if (ends.length > 0) return this.doPlay(uid, t.id, ends[0]);
+      }
+    }
+    this.doPass(uid);
   }
 
   // --- Equipos / ganadores ------------------------------------------------
@@ -263,6 +316,7 @@ export class DominoEngine implements GameEngine {
     this.phase = "finished";
     this.table.status = "finished";
     this.notify();
+    this.syncTurnTimer(); // limpia el contador de turno
     this.resetTimer = setTimeout(() => this.reset(), this.resetDelayMs);
   }
 
@@ -280,6 +334,7 @@ export class DominoEngine implements GameEngine {
     this.winners = [];
     this.table.status = "waiting";
     this.notify();
+    this.syncTurnTimer(); // limpia el contador de turno
   }
 
   // --- Estado público (por jugador) --------------------------------------
@@ -331,6 +386,8 @@ export class DominoEngine implements GameEngine {
       starterTileId: this.starterTileId,
       winners: this.winners,
       seatsNeeded: this.maxPlayers,
+      turnEndsAt: this.phase === "playing" ? this.turnDeadline : null,
+      turnTimeoutMs: this.turnTimeoutMs,
     };
   }
 }

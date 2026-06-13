@@ -1476,3 +1476,29 @@ html, body { overflow-x: clip; max-width: 100%; }
   100% { transform: translateX(320%); }
 }
 .wake-elapsed { color: var(--text-3); font-size: 12px; letter-spacing: 0.04em; }
+
+/* Cuenta regresiva del turno (dominó / póker) */
+.turn-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-bright);
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.32);
+}
+.turn-timer.urgent {
+  color: #fff;
+  background: rgba(248, 113, 113, 0.22);
+  border-color: rgba(248, 113, 113, 0.5);
+  animation: turn-pulse 1s ease-in-out infinite;
+}
+@keyframes turn-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}

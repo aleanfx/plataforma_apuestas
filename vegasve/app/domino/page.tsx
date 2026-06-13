@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
+import { TurnTimer } from "@/components/turn-timer";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -32,6 +33,7 @@ type DomState = {
   mustPass: boolean;
   winners: { id: string; name: string; amount: number }[];
   seatsNeeded: number;
+  turnEndsAt: number | null;
 };
 
 type Meta = { id: string; name: string };
@@ -251,8 +253,9 @@ function DominoContent() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <h3>Tus fichas</h3>
                   {game.phase === "playing" && (
-                    <span style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)", fontSize: 14, fontWeight: 600 }}>
+                    <span style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)", fontSize: 14, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 8 }}>
                       {game.myTurn ? "Es tu turno" : "Turno de " + (game.seats.find((s) => s.isTurn)?.name ?? "…")}
+                      <TurnTimer endsAt={game.turnEndsAt} />
                     </span>
                   )}
                 </div>

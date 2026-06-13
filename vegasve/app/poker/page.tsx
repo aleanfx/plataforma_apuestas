@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
+import { TurnTimer } from "@/components/turn-timer";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -50,6 +51,7 @@ type PokerState = {
   myTurn: boolean;
   actions: Actions | null;
   showdown: { id: string; name: string; amount: number; hand?: string }[];
+  turnEndsAt: number | null;
 };
 type Meta = { id: string; name: string };
 
@@ -226,6 +228,7 @@ function PokerContent() {
                     {s.isButton ? "🔘 " : ""}{s.name}{s.id === user?.id ? " (tú)" : ""}
                   </span>
                   {s.allIn && <span className="poker-allin">ALL-IN</span>}
+                  {s.isTurn && <TurnTimer endsAt={game.turnEndsAt} />}
                 </div>
                 <div className="poker-seat-cards">
                   {s.hole ? s.hole.map((c, i) => <PlayingCard key={i} c={c} />) :

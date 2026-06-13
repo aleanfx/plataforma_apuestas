@@ -31,6 +31,7 @@ export type PokerOptions = {
   smallBlind: number;
   bigBlind: number;
   handDelayMs?: number;
+  turnTimeoutMs?: number;
 };
 
 // Texas Hold'em (cash game). El buy-in debita la billetera y entrega fichas;
@@ -54,6 +55,8 @@ export class PokerEngine implements GameEngine {
   private lastShowdown: ShowdownEntry[] = [];
 
   private handTimer: NodeJS.Timeout | null = null;
+  private turnTimer: NodeJS.Timeout | null = null;
+  private turnDeadline: number | null = null;
   private table!: Table;
   private notify: () => void = () => {};
 
@@ -61,6 +64,7 @@ export class PokerEngine implements GameEngine {
   private readonly smallBlind: number;
   private readonly bigBlind: number;
   private readonly handDelayMs: number;
+  private readonly turnTimeoutMs: number;
 
   constructor(opts: PokerOptions) {
     this.maxPlayers = opts.seats;
@@ -68,6 +72,9 @@ export class PokerEngine implements GameEngine {
     this.smallBlind = opts.smallBlind;
     this.bigBlind = opts.bigBlind;
     this.handDelayMs = opts.handDelayMs ?? 6000;
+    // Tiempo máximo por turno; al agotarse: auto-check si puede, si no auto-fold.
+    // Evita que un jugador AFK/desconectado congele la mano. 0 = desactivado.
+    this.turnTimeoutMs = opts.turnTimeoutMs ?? 25000;
   }
 
   attach(table: Table, notify: () => void) {
@@ -113,6 +120,7 @@ export class PokerEngine implements GameEngine {
     p.leaving = true;
     if (!this.handActive) this.removePlayer(userId);
     this.notify();
+    this.syncTurnTimer();
   }
 
   private removePlayer(userId: string) {
@@ -153,6 +161,7 @@ export class PokerEngine implements GameEngine {
       default:
         throw badRequest("Acción de póker desconocida");
     }
+    this.syncTurnTimer();
   }
 
   // --- Buy-in / arranque -------------------------------------------------
@@ -229,6 +238,7 @@ export class PokerEngine implements GameEngine {
     this.handActive = true;
     this.phase = "playing";
     this.notify();
+    this.syncTurnTimer();
   }
 
   private postBlind(seat: number, amount: number) {
@@ -427,7 +437,41 @@ export class PokerEngine implements GameEngine {
     for (const p of [...this.players]) if (p.leaving) this.removePlayer(p.userId);
     this.phase = "waiting";
     this.notify();
+    this.syncTurnTimer(); // mano terminada -> limpia el contador
     this.maybeStartHand();
+  }
+
+  // --- Temporizador de turno ---------------------------------------------
+
+  // (Re)arma el contador para quien deba actuar. Al agotarse, actúa el servidor.
+  private syncTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+    if (this.handActive && this.toAct >= 0 && this.turnTimeoutMs > 0) {
+      this.turnDeadline = Date.now() + this.turnTimeoutMs;
+      this.turnTimer = setTimeout(() => this.onTurnTimeout(), this.turnTimeoutMs);
+      this.turnTimer.unref?.(); // no mantener vivo el proceso por este timer
+    } else {
+      this.turnDeadline = null;
+    }
+  }
+
+  // Al agotarse el turno: pasa si puede (no hay apuesta que igualar), si no, se retira.
+  private onTurnTimeout() {
+    if (!this.handActive || this.toAct < 0) return;
+    const seat = this.toAct;
+    const p = this.players[seat];
+    if (!p) return;
+    const callAmount = this.currentBet - p.roundBet;
+    try {
+      if (callAmount === 0) this.act(seat, { kind: "check" });
+      else this.act(seat, { kind: "fold" });
+    } catch {
+      /* si el estado cambió en el ínterin, lo ignoramos */
+    }
+    this.syncTurnTimer();
   }
 
   // --- Estado por jugador ------------------------------------------------
@@ -490,6 +534,8 @@ export class PokerEngine implements GameEngine {
       actions,
       showdown: this.lastShowdown,
       seatsMax: this.maxPlayers,
+      turnEndsAt: this.handActive ? this.turnDeadline : null,
+      turnTimeoutMs: this.turnTimeoutMs,
     };
   }
 }
