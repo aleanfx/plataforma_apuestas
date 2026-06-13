@@ -14,11 +14,13 @@
 BetmarPlay pasó de ser un **frontend Next.js estático** (todo hardcodeado) a un **MVP con backend real**:
 auth, billetera con ledger contable, **3 juegos multijugador en tiempo real** (Bingo, Dominó, Póker)
 y panel admin. Todo el dinero es saldo interno real (céntimos), con depósitos/retiros por **aprobación
-manual**. **110 pruebas e2e en verde** contra la base real (Neon). Lo único pendiente es que el dueño
-**corra el deploy** (Render + Vercel) siguiendo `server/DESPLIEGUE.md`.
+manual**. **110 pruebas e2e en verde** contra la base real (Neon). 🟢 **DESPLEGADO EN PRODUCCIÓN
+el 13/06/2026** y verificado funcionando (login + juegos).
 
-- **Repo:** https://github.com/aleanfx/plataforma_apuestas — todo en `main` (commit `89d949a`).
-- **Frontend:** `vegasve/` (Next.js 14, Vercel). **Backend:** `server/` (Node 20 + TS, Render).
+- **Repo:** https://github.com/aleanfx/plataforma_apuestas — todo en `main`.
+- **Frontend (en vivo):** https://plataforma-apuestas.vercel.app — `vegasve/` (Next.js 14, Vercel).
+- **Backend (en vivo):** https://betmarplay-server.onrender.com — `server/` (Node 20 + TS, Render free).
+- **DB:** Neon (Postgres, us-east). El backend de Render también está en us-east (misma región).
 
 ### Decisiones de producto (tomadas con el dueño, NO re-litigar)
 - **Dinero:** ledger doble entrada + **aprobación manual** en `/admin`. Sin APIs de pago.
@@ -228,6 +230,25 @@ guardan una referencia `notify = () => hub.broadcast(table)` para emitir fuera d
     15 min sin tráfico** pero los mensajes WS lo mantienen vivo mientras haya partidas; el dinero está
     a salvo en Neon. La app ya escuchaba en `process.env.PORT` (Render lo inyecta solo), así que no
     hubo cambios de código salvo comentarios.
+14. **Render SÍ pide tarjeta para desplegar** (jun 2026, vía Stripe): aunque el plan es free ($0/mes),
+    exige verificar una tarjeta con una autorización temporal de $1 (no cobra). La **Zinli (prepagada)
+    también fue rechazada aquí** (el formulario se borra y reaparece = decline). Se resolvió con una
+    **Visa de banco real (no prepagada)** que sí pasó. Conclusión: cualquier host con Stripe (Render,
+    Fly) rechaza prepagadas; hace falta tarjeta real, o un host 100% sin tarjeta (Koyeb/Back4app).
+15. **Render no encontraba el repo tras conectar GitHub** (la app de GitHub se instaló pero el panel
+    seguía vacío). Atajo que funcionó: pestaña **"Public Git Repository"** → pegar la URL del repo
+    (es público) → saltó toda la conexión de la GitHub App.
+16. **Deploy manual (no Blueprint) en Render:** *New + → Web Service* (el Blueprint disparaba el
+    cobro/tarjeta antes). Config: runtime **Docker**, **Root Directory `server`**, Dockerfile Path por
+    defecto (`./Dockerfile`), branch `main`, Region **Virginia (US East)** (misma que Neon), plan
+    **Free**. Variables: botón **"Add from .env"** las carga de golpe; OJO **borrar la fila vacía**
+    `NAME_OF_VARIABLE` (queda como "Required" y bloquea el deploy) y **no incluir `PORT`** (Render lo
+    inyecta). Logs de éxito: `✅ Conectado a PostgreSQL`, `🚀 ... escuchando ...:10000`, `Your service
+    is live`.
+17. **Vercel — variables `NEXT_PUBLIC_*`:** añadir `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_SOCKET_URL` =
+    `https://betmarplay-server.onrender.com`, **apagar el toggle "Sensitive"** (son públicas, van al
+    bundle del navegador; marcarlas sensibles puede romper el build) y hacer **Redeploy** para que las
+    tome. Sin el redeploy, producción seguía apuntando a `localhost`.
 
 ---
 

@@ -1,6 +1,8 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **12 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **13 de junio de 2026**.
+> 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
+> https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
 > **Bitácora completa de construcción (qué se hizo, errores y soluciones, lecciones):**
 > [`BITACORA.md`](./BITACORA.md) — léela si retomas sin contexto.
@@ -34,10 +36,11 @@ plataforma_apuestas/
 | 5 | Dominó (mesa 2-4, turnos, tranque) | ✅ Completo |
 | 6 | Póker (Texas Hold'em, side pots, showdown) | ✅ Completo |
 | 7 | Admin real (métricas, usuarios, mesas) | ✅ Completo |
-| 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Hardening hecho · deploy lo corres tú |
+| 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Completo · **desplegado en Render + Vercel** |
 
-> **MVP completo.** Suite: **110 pruebas e2e en verde**. Parley y Caballos = **Fase 2**.
-> Para desplegar: sigue [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md) (Render + Vercel).
+> **MVP completo y EN VIVO.** Suite: **110 pruebas e2e en verde**. Parley y Caballos = **Fase 2**.
+> Desplegado el 13/06/2026 (backend en Render free, frontend en Vercel). Guía usada:
+> [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
 
 ## Lo que YA funciona (probado end-to-end contra Neon real — 110 pruebas)
 
@@ -56,8 +59,10 @@ plataforma_apuestas/
 
 ## Lo que falta (acción tuya)
 
-- **Desplegar:** backend a Render (free, sin tarjeta) + variables en Vercel — guía en [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
-  ⚠️ Hasta entonces, el frontend en producción apunta a `localhost` y el login no funcionará allí.
+- ✅ ~~**Desplegar:** backend a Render + variables en Vercel.~~ **HECHO** (13/06/2026). En vivo.
+- 🔒 **Rotar** la contraseña de Neon y el token de GitHub (se compartieron en el chat). Tras rotar
+  Neon: actualizar `DATABASE_URL` en Render (Environment) y en `server/.env`.
+- **Crear admin:** registrarse en la web con `betmarplay@gmail.com` → rol admin automático.
 - **Fase 2:** Parley y Caballos (siguen como prototipo).
 - **Producto regulado:** licencia, KYC/AML, juego responsable (fuera de código).
 

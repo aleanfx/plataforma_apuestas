@@ -158,8 +158,9 @@ nombres claros ("Criptomonedas").
 7. **110 pruebas e2e en verde** contra Neon.
 
 **⏳ Pendiente:**
-- **Deploy** (lo corre el usuario): backend a Render (free) + `NEXT_PUBLIC_API_URL` en Vercel —
-  guía en [`../server/DESPLIEGUE.md`](../server/DESPLIEGUE.md). ⚠️ Hasta entonces, producción apunta a `localhost`.
+- ✅ **Deploy HECHO (13/06/2026):** backend en https://betmarplay-server.onrender.com (Render free) +
+  `NEXT_PUBLIC_API_URL`/`_SOCKET_URL` en Vercel → https://plataforma-apuestas.vercel.app en vivo.
+  Pendiente del usuario: rotar contraseña de Neon y token de GitHub; crear admin con `betmarplay@gmail.com`.
 - **Parley y Caballos:** Fase 2 (siguen como prototipo).
 
 > Auth, billetera, lobby, perfil, admin y los 3 juegos ya usan datos reales. Solo parley/caballos
