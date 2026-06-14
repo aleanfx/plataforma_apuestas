@@ -1,8 +1,11 @@
+import crypto from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { GameKind } from "@prisma/client";
 import type { GameEngine, GameAction } from "./engine.js";
 import type { SocketUser } from "./auth.js";
 import { userOf } from "./auth.js";
+
+export type ChatMessage = { id: string; userId: string; name: string; text: string; ts: number };
 
 export type Member = {
   id: string;
@@ -31,6 +34,7 @@ export interface Table {
   roundId?: string;
   practice?: boolean; // mesa "Practicar vs CPU": dinero de juguete, se destruye al irse el humano
   bots?: TableBots; // controlador de los jugadores CPU
+  messages?: ChatMessage[]; // chat de la mesa (últimos N)
 }
 
 function roomOf(tableId: string) {
@@ -188,6 +192,7 @@ export class Hub {
       // Reconexión: vuelve a la sala y márcalo conectado.
       existing.connected = true;
       socket.join(roomOf(tableId));
+      socket.emit("table:messages", table.messages ?? []);
       this.sendState(table, user.id);
       this.broadcast(table);
       table.bots?.onState(); // reanuda a los CPU si toca
@@ -200,6 +205,7 @@ export class Hub {
 
     table.members.set(user.id, { id: user.id, name: user.name, connected: true, joinedAt: Date.now() });
     socket.join(roomOf(tableId));
+    socket.emit("table:messages", table.messages ?? []);
     void table.engine.onJoin(table, user);
     this.broadcast(table);
     table.bots?.onState(); // arranca a los CPU (comprar/sentarse) ahora que hay humano
@@ -231,6 +237,26 @@ export class Hub {
     } catch (err) {
       return { ok: false, reason: err instanceof Error ? err.message : "Acción inválida" };
     }
+  }
+
+  /** Mensaje de chat a la mesa (solo miembros). */
+  chat(socket: Socket, tableId: string, text: string) {
+    const user = userOf(socket);
+    const table = this.tables.get(tableId);
+    if (!table || !table.members.has(user.id)) return;
+    const clean = String(text ?? "").trim().slice(0, 240);
+    if (!clean) return;
+    const msg: ChatMessage = {
+      id: crypto.randomUUID(),
+      userId: user.id,
+      name: user.name,
+      text: clean,
+      ts: Date.now(),
+    };
+    if (!table.messages) table.messages = [];
+    table.messages.push(msg);
+    if (table.messages.length > 30) table.messages.shift();
+    this.io.to(roomOf(tableId)).emit("table:message", msg);
   }
 
   // --- Difusión de estado ------------------------------------------------

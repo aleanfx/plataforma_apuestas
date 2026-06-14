@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
+import { TableChat } from "@/components/table-chat";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -345,6 +346,8 @@ function BingoContent() {
               </div>
             </div>
           </div>
+
+          <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
         </div>
       </section>
     </>

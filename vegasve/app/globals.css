@@ -1551,3 +1551,38 @@ html, body { overflow-x: clip; max-width: 100%; }
 .game-cell { transition: background 0.3s ease, color 0.3s ease; }
 .domino-board .domino-piece { animation: tile-in 0.35s ease; }
 .poker-community .pcard { animation: card-deal 0.4s ease; }
+
+/* ===== Chat de mesa ===== */
+.chat-panel { margin-top: 22px; }
+.chat-title { margin-bottom: 12px; font-size: 18px; }
+.chat-msgs {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+  margin-bottom: 12px;
+}
+.chat-empty { color: var(--text-2); text-align: center; padding: 16px 0; }
+.chat-msg { font-size: 14px; color: var(--text); line-height: 1.45; word-break: break-word; }
+.chat-name { font-weight: 600; color: var(--purple-bright); margin-right: 2px; }
+.chat-msg.mine .chat-name { color: var(--gold); }
+.chat-form { display: flex; gap: 8px; }
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--gray-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* ===== Ajustes móviles de las mesas ===== */
+@media (max-width: 768px) {
+  .domino-board { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .poker-seats { gap: 8px; }
+  .chat-msgs { max-height: 160px; }
+  .sound-toggle { width: 40px; height: 40px; right: 12px; bottom: 12px; }
+}

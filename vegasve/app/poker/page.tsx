@@ -8,6 +8,7 @@ import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { TurnTimer } from "@/components/turn-timer";
+import { TableChat } from "@/components/table-chat";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -332,6 +333,8 @@ function PokerContent() {
               </div>
             )}
           </div>
+
+          <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
         </div>
       </section>
     </>

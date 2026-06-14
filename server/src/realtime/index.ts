@@ -51,6 +51,10 @@ export function initRealtime(io: Server): Hub {
       },
     );
 
+    socket.on("table:chat", (data: { tableId?: string; text?: string } = {}) => {
+      hub.chat(socket, data?.tableId ?? "", data?.text ?? "");
+    });
+
     socket.on("disconnect", () => hub.handleDisconnect(socket));
   });
 
