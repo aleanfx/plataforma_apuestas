@@ -116,7 +116,15 @@ async function main() {
   check("B ve 2 miembros al unirse", sB1.table.members.length === 2, sB1.table.members.length);
 
   console.log("\n--- Acción de juego (broadcast) ---");
-  const aAfterInc = waitFor(sa, "table:state");
+  // Espera el estado con count===1 (no "el próximo estado") para no depender del
+  // orden con otros broadcasts (p. ej. el del historial de chat al unirse).
+  const aAfterInc = new Promise<any>((resolve, reject) => {
+    const to = setTimeout(() => reject(new Error("timeout esperando count==1")), 3000);
+    const h = (p: any) => {
+      if (p.game.count === 1) { clearTimeout(to); sa.off("table:state", h); resolve(p); }
+    };
+    sa.on("table:state", h);
+  });
   await emit(sb, "table:action", { tableId, action: { type: "increment" } });
   const sA2 = await aAfterInc;
   check("A ve el count actualizado por acción de B", sA2.game.count === 1, sA2.game.count);
