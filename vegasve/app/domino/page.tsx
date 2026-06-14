@@ -91,10 +91,23 @@ function DominoContent() {
     s.on("table:state", onState);
     const onConnect = () => refreshMesas();
     s.on("connect", onConnect);
+    const onRejoin = (p: { tableIds?: string[] }) => {
+      if (tableRef.current) return;
+      const id = (p.tableIds ?? []).find((t) => t.startsWith("domino-") || t.startsWith("practice-domino-"));
+      if (!id) return;
+      s.emit("table:join", { tableId: id }, (res: { ok: boolean }) => {
+        if (res?.ok) {
+          tableRef.current = id;
+          setTableId(id);
+        }
+      });
+    };
+    s.on("table:rejoinable", onRejoin);
     refreshMesas();
     return () => {
       s.off("table:state", onState);
       s.off("connect", onConnect);
+      s.off("table:rejoinable", onRejoin);
       if (tableRef.current) s.emit("table:leave", { tableId: tableRef.current });
     };
   }, [refreshMesas, refreshUser]);

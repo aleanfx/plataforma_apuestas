@@ -72,6 +72,7 @@ function ProfileContent() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [txs, setTxs] = React.useState<Tx[] | null>(null);
+  const [filter, setFilter] = React.useState<"all" | "pagos" | "juegos">("all");
 
   React.useEffect(() => {
     let active = true;
@@ -167,22 +168,29 @@ function ProfileContent() {
               <div className="panel-head">
                 <h3 className="serif">Historial de movimientos</h3>
                 <div className="filters">
-                  <button className="active">Todo</button>
-                  <button>Pagos</button>
-                  <button>Juegos</button>
+                  <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>Todo</button>
+                  <button className={filter === "pagos" ? "active" : ""} onClick={() => setFilter("pagos")}>Pagos</button>
+                  <button className={filter === "juegos" ? "active" : ""} onClick={() => setFilter("juegos")}>Juegos</button>
                 </div>
               </div>
 
-              {txs === null ? (
-                <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
-                  Cargando movimientos…
-                </div>
-              ) : txs.length === 0 ? (
-                <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
-                  Aún no tienes movimientos. Haz tu primer depósito para empezar.
-                </div>
-              ) : (
-                txs.map((t) => (
+              {(() => {
+                const shown =
+                  txs?.filter((t) =>
+                    filter === "all" ? true : filter === "juegos" ? t.ic === "game" : t.ic !== "game",
+                  ) ?? null;
+                return shown === null ? (
+                  <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
+                    Cargando movimientos…
+                  </div>
+                ) : shown.length === 0 ? (
+                  <div style={{ padding: 28, textAlign: "center", color: "var(--text-2)" }}>
+                    {filter === "all"
+                      ? "Aún no tienes movimientos. Haz tu primer depósito para empezar."
+                      : "No hay movimientos en esta categoría."}
+                  </div>
+                ) : (
+                  shown.map((t) => (
                   <div className="tx" key={t.id}>
                     <div className={`tx-ic ${t.ic}`}>
                       <t.Icon />
@@ -195,8 +203,9 @@ function ProfileContent() {
                       {t.amt} <span className="sm">{t.usd}</span>
                     </div>
                   </div>
-                ))
-              )}
+                  ))
+                );
+              })()}
             </div>
           </div>
         </div>

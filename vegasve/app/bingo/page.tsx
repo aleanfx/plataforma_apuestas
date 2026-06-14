@@ -104,11 +104,26 @@ function BingoContent() {
     s.on("table:state", onState);
     const onConnect = () => refreshSalas();
     s.on("connect", onConnect);
+    // Reconexión: si al (re)conectar el servidor dice que seguimos en una mesa de
+    // bingo, volvemos a entrar (p. ej. tras refrescar la página a mitad de ronda).
+    const onRejoin = (p: { tableIds?: string[] }) => {
+      if (tableRef.current) return;
+      const id = (p.tableIds ?? []).find((t) => t.startsWith("bingo-") || t.startsWith("practice-bingo-"));
+      if (!id) return;
+      s.emit("table:join", { tableId: id }, (res: { ok: boolean }) => {
+        if (res?.ok) {
+          tableRef.current = id;
+          setTableId(id);
+        }
+      });
+    };
+    s.on("table:rejoinable", onRejoin);
     refreshSalas();
 
     return () => {
       s.off("table:state", onState);
       s.off("connect", onConnect);
+      s.off("table:rejoinable", onRejoin);
       if (tableRef.current) s.emit("table:leave", { tableId: tableRef.current });
     };
   }, [refreshSalas, refreshUser]);
