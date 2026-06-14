@@ -1505,3 +1505,49 @@ html, body { overflow-x: clip; max-width: 100%; }
 
 /* Botón "Practicar vs CPU" en los lobbies de juego */
 .practice-cta { margin-top: 14px; }
+
+/* Botón flotante de silencio */
+.sound-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-2);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.sound-toggle:hover { transform: scale(1.08); border-color: var(--gold); }
+
+/* ===== Animaciones de juego ===== */
+@keyframes ball-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes pop-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes tile-in {
+  from { transform: translateY(-10px) scale(0.85); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes card-deal {
+  from { transform: translateY(-14px) rotateY(90deg); opacity: 0; }
+  to { transform: translateY(0) rotateY(0); opacity: 1; }
+}
+
+.bingo-last { animation: ball-pop 0.45s ease; }
+.bingo-ball { animation: pop-in 0.3s ease; }
+.game-cell { transition: background 0.3s ease, color 0.3s ease; }
+.domino-board .domino-piece { animation: tile-in 0.35s ease; }
+.poker-community .pcard { animation: card-deal 0.4s ease; }

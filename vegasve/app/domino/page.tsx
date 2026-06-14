@@ -11,6 +11,7 @@ import { TurnTimer } from "@/components/turn-timer";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
+import { sfx } from "@/lib/sfx";
 
 type Mesa = { id: string; name: string; stake: number; players: number; maxPlayers: number; status: string };
 type DomTile = { id: string; a: number; b: number };
@@ -72,6 +73,13 @@ function DominoContent() {
   const [pending, setPending] = React.useState<string | null>(null);
   const socketRef = React.useRef<Socket | null>(null);
   const tableRef = React.useRef<string | null>(null);
+  const prevTurn = React.useRef(false);
+  const prevBoard = React.useRef(0);
+  const prevPhase = React.useRef("");
+  const meIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    meIdRef.current = user?.id ?? null;
+  }, [user?.id]);
 
   const refreshMesas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "domino" }, (res: { tables?: Mesa[] }) =>
@@ -83,10 +91,21 @@ function DominoContent() {
     const s = connectSocket();
     socketRef.current = s;
     const onState = (p: { table: Meta; game: DomState }) => {
+      const g = p.game;
+      if (g.phase === "playing") {
+        if (g.board.length > prevBoard.current) sfx.place();
+        if (g.myTurn && !prevTurn.current) sfx.turn();
+      }
+      prevBoard.current = g.board.length;
+      prevTurn.current = g.myTurn;
+      if (g.phase === "finished" && prevPhase.current !== "finished" && g.winners.some((w) => w.id === meIdRef.current)) {
+        sfx.win();
+      }
+      prevPhase.current = g.phase;
       setMeta(p.table);
-      setGame(p.game);
+      setGame(g);
       setPending(null);
-      if (p.game.phase === "finished") refreshUser();
+      if (g.phase === "finished") refreshUser();
     };
     s.on("table:state", onState);
     const onConnect = () => refreshMesas();

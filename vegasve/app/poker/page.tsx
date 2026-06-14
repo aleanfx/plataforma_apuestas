@@ -11,6 +11,7 @@ import { TurnTimer } from "@/components/turn-timer";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
+import { sfx } from "@/lib/sfx";
 
 type Mesa = { id: string; name: string; stake: number; players: number; maxPlayers: number; status: string };
 type Seat = {
@@ -80,6 +81,12 @@ function PokerContent() {
   const socketRef = React.useRef<Socket | null>(null);
   const tableRef = React.useRef<string | null>(null);
   const turnRef = React.useRef(false);
+  const prevCommunity = React.useRef(0);
+  const prevHandActive = React.useRef(false);
+  const meIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    meIdRef.current = user?.id ?? null;
+  }, [user?.id]);
 
   const refreshMesas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "poker" }, (res: { tables?: Mesa[] }) =>
@@ -91,11 +98,20 @@ function PokerContent() {
     const s = connectSocket();
     socketRef.current = s;
     const onState = (p: { table: Meta; game: PokerState }) => {
+      const g = p.game;
+      if (g.myTurn && !turnRef.current) sfx.turn();
+      if ((g.community?.length ?? 0) > prevCommunity.current) sfx.place();
+      prevCommunity.current = g.community?.length ?? 0;
+      if (prevHandActive.current && !g.handActive) {
+        const mine = g.showdown?.find((sd) => sd.id === meIdRef.current);
+        if (mine && mine.amount > 0) sfx.win();
+      }
+      prevHandActive.current = g.handActive;
       setMeta(p.table);
-      setGame(p.game);
+      setGame(g);
       // Al iniciar mi turno, fija el valor por defecto de subida.
-      if (p.game.myTurn && !turnRef.current && p.game.actions) setRaiseTo(p.game.actions.minRaiseTo);
-      turnRef.current = p.game.myTurn;
+      if (g.myTurn && !turnRef.current && g.actions) setRaiseTo(g.actions.minRaiseTo);
+      turnRef.current = g.myTurn;
       refreshUser();
     };
     s.on("table:state", onState);
@@ -227,7 +243,7 @@ function PokerContent() {
             <div className="poker-pot">Pozo · {formatBs(game.pot)}</div>
             <div className="poker-community">
               {[0, 1, 2, 3, 4].map((i) => (
-                <PlayingCard key={i} c={game.community[i]} hidden={!game.community[i]} />
+                <PlayingCard key={game.community[i] ?? i} c={game.community[i]} hidden={!game.community[i]} />
               ))}
             </div>
           </div>

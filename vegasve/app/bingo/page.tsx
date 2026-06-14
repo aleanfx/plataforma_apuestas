@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
+import { sfx } from "@/lib/sfx";
 
 type Sala = {
   id: string;
@@ -85,6 +86,8 @@ function BingoContent() {
   const [meta, setMeta] = React.useState<TableMeta | null>(null);
   const socketRef = React.useRef<Socket | null>(null);
   const tableRef = React.useRef<string | null>(null);
+  const prevCalled = React.useRef(0);
+  const prevPhase = React.useRef("");
 
   const refreshSalas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "bingo" }, (res: { tables?: Sala[] }) => {
@@ -97,9 +100,16 @@ function BingoContent() {
     socketRef.current = s;
 
     const onState = (p: { table: TableMeta; game: BingoState }) => {
+      const g = p.game;
+      if (g.phase === "playing" && g.called.length > prevCalled.current) sfx.call();
+      prevCalled.current = g.called.length;
+      if (g.phase === "finished" && prevPhase.current !== "finished" && g.myCartones?.some((c) => c.hasLine)) {
+        sfx.win();
+      }
+      prevPhase.current = g.phase;
       setMeta(p.table);
-      setGame(p.game);
-      if (p.game.phase === "finished") refreshUser(); // el premio ya se acreditó
+      setGame(g);
+      if (g.phase === "finished") refreshUser(); // el premio ya se acreditó
     };
     s.on("table:state", onState);
     const onConnect = () => refreshSalas();
@@ -303,7 +313,7 @@ function BingoContent() {
             <div className="game-side">
               <div className="game-panel">
                 <h2 style={{ fontSize: 20, marginBottom: 14 }}>Número cantado</h2>
-                <div className="bingo-last">{game.lastLabel ?? "—"}</div>
+                <div className="bingo-last" key={game.lastCalled ?? "none"}>{game.lastLabel ?? "—"}</div>
                 {game.phase === "buying" && (
                   <button
                     className="btn btn-gold btn-block"

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ServerWakeOverlay } from "@/components/server-wake-overlay";
+import { SoundToggle } from "@/components/sound-toggle";
 
 const display = Outfit({
   subsets: ["latin"],
@@ -68,6 +69,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>{children}</AuthProvider>
         <ServerWakeOverlay />
+        <SoundToggle />
         <Toaster />
       </body>
     </html>
