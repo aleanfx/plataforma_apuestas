@@ -306,7 +306,7 @@ en cada commit que no entraran `.env`/`node_modules`/`dist`).
   certificado. El software está; lo legal/regulatorio no.
 - **Mejoras técnicas anotadas:** llenar `GameRound/GameResult` para estadísticas; adaptador Redis si
   se escala Socket.IO a varias instancias (hoy el estado vive en memoria, 1 sola instancia en Render);
-  endurecer auth a cookies httpOnly; auto-pass por timeout si un jugador se desconecta en su turno.
+  endurecer auth a cookies httpOnly. (El auto-pass/auto-fold por timeout YA está hecho — ver §12.)
 
 ---
 
@@ -322,3 +322,39 @@ en cada commit que no entraran `.env`/`node_modules`/`dist`).
 - **No pushear el frontend a `main`/producción** sin que el backend esté desplegado y Vercel tenga
   `NEXT_PUBLIC_API_URL`, o rompes el login en vivo.
 - **El push necesita un PAT del dueño** (no hay credenciales en el entorno; no está en CLAUDE.md).
+
+---
+
+## 12. Mejoras de jugabilidad y UX (14/06/2026)
+
+Tras el deploy, ronda de mejoras pedidas por el dueño (todo verificado: 110/110 e2e + 9/9 práctica):
+
+1. **Overlay "servidor despertando"** (`vegasve/lib/server-status.ts` + `components/server-wake-overlay.tsx`):
+   el plan free de Render duerme tras 15 min; si una petición tarda >4s o el socket no conecta (confirmado
+   con `/health`), se muestra un overlay "Preparando la mesa…" que se quita solo al revivir. Enganchado en
+   `lib/api.ts` (timer + catch de red) y `lib/socket.ts` (connect/connect_error).
+2. **Temporizador de turno + auto-acción** (dominó y póker): cada motor tiene `turnTimeoutMs` (25s real),
+   `syncTurnTimer()`/`onTurnTimeout()`; al agotarse, dominó juega 1.ª ficha legal o pasa, póker hace
+   check si puede o fold. Timers con `unref()`. Expone `turnEndsAt` → `components/turn-timer.tsx`
+   (cuenta regresiva). Arregla el congelamiento de dominó por desconexión.
+3. **Practicar vs CPU** (lo más grande):
+   - **Escrow inyectable** en `src/realtime/escrow.ts`: interfaz `Escrow`, `realEscrow` (ledger) y
+     `practiceEscrow` (no-op, saldo infinito). Los 3 motores reciben `escrow` (default real) → mesas de
+     práctica no tocan dinero real. Motores ahora tienen `dispose()` para limpiar timers.
+   - **Bots** en `src/realtime/bots.ts`: `BotController` (programa acciones con retraso 0.7–1.9s tras
+     cada cambio de estado) + deciders por juego. Hub: `Member.bot`, `Table.practice`/`bots`, `addBot()`,
+     arranque al unirse el humano, **autodestrucción** de la mesa al irse/desconectarse el humano
+     (`cleanupPractice` + `removeTable` → `engine.dispose()`).
+   - `src/games/practice.ts` (`createPracticeTable`) + evento socket `table:practice`.
+   - Verificado con `scripts/smoke-practice.ts` (los CPU juegan y la partida avanza en los 3).
+4. **Reconexión en el frontend:** las 3 páginas escuchan `table:rejoinable` y vuelven a la mesa al
+   refrescar (el backend ya conservaba el asiento).
+5. **Sonidos + animaciones:** `vegasve/lib/sfx.ts` (Web Audio sintetizado, sin archivos) +
+   `components/sound-toggle.tsx` (silencio persistido, desbloquea audio en 1.er gesto); animaciones CSS.
+6. **Chat de mesa en vivo:** `Hub.chat()` (últimos 30, historial al unirse vía `table:messages`),
+   evento `table:chat`, `components/table-chat.tsx` en los 3 juegos. + ajustes móviles + filtros del
+   historial del perfil (Todo/Pagos/Juegos).
+
+**Gotcha resuelto:** un test de realtime ("A ve el count por acción de B") capturaba "el próximo
+`table:state`"; al añadir el broadcast del historial de chat al unirse, a veces atrapaba el estado de la
+unión (count 0). Fix: esperar el estado con `count===1` (determinista), no "el próximo".

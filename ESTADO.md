@@ -57,6 +57,21 @@ plataforma_apuestas/
 - **Frontend:** todas las páginas conectadas a datos reales; `/bingo`,`/domino`,`/poker` server-driven.
   Build de `vegasve/` en verde.
 
+## Mejoras de jugabilidad y UX (14/06/2026)
+
+- **🤖 Practicar vs CPU:** botón en cada juego que crea una mesa con bots automáticos y
+  **dinero de juguete** (no toca el saldo real). Para probar sin más jugadores. Verificado con
+  `scripts/smoke-practice.ts` (9/9). Infra: escrow inyectable (`realEscrow`/`practiceEscrow`),
+  `BotController` + deciders en `src/realtime/bots.ts`, `src/games/practice.ts`, evento `table:practice`.
+- **⏱️ Temporizador de turno (25s) + auto-acción** en dominó y póker: si un jugador no actúa (AFK o
+  desconectado), el servidor juega/pasa o hace check/fold. Arregla el congelamiento de mesas.
+- **🔌 Reconexión:** al refrescar la página vuelves a tu mesa (`table:rejoinable`).
+- **🟡 Overlay "servidor despertando":** mientras Render free arranca (~1 min), muestra "Preparando la
+  mesa…" en vez de dejar al usuario a ciegas. Se quita solo al revivir.
+- **🔊 Sonidos + animaciones:** efectos sintetizados (Web Audio, sin archivos) + botón de silencio;
+  animaciones de bolita/fichas/cartas.
+- **💬 Chat de mesa en vivo** en los 3 juegos. **📱 Ajustes móviles.** Filtros del historial del perfil.
+
 ## Lo que falta (acción tuya)
 
 - ✅ ~~**Desplegar:** backend a Render + variables en Vercel.~~ **HECHO** (13/06/2026). En vivo.
