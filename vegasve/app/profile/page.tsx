@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { SiteNav } from "@/components/site-nav";
 import { WalletDialog } from "@/components/wallet-dialog";
@@ -68,11 +69,59 @@ function mapTx(e: LedgerDTO): Tx {
   };
 }
 
+// Redimensiona la imagen elegida a un avatar cuadrado pequeño (data URL JPEG).
+async function fileToAvatar(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("No se pudo leer la imagen"));
+      i.src = url;
+    });
+    const size = 220;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas no disponible");
+    const min = Math.min(img.width, img.height);
+    const sx = (img.width - min) / 2;
+    const sy = (img.height - min) / 2;
+    ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function ProfileContent() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateAvatar } = useAuth();
   const router = useRouter();
   const [txs, setTxs] = React.useState<Tx[] | null>(null);
   const [filter, setFilter] = React.useState<"all" | "pagos" | "juegos">("all");
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const [savingAvatar, setSavingAvatar] = React.useState(false);
+
+  async function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite re-elegir la misma foto
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Elige un archivo de imagen");
+      return;
+    }
+    setSavingAvatar(true);
+    try {
+      const dataUrl = await fileToAvatar(file);
+      await updateAvatar(dataUrl);
+      toast.success("Foto de perfil actualizada");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar la foto");
+    } finally {
+      setSavingAvatar(false);
+    }
+  }
 
   React.useEffect(() => {
     let active = true;
@@ -101,7 +150,24 @@ function ProfileContent() {
           {/* left column */}
           <aside>
             <div className="pcard profile-id">
-              <div className="av-lg">{user ? initialOf(user.name) : "·"}</div>
+              <button
+                type="button"
+                className="av-lg av-edit"
+                onClick={() => fileRef.current?.click()}
+                title="Cambiar foto de perfil"
+                disabled={savingAvatar}
+              >
+                {user?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.avatarUrl} alt="Foto de perfil" />
+                ) : user ? (
+                  initialOf(user.name)
+                ) : (
+                  "·"
+                )}
+                <span className="av-cam">{savingAvatar ? "…" : "📷"}</span>
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickAvatar} />
               <div className="pname">{user?.name}</div>
               <div className="pmeta">{handle}</div>
               <div className="verified">

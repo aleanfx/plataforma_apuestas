@@ -95,7 +95,14 @@ function NavIn() {
             </WalletDialog>
           </div>
           <Link href="/profile" className="avatar">
-            {user ? initialOf(user.name) : "·"}
+            {user?.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatarUrl} alt="" />
+            ) : user ? (
+              initialOf(user.name)
+            ) : (
+              "·"
+            )}
           </Link>
         </div>
       </div>

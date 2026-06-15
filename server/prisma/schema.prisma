@@ -55,6 +55,7 @@ model User {
   email        String     @unique
   passwordHash String
   name         String
+  avatarUrl    String?    // foto de perfil (data URL o URL externa)
   role         Role       @default(user)
   status       UserStatus @default(active)
   createdAt    DateTime   @default(now())

@@ -22,6 +22,14 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+const googleSchema = z.object({
+  credential: z.string().min(10, "Falta el credential de Google"),
+});
+
+const avatarSchema = z.object({
+  avatarUrl: z.string().min(1).max(90_000),
+});
+
 authRouter.post(
   "/register",
   authLimiter,
@@ -38,6 +46,16 @@ authRouter.post(
   asyncHandler(async (req, res) => {
     const data = parseBody(loginSchema, req.body);
     const result = await auth.login(data);
+    res.json(result);
+  }),
+);
+
+authRouter.post(
+  "/google",
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const { credential } = parseBody(googleSchema, req.body);
+    const result = await auth.loginWithGoogle(credential);
     res.json(result);
   }),
 );
@@ -65,6 +83,16 @@ authRouter.get(
   requireAuth,
   asyncHandler(async (req: AuthedRequest, res) => {
     const user = await auth.getMe(req.user!.sub);
+    res.json({ user });
+  }),
+);
+
+authRouter.patch(
+  "/avatar",
+  requireAuth,
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const { avatarUrl } = parseBody(avatarSchema, req.body);
+    const user = await auth.updateAvatar(req.user!.sub, avatarUrl);
     res.json({ user });
   }),
 );

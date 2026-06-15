@@ -13,7 +13,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Mail, Lock, User, Google } from "@/components/icons";
+import { Mail, Lock, User } from "@/components/icons";
+import { GoogleSignIn } from "@/components/google-signin";
 import { useAuth } from "@/lib/auth-context";
 
 export function AuthDialog({
@@ -194,12 +195,7 @@ export function AuthDialog({
 
           <div className="divider-or">o continúa con</div>
           <div className="social-row">
-            <button
-              type="button"
-              onClick={() => toast("El acceso con Google llegará pronto.")}
-            >
-              <Google /> Google
-            </button>
+            <GoogleSignIn onSuccess={(name) => enter(name)} />
           </div>
         </div>
         <DialogClose className="sr-only">Cerrar</DialogClose>

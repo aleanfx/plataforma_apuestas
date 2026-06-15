@@ -1,7 +1,9 @@
+import crypto from "node:crypto";
+import { OAuth2Client } from "google-auth-library";
 import type { Account, User } from "@prisma/client";
 import { prisma } from "../db.js";
 import { env } from "../env.js";
-import { conflict, unauthorized, forbidden } from "../errors.js";
+import { conflict, unauthorized, forbidden, badRequest } from "../errors.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { signAccess, newRefreshToken, hashToken } from "./jwt.js";
 
@@ -10,6 +12,7 @@ export type PublicUser = {
   id: string;
   email: string;
   name: string;
+  avatarUrl: string | null;
   role: "user" | "admin";
   balance: number; // céntimos
   bonus: number; // céntimos
@@ -21,6 +24,7 @@ export function toPublicUser(user: User, account: Account): PublicUser {
     id: user.id,
     email: user.email,
     name: user.name,
+    avatarUrl: user.avatarUrl ?? null,
     role: user.role,
     balance: Number(account.balance),
     bonus: Number(account.bonus),
@@ -108,5 +112,75 @@ export async function getMe(userId: string): Promise<PublicUser> {
     include: { account: true },
   });
   if (!user || !user.account) throw unauthorized("Sesión inválida");
+  return toPublicUser(user, user.account);
+}
+
+// --- Login con Google (OAuth) ----------------------------------------------
+
+let googleClient: OAuth2Client | null = null;
+function getGoogleClient(): OAuth2Client | null {
+  if (!env.GOOGLE_CLIENT_ID) return null;
+  if (!googleClient) googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+  return googleClient;
+}
+
+/** Verifica el credential (ID token) de Google y crea/recupera la cuenta. */
+export async function loginWithGoogle(credential: string) {
+  const client = getGoogleClient();
+  if (!client || !env.GOOGLE_CLIENT_ID) throw badRequest("El acceso con Google no está configurado");
+
+  let payload;
+  try {
+    const ticket = await client.verifyIdToken({ idToken: credential, audience: env.GOOGLE_CLIENT_ID });
+    payload = ticket.getPayload();
+  } catch {
+    throw unauthorized("No se pudo verificar la cuenta de Google");
+  }
+  if (!payload?.email || !payload.email_verified) {
+    throw unauthorized("La cuenta de Google no tiene un correo verificado");
+  }
+
+  const email = payload.email.trim().toLowerCase();
+  const name = payload.name?.trim() || email.split("@")[0];
+  const picture = payload.picture ?? null;
+
+  let user = await prisma.user.findUnique({ where: { email }, include: { account: true } });
+  if (!user) {
+    const role = email === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+    // Sin contraseña usable: se genera un hash aleatorio (sólo entra por Google).
+    const passwordHash = await hashPassword(crypto.randomBytes(32).toString("hex"));
+    user = await prisma.user.create({
+      data: { email, name, passwordHash, role, avatarUrl: picture, account: { create: {} } },
+      include: { account: true },
+    });
+  } else {
+    if (user.status === "suspended") throw forbidden("Tu cuenta está suspendida");
+    if (!user.avatarUrl && picture) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { avatarUrl: picture },
+        include: { account: true },
+      });
+    }
+  }
+
+  const session = await issueSession(user.id, user.role);
+  return { user: toPublicUser(user, user.account!), ...session };
+}
+
+// --- Foto de perfil --------------------------------------------------------
+
+/** Actualiza la foto de perfil (data URL de imagen, pequeña). */
+export async function updateAvatar(userId: string, avatarUrl: string): Promise<PublicUser> {
+  if (!/^data:image\/(png|jpeg|jpg|webp);base64,/.test(avatarUrl)) {
+    throw badRequest("Formato de imagen no válido");
+  }
+  if (avatarUrl.length > 90_000) throw badRequest("La imagen es muy grande; usa una más pequeña");
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl },
+    include: { account: true },
+  });
+  if (!user.account) throw unauthorized("Sesión inválida");
   return toPublicUser(user, user.account);
 }
