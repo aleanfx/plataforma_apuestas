@@ -358,3 +358,45 @@ Tras el deploy, ronda de mejoras pedidas por el dueño (todo verificado: 110/110
 **Gotcha resuelto:** un test de realtime ("A ve el count por acción de B") capturaba "el próximo
 `table:state`"; al añadir el broadcast del historial de chat al unirse, a veces atrapaba el estado de la
 unión (count 0). Fix: esperar el estado con `count===1` (determinista), no "el próximo".
+
+---
+
+## 13. Cuentas (Google + foto), rediseño visual y extras (14/06/2026)
+
+**Login con Google (código listo, PENDIENTE de activar):**
+- Backend `POST /auth/google` (`src/auth/service.ts:loginWithGoogle`): verifica el ID token con
+  `google-auth-library` (`OAuth2Client.verifyIdToken`, audience = `GOOGLE_CLIENT_ID`), crea/recupera el
+  usuario (passwordHash aleatorio, sin contraseña usable). `GOOGLE_CLIENT_ID` opcional en `env.ts`.
+- Frontend: Google Identity Services en `components/google-signin.tsx` (carga el script GSI, renderiza
+  el botón, manda el `credential` a `/auth/google`); integrado en `auth-dialog.tsx`. `auth-context` tiene
+  `loginWithGoogle`. Si falta `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, el botón muestra "pronto".
+- **Bloqueo externo:** la cuenta `betmarplay@gmail.com` está en revisión por Google → no se pudo crear el
+  OAuth Client ID. Al reactivarse: crear cliente OAuth web (orígenes JS = vercel.app + localhost:3000),
+  copiar el Client ID, ponerlo en `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (Vercel) y `GOOGLE_CLIENT_ID` (Render).
+
+**Foto de perfil:**
+- `User.avatarUrl String?` añadido al esquema. La columna se añadió a Neon con `server/prisma/add-avatar.ts`
+  (`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT;` por 443) — **patrón para añadir columnas
+  sin romper** (`db:diff` regenera el esquema completo, NO sirve para columnas sueltas). `PATCH /auth/avatar`
+  valida data URL de imagen ≤ 90 KB. Front: subida en `/profile` (redimensiona a 220px con canvas →
+  JPEG data URL), avatar mostrado en perfil y navbar. **⚠️ Orden:** primero la columna, luego desplegar
+  (si no, el backend nuevo consulta una columna inexistente y rompe login). Render hace `prisma generate`
+  en su build, así que el cliente desplegado sí tiene `avatarUrl` aunque el local quede sin regenerar.
+
+**Rediseño visual de los juegos (en curso — Dominó primero, los otros pendientes):**
+- `components/domino-piece.tsx`: ficha con **puntos reales** (rejilla 3×3 por mitad), orientación v/h y
+  cara oculta (dominó de espalda marfil, NO carta).
+- **Todo en un recuadro** `.game-stage` (mesa + mano + acciones), alto/cuadrado. El tablero es **una sola
+  línea conectada que se auto-escala** para caber (sin scroll ni filas sueltas): `reconcileBoard` da ids
+  estables (solo la ficha nueva se anima), `fitBoard` mide y aplica `transform: scale` (felt `overflow:hidden`).
+- **Chat flotante** (`components/table-chat.tsx`): botón en esquina; cerrado, mensajes nuevos salen como
+  burbujas tipo notificación (3 s) + contador; clic abre el panel. Compartido por los 3 juegos.
+- Sonido `place` = **clack de madera** (ruido filtrado + golpe grave, `sfx.woodClack`); póker usa `sfx.card()`.
+- Bingo: tablero 1-75 que se ilumina + bola 3D. Póker: mesa ovalada. (Falta subir póker/bingo al nivel de Dominó.)
+
+**Extras:** `components/fullscreen-toggle.tsx` (pantalla completa, PC+Android, global en el layout).
+Práctica de Dominó cambiada a **4 jugadores (parejas)** en `src/games/practice.ts` (verificado smoke 9/9).
+
+**Iteración de UX (lecciones, blind):** el tablero pasó por scroll horizontal → wrap en filas (ambos
+se veían feos) → **línea única auto-escalada** (la que funcionó). Construido sin ver el render: cada pase
+se desplegó y se afinó con capturas del dueño.

@@ -26,6 +26,11 @@ un **frontend** Next.js 14 en [`vegasve/`](./vegasve/) y un **backend** Node/TS 
   Consecuencias:
   - `prisma db push` / `migrate dev` **NO funcionan aquí**. Para cambios de esquema:
     `npm run db:diff` (genera `prisma/init.sql`) y `npm run db:apply` (lo ejecuta por 443).
+  - **Para añadir UNA columna** (`db:diff` regenera el esquema completo, no sirve): edita el
+    `schema.prisma`, escribe un `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...` y córrelo por 443 con un
+    script tipo `prisma/add-avatar.ts` (Pool de Neon). **⚠️ Orden:** primero la columna en Neon, LUEGO
+    desplegar el backend (si despliegas código que consulta una columna inexistente, rompes el login).
+    Render hace `prisma generate` en su build, así que el cliente desplegado se regenera solo.
   - Versiones acopladas: `@prisma/client` y `@prisma/adapter-neon` ambos **5.22**;
     `@neondatabase/serverless` en **0.10.x** (el 1.x rompe el peer del adapter v5).
   - Para conectarse a la DB desde Bash en este entorno hay que usar `dangerouslyDisableSandbox`.

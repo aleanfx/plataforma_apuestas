@@ -161,6 +161,11 @@ nombres claros ("Criptomonedas").
 - ✅ **Deploy HECHO (13/06/2026):** backend en https://betmarplay-server.onrender.com (Render free) +
   `NEXT_PUBLIC_API_URL`/`_SOCKET_URL` en Vercel → https://plataforma-apuestas.vercel.app en vivo.
   Pendiente del usuario: rotar contraseña de Neon y token de GitHub; crear admin con `betmarplay@gmail.com`.
+- ⏸️ **Login con Google:** código listo (`/auth/google` + `components/google-signin.tsx`); falta crear el
+  OAuth Client ID (cuenta `betmarplay@gmail.com` en revisión por Google) y poner `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+  (Vercel) + `GOOGLE_CLIENT_ID` (Render).
+- 🎨 **Rediseño visual de los juegos:** Dominó ya rediseñado (recuadro único, fichas de puntos, tablero
+  auto-escalado, chat flotante). **Falta** subir Póker y Bingo al mismo nivel.
 - **Parley y Caballos:** Fase 2 (siguen como prototipo).
 
 > Auth, billetera, lobby, perfil, admin y los 3 juegos ya usan datos reales. Solo parley/caballos

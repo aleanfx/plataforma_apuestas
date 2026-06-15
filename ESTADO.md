@@ -1,6 +1,6 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **13 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **14 de junio de 2026**.
 > 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
@@ -72,9 +72,29 @@ plataforma_apuestas/
   animaciones de bolita/fichas/cartas.
 - **💬 Chat de mesa en vivo** en los 3 juegos. **📱 Ajustes móviles.** Filtros del historial del perfil.
 
+## Cuentas, perfil y rediseño visual (14/06/2026)
+
+- **📸 Foto de perfil:** cualquier usuario sube su foto desde `/perfil` (se redimensiona a 220px y se
+  guarda como data URL en `User.avatarUrl`). Se muestra en perfil y navbar. Backend: `PATCH /auth/avatar`.
+  **Columna `avatarUrl` añadida a Neon** vía `server/prisma/add-avatar.ts` (ALTER por 443).
+- **🔵 Login con Google (código listo, ⏸️ PENDIENTE de activar):** `POST /auth/google` verifica el ID
+  token con `google-auth-library`; front con Google Identity Services (`components/google-signin.tsx`).
+  Falta: la cuenta `betmarplay@gmail.com` está en revisión por Google → cuando se reactive, crear el
+  OAuth Client ID y poner `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (Vercel) + `GOOGLE_CLIENT_ID` (Render). Sin eso
+  el botón muestra "pronto" sin romper nada.
+- **🎨 Rediseño visual de los juegos (en curso, primero Dominó):** Dominó con **fichas de puntos reales**
+  (`components/domino-piece.tsx`), mesa de fieltro, **todo en un solo recuadro** (`.game-stage`), tablero
+  en **línea única que se auto-escala** (sin scroll ni wrap), animación de colocación, clack de madera,
+  fichas del rival como dominó de espalda. **Chat flotante** (botón + burbujas notificación). Bingo:
+  tablero 1-75 + bola 3D. Póker: mesa ovalada. **Falta:** llevar Póker y Bingo al nivel de Dominó.
+- **🖥️ Pantalla completa** (`components/fullscreen-toggle.tsx`, PC + Android). Práctica de **Dominó a 4**
+  (parejas, verificado).
+
 ## Lo que falta (acción tuya)
 
 - ✅ ~~**Desplegar:** backend a Render + variables en Vercel.~~ **HECHO** (13/06/2026). En vivo.
+- ⏸️ **Activar Google login:** crear OAuth Client ID cuando Google reactive la cuenta + poner las 2
+  variables de entorno (ver arriba).
 - 🔒 **Rotar** la contraseña de Neon y el token de GitHub (se compartieron en el chat). Tras rotar
   Neon: actualizar `DATABASE_URL` en Render (Environment) y en `server/.env`.
 - **Crear admin:** registrarse en la web con `betmarplay@gmail.com` → rol admin automático.
