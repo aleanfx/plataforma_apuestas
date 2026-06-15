@@ -66,6 +66,17 @@ export async function reportConnectionError() {
   if (!(await pingHealth(3000))) markServerWaking();
 }
 
+/** Pre-encendido silencioso: al abrir la web hace un ping a /health para que
+ *  Render empiece a despertar ANTES de que el usuario intente entrar (sin overlay). */
+export function prewarmServer() {
+  void pingHealth(9000);
+}
+
+/** Reintento manual (botón del overlay): pinguea ya; si responde, oculta el overlay. */
+export async function retryServerNow(): Promise<void> {
+  if (await pingHealth(6000)) markServerOnline();
+}
+
 /** Mientras esté "waking", sondea /health hasta que responda; entonces vuelve a online. */
 function startPolling() {
   if (polling) return;

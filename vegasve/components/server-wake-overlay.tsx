@@ -2,7 +2,13 @@
 
 import * as React from "react";
 
-import { onServerStatus, getServerStatus, type ServerStatus } from "@/lib/server-status";
+import {
+  onServerStatus,
+  getServerStatus,
+  prewarmServer,
+  retryServerNow,
+  type ServerStatus,
+} from "@/lib/server-status";
 
 /**
  * Overlay a pantalla completa que aparece SOLO cuando el backend está dormido y
@@ -15,6 +21,7 @@ export function ServerWakeOverlay() {
 
   React.useEffect(() => {
     setStatus(getServerStatus());
+    prewarmServer(); // al abrir la web, empieza a despertar el servidor en segundo plano
     return onServerStatus(setStatus);
   }, []);
 
@@ -42,6 +49,22 @@ export function ServerWakeOverlay() {
           <span />
         </div>
         <div className="wake-elapsed">Reconectando… {elapsed}s</div>
+        <div className="wake-actions">
+          <button type="button" className="wake-btn" onClick={() => void retryServerNow()}>
+            Reintentar ahora
+          </button>
+          {elapsed >= 60 && (
+            <button type="button" className="wake-btn ghost" onClick={() => window.location.reload()}>
+              Recargar página
+            </button>
+          )}
+        </div>
+        {elapsed >= 60 && (
+          <p className="wake-hint">
+            Tras una actualización el servidor puede tardar 2–3 min en encender. Si sigue así,
+            recarga en un momento.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -60,12 +60,12 @@ type Meta = { id: string; name: string };
 const SUIT: Record<string, string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
 
 function PlayingCard({ c, hidden }: { c?: string; hidden?: boolean }) {
-  if (hidden || !c) return <div className="pcard back" />;
+  if (hidden || !c) return <div className="pkcard back" />;
   const rank = c[0] === "T" ? "10" : c[0];
   const suit = c[1];
   const red = suit === "h" || suit === "d";
   return (
-    <div className={`pcard${red ? " red" : ""}`}>
+    <div className={`pkcard${red ? " red" : ""}`}>
       <span>{rank}</span>
       <span>{SUIT[suit]}</span>
     </div>
