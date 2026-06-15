@@ -95,7 +95,6 @@ function DominoContent() {
   const feltRef = React.useRef<HTMLDivElement>(null);
   const stageRef = React.useRef<HTMLDivElement>(null);
   const sideRef = React.useRef<"left" | "right" | null>(null);
-  const [boardScale, setBoardScale] = React.useState(1);
   React.useEffect(() => {
     meIdRef.current = user?.id ?? null;
   }, [user?.id]);
@@ -151,37 +150,11 @@ function DominoContent() {
     };
   }, [refreshMesas, refreshUser]);
 
-  // Auto-ajuste: las fichas se acomodan en filas (usando el alto disponible) y, si
-  // ya no caben, se "aleja la vista" escalando la cadena para que TODO quepa sin scroll.
-  const fitBoard = React.useCallback(() => {
+  // Mantén la última ficha colocada a la vista (auto-scroll suave al final).
+  React.useEffect(() => {
     const felt = feltRef.current;
-    const chain = chainRef.current;
-    if (!felt || !chain) return;
-    const availW = felt.clientWidth - 20;
-    const availH = felt.clientHeight - 20;
-    const needW = chain.scrollWidth;
-    const needH = chain.scrollHeight;
-    if (availW <= 0 || availH <= 0 || needW <= 0 || needH <= 0) {
-      setBoardScale(1);
-      return;
-    }
-    setBoardScale(Math.min(1, availW / needW, availH / needH));
-  }, []);
-
-  React.useEffect(() => {
-    fitBoard();
-  }, [boardTiles, fitBoard]);
-
-  React.useEffect(() => {
-    window.addEventListener("resize", fitBoard);
-    // Al entrar/salir de pantalla completa el tablero debe re-ajustarse.
-    const onFs = () => setTimeout(fitBoard, 60);
-    document.addEventListener("fullscreenchange", onFs);
-    return () => {
-      window.removeEventListener("resize", fitBoard);
-      document.removeEventListener("fullscreenchange", onFs);
-    };
-  }, [fitBoard]);
+    if (felt) felt.scrollTop = felt.scrollHeight;
+  }, [boardTiles]);
 
   // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
   // el compañero (offset 2) arriba, y los rivales a izquierda/derecha.
@@ -356,11 +329,7 @@ function DominoContent() {
                 ) : game.board.length === 0 ? (
                   <span className="dom-felt-msg">Esperando la salida…</span>
                 ) : (
-                  <div
-                    className="dom-chain"
-                    ref={chainRef}
-                    style={{ transform: `scale(${boardScale})` }}
-                  >
+                  <div className="dom-chain" ref={chainRef}>
                     {boardTiles.map((t) => (
                       <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
                     ))}
