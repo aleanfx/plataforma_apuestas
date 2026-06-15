@@ -1779,3 +1779,123 @@ html, body { overflow-x: clip; max-width: 100%; }
   padding: 6px 18px;
   border-radius: 99px;
 }
+
+/* ============================================================
+   Recuadro único del juego (todo en una sola caja) + chat flotante
+   ============================================================ */
+.game-stage {
+  max-width: 760px;
+  margin: 0 auto 24px;
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 26px;
+  background: radial-gradient(ellipse at 50% 36%, #1f6b3a, #0d3a1f 80%);
+  border: 7px solid #5a3a1e;
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.55), var(--shadow);
+}
+.dom-stage .dom-felt { flex: 1; } /* el tablero llena el centro -> recuadro alto */
+
+.stage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 14px;
+  padding: 8px 16px;
+  color: var(--text);
+  font-size: 14px;
+}
+.stage-bar span { display: inline-flex; gap: 6px; align-items: baseline; }
+.stage-bar i { color: rgba(255, 255, 255, 0.6); font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stage-winner {
+  text-align: center;
+  font-weight: 700;
+  font-size: 17px;
+  color: #fff;
+  background: linear-gradient(120deg, rgba(34, 197, 94, 0.3), rgba(245, 158, 11, 0.25));
+  border: 1px solid var(--green-bright);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+.dom-hand-area { background: rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 14px; }
+.dom-hand-area h3 { color: #fff; font-size: 16px; }
+
+/* Chat flotante (botón + burbujas + panel) */
+.chat-fab-wrap {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.chat-fab {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #04210f;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.7);
+}
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.chat-bubbles { display: flex; flex-direction: column; gap: 6px; max-width: 260px; }
+.chat-bubble {
+  background: var(--gray-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  border-bottom-left-radius: 3px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  animation: bubble-in 0.25s ease;
+}
+@keyframes bubble-in { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
+.chat-pop {
+  width: min(330px, 88vw);
+  height: 400px;
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.chat-pop-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 600; color: var(--text); }
+.chat-pop-head button { background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 15px; }
+.chat-pop .chat-msgs { flex: 1; padding: 12px 14px; max-height: none; }
+.chat-pop .chat-form { padding: 10px 12px; border-top: 1px solid var(--line); }
+
+@media (max-width: 768px) {
+  .game-stage { min-height: 70vh; border-width: 5px; padding: 10px; }
+}

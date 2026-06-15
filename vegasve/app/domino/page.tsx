@@ -221,22 +221,22 @@ function DominoContent() {
             <button className="btn btn-ghost btn-sm" onClick={leave}>Salir</button>
           </div>
 
-          <div className="bal-banner" style={{ marginBottom: 24 }}>
-            <div className="cell"><div className="k">Pozo</div><div className="big">{formatBs(game.pot)}</div></div>
-            <div className="cell"><div className="k">Apuesta</div><div className="mid">{formatBs(game.stake)}</div></div>
-            <div className="cell"><div className="k">Jugadores</div><div className="mid">{game.seats.length}/{game.seatsNeeded}</div></div>
-            <div className="cell"><div className="k">Tu saldo</div><div className="mid">{formatBs(user?.balance ?? 0)}</div></div>
-          </div>
-
-          {game.phase === "finished" && game.winners.length > 0 && (
-            <div className="bingo-winner">
-              {iWon ? "🎉 ¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(" y ")} ·{" "}
-              {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
+          {/* Todo el juego en un solo recuadro (mesa + mano + acciones) */}
+          <div className="game-stage dom-stage">
+            <div className="stage-bar">
+              <span><i>Pozo</i> {formatBs(game.pot)}</span>
+              <span><i>Apuesta</i> {formatBs(game.stake)}</span>
+              <span><i>Jugadores</i> {game.seats.length}/{game.seatsNeeded}</span>
+              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
             </div>
-          )}
 
-          {/* Mesa de fieltro con jugadores alrededor */}
-          <div className="dom-table">
+            {game.phase === "finished" && game.winners.length > 0 && (
+              <div className="stage-winner">
+                {iWon ? "🎉 ¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(" y ")} ·{" "}
+                {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
+              </div>
+            )}
+
             {/* Rivales (arriba) */}
             <div className="dom-rivals">
               {game.seats
@@ -279,10 +279,9 @@ function DominoContent() {
                 <div className="dom-ends">extremos {game.leftEnd} y {game.rightEnd}</div>
               )}
             </div>
-          </div>
 
-          {/* Acciones / mano */}
-          <div className="game-panel">
+            {/* Mano + acciones (dentro del mismo recuadro) */}
+            <div className="dom-hand-area">
             {game.phase === "waiting" ? (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
                 <p style={{ color: "var(--text-2)", marginBottom: 16 }}>
@@ -339,6 +338,7 @@ function DominoContent() {
                 )}
               </>
             )}
+            </div>
           </div>
 
           <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
