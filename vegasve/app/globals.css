@@ -1894,6 +1894,20 @@ html, body { overflow-x: clip; max-width: 100%; }
   overflow: auto !important; /* si algo no cabe, se desliza (no se rompe) */
   -webkit-overflow-scrolling: touch;
 }
+/* En pantalla completa simulada, el botón de salir queda SIEMPRE visible y
+   tocable: fijado a la pantalla y respetando el área segura del iPhone
+   (notch/barra de estado), no detrás de ella ni desplazándose con el scroll. */
+.game-stage.stage-faux-fs .stage-fs {
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  right: calc(env(safe-area-inset-right, 0px) + 14px) !important;
+  z-index: 10000 !important;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.65);
+  border-color: rgba(255, 255, 255, 0.5);
+}
 
 /* Mesa con jugadores alrededor: arriba / izquierda / derecha y el tablero al centro */
 .dom-table-area {
