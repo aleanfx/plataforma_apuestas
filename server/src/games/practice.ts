@@ -36,9 +36,9 @@ export function createPracticeTable(hub: Hub, game: GameKind): Table {
   }
 
   if (game === "domino") {
-    const engine = new DominoEngine({ seats: 2, escrow: practiceEscrow, resetDelayMs: 6000, turnTimeoutMs: 20000 });
-    const table = hub.createTable({ id, name: "Dominó · Práctica vs CPU", stake: 5000, engine });
-    wire(hub, table, engine, makeBots(1), decideDomino);
+    const engine = new DominoEngine({ seats: 4, escrow: practiceEscrow, resetDelayMs: 6000, turnTimeoutMs: 20000 });
+    const table = hub.createTable({ id, name: "Dominó Parejas · Práctica vs CPU", stake: 5000, engine });
+    wire(hub, table, engine, makeBots(3), decideDomino);
     return table;
   }
 
