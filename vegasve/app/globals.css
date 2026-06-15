@@ -1708,16 +1708,15 @@ html, body { overflow-x: clip; max-width: 100%; }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
 .dom-chain {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 3px;
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 8px 6px;
-  scroll-behavior: smooth;
+  align-content: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  transform-origin: center center;
+  transition: transform 0.25s ease;
 }
-.dom-chain::-webkit-scrollbar { height: 6px; }
-.dom-chain::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
 .dom-chain .dom-tile { --hs: 34px; flex-shrink: 0; animation: tile-place 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 @keyframes tile-place { from { opacity: 0; transform: translateY(-18px) scale(0.82); } to { opacity: 1; transform: none; } }
 .dom-ends {

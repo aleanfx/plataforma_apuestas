@@ -90,7 +90,9 @@ function DominoContent() {
   const meIdRef = React.useRef<string | null>(null);
   const [boardTiles, setBoardTiles] = React.useState<BoardTile[]>([]);
   const chainRef = React.useRef<HTMLDivElement>(null);
+  const feltRef = React.useRef<HTMLDivElement>(null);
   const sideRef = React.useRef<"left" | "right" | null>(null);
+  const [boardScale, setBoardScale] = React.useState(1);
   React.useEffect(() => {
     meIdRef.current = user?.id ?? null;
   }, [user?.id]);
@@ -146,13 +148,31 @@ function DominoContent() {
     };
   }, [refreshMesas, refreshUser]);
 
-  // Desplaza la cadena hacia la última ficha colocada (para seguir la jugada).
+  // Auto-ajuste: las fichas se acomodan en filas (usando el alto disponible) y, si
+  // ya no caben, se "aleja la vista" escalando la cadena para que TODO quepa sin scroll.
+  const fitBoard = React.useCallback(() => {
+    const felt = feltRef.current;
+    const chain = chainRef.current;
+    if (!felt || !chain) return;
+    const availW = felt.clientWidth - 20;
+    const availH = felt.clientHeight - 20;
+    const needW = chain.scrollWidth;
+    const needH = chain.scrollHeight;
+    if (availW <= 0 || availH <= 0 || needW <= 0 || needH <= 0) {
+      setBoardScale(1);
+      return;
+    }
+    setBoardScale(Math.min(1, availW / needW, availH / needH));
+  }, []);
+
   React.useEffect(() => {
-    const el = chainRef.current;
-    if (!el) return;
-    if (sideRef.current === "left") el.scrollTo({ left: 0, behavior: "smooth" });
-    else el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
-  }, [boardTiles]);
+    fitBoard();
+  }, [boardTiles, fitBoard]);
+
+  React.useEffect(() => {
+    window.addEventListener("resize", fitBoard);
+    return () => window.removeEventListener("resize", fitBoard);
+  }, [fitBoard]);
 
   function join(id: string) {
     socketRef.current?.emit("table:join", { tableId: id }, (res: { ok: boolean; reason?: string }) => {
@@ -307,7 +327,7 @@ function DominoContent() {
             </div>
 
             {/* Tablero (cadena de fichas) */}
-            <div className="dom-felt">
+            <div className="dom-felt" ref={feltRef}>
               {game.phase === "waiting" ? (
                 <span className="dom-felt-msg">
                   Esperando jugadores ({game.seats.length}/{game.seatsNeeded})…
@@ -315,7 +335,11 @@ function DominoContent() {
               ) : game.board.length === 0 ? (
                 <span className="dom-felt-msg">Esperando la salida…</span>
               ) : (
-                <div className="dom-chain" ref={chainRef}>
+                <div
+                  className="dom-chain"
+                  ref={chainRef}
+                  style={{ transform: `scale(${boardScale})` }}
+                >
                   {boardTiles.map((t) => (
                     <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
                   ))}
