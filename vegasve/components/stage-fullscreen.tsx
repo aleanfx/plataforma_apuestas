@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { Expand, Compress } from "@/components/icons";
+
 /**
  * Botón de pantalla completa que afecta SOLO al recuadro del juego (el elemento
  * que se le pasa por `targetRef`), no a toda la interfaz.
@@ -24,7 +26,6 @@ export function StageFullscreen({ targetRef }: { targetRef: React.RefObject<HTML
     const el = targetRef.current;
     if (!el) return;
     el.classList.toggle("stage-faux-fs", faux);
-    document.body.classList.toggle("stage-faux-open", faux);
     const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 80);
     return () => clearTimeout(t);
   }, [faux, targetRef]);
@@ -69,7 +70,7 @@ export function StageFullscreen({ targetRef }: { targetRef: React.RefObject<HTML
       title={active ? "Salir de pantalla completa" : "Pantalla completa"}
       aria-label={active ? "Salir de pantalla completa" : "Pantalla completa"}
     >
-      {active ? "🗗" : "⛶"}
+      {active ? <Compress width="1em" height="1em" /> : <Expand width="1em" height="1em" />}
     </button>
   );
 }

@@ -36,6 +36,14 @@ export function initRealtime(io: Server): Hub {
     // Crea una mesa de práctica vs CPU (dinero de juguete) y devuelve su id.
     socket.on("table:practice", (data: { game?: GameKind } = {}, ack?: Ack) => {
       try {
+        // Límite: si ya está en una mesa (quizá en otro dispositivo), no abrir otra.
+        if (hub.busyTable(socket)) {
+          ack?.({
+            ok: false,
+            reason: "Ya tienes una partida abierta (quizá en otro dispositivo). Termínala o sal de ella antes de abrir otra.",
+          });
+          return;
+        }
         const table = createPracticeTable(hub, data?.game ?? "bingo");
         ack?.({ ok: true, tableId: table.id });
       } catch (err) {

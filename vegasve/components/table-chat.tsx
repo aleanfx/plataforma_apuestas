@@ -3,6 +3,8 @@
 import * as React from "react";
 import type { Socket } from "socket.io-client";
 
+import { Chat, Close } from "@/components/icons";
+
 type Msg = { id: string; userId: string; name: string; text: string; ts: number };
 
 /**
@@ -90,7 +92,9 @@ export function TableChat({
         <div className="chat-pop">
           <div className="chat-pop-head">
             <span>Chat de la mesa</span>
-            <button type="button" onClick={toggle} aria-label="Cerrar chat">✕</button>
+            <button type="button" onClick={toggle} aria-label="Cerrar chat">
+              <Close width="1em" height="1em" />
+            </button>
           </div>
           <div className="chat-msgs">
             {msgs.length === 0 ? (
@@ -117,7 +121,7 @@ export function TableChat({
       )}
 
       <button type="button" className="chat-fab" onClick={toggle} aria-label="Abrir chat">
-        💬
+        <Chat width="1em" height="1em" />
         {!open && unread > 0 && <span className="chat-fab-badge">{unread > 9 ? "9+" : unread}</span>}
       </button>
     </div>

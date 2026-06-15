@@ -72,6 +72,21 @@ export class Hub {
     return this.tables.get(id);
   }
 
+  /** Otra mesa (distinta de exceptId) donde el usuario sigue sentado como humano. */
+  findUserTable(userId: string, exceptId?: string): Table | undefined {
+    for (const t of this.tables.values()) {
+      if (t.id === exceptId) continue;
+      const m = t.members.get(userId);
+      if (m && !m.bot) return t;
+    }
+    return undefined;
+  }
+
+  /** ¿El usuario de este socket ya está en alguna mesa? (para limitar a 1 a la vez) */
+  busyTable(socket: Socket): Table | undefined {
+    return this.findUserTable(userOf(socket).id);
+  }
+
   removeTable(id: string) {
     const table = this.tables.get(id);
     if (table) {
@@ -197,6 +212,15 @@ export class Hub {
       this.broadcast(table);
       table.bots?.onState(); // reanuda a los CPU si toca
       return { ok: true };
+    }
+
+    // Límite: una sola mesa activa por usuario (evita conflictos entre dispositivos).
+    const other = this.findUserTable(user.id, tableId);
+    if (other) {
+      return {
+        ok: false,
+        reason: "Ya tienes una partida abierta (quizá en otro dispositivo). Termínala o sal de ella antes de abrir otra.",
+      };
     }
 
     if (table.members.size >= table.maxPlayers) return { ok: false, reason: "Mesa llena" };

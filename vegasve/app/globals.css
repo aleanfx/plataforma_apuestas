@@ -1876,21 +1876,24 @@ html, body { overflow-x: clip; max-width: 100%; }
   border: none;
   border-radius: 0;
 }
-/* Pantalla completa simulada (iPhone/Safari, sin Fullscreen API) */
+/* Pantalla completa simulada (iPhone/Safari, sin Fullscreen API).
+   Nota: NO se pone overflow:hidden en el body -> en iOS eso rompe los
+   elementos position:fixed (bug conocido de Safari). */
 .game-stage.stage-faux-fs {
   position: fixed !important;
-  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   z-index: 9999 !important;
   max-width: none !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
   min-height: 0 !important;
   margin: 0 !important;
   border: none !important;
   border-radius: 0 !important;
+  overflow: auto !important; /* si algo no cabe, se desliza (no se rompe) */
+  -webkit-overflow-scrolling: touch;
 }
-body.stage-faux-open { overflow: hidden; } /* sin scroll detrás */
 
 /* Mesa con jugadores alrededor: arriba / izquierda / derecha y el tablero al centro */
 .dom-table-area {

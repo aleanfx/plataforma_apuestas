@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { sfx } from "@/lib/sfx";
+import { SoundOn, SoundOff } from "@/components/icons";
 
 /**
  * Botón flotante de silencio (abajo a la derecha). También desbloquea el audio
@@ -26,7 +27,7 @@ export function SoundToggle() {
       title={muted ? "Activar sonido" : "Silenciar"}
       onClick={() => setMuted(sfx.toggle())}
     >
-      {muted ? "🔇" : "🔊"}
+      {muted ? <SoundOff width="1em" height="1em" /> : <SoundOn width="1em" height="1em" />}
     </button>
   );
 }

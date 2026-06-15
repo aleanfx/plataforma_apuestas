@@ -285,3 +285,41 @@ export const CreditCard = (p: P) => (
   </Outline>
 );
 export const Settings = Cog;
+
+/* ---- Juego en vivo (reemplazan emojis) ---- */
+export const Expand = (p: P) => (
+  <Outline {...p}>
+    <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+  </Outline>
+);
+export const Compress = (p: P) => (
+  <Outline {...p}>
+    <path d="M3 8h3a2 2 0 0 0 2-2V3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M21 16h-3a2 2 0 0 0-2 2v3" />
+  </Outline>
+);
+export const SoundOn = (p: P) => (
+  <Outline {...p}>
+    <path d="M11 5 6 9H2v6h4l5 4z" />
+    <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+  </Outline>
+);
+export const SoundOff = (p: P) => (
+  <Outline {...p}>
+    <path d="M11 5 6 9H2v6h4l5 4z" />
+    <path d="M22 9l-6 6M16 9l6 6" />
+  </Outline>
+);
+export const Cpu = (p: P) => (
+  <Outline {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+    <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2M9.5 14.5h5" />
+    <circle cx="10" cy="11" r="1" fill="currentColor" stroke="none" />
+    <circle cx="14" cy="11" r="1" fill="currentColor" stroke="none" />
+  </Outline>
+);
+export const Trophy = (p: P) => (
+  <Outline {...p}>
+    <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
+    <path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" />
+  </Outline>
+);

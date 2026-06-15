@@ -11,6 +11,7 @@ import { TurnTimer } from "@/components/turn-timer";
 import { TableChat } from "@/components/table-chat";
 import { DominoPiece } from "@/components/domino-piece";
 import { StageFullscreen } from "@/components/stage-fullscreen";
+import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -256,7 +257,8 @@ function DominoContent() {
                 Mesas 1v1 y por parejas. Apuesta, juega tus fichas y llévate el pozo.
               </p>
               <button className="btn btn-ghost btn-sm practice-cta" onClick={practice}>
-                🤖 Practicar vs CPU · gratis
+                <Cpu width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                Practicar vs CPU · gratis
               </button>
             </div>
             <div className="bal-banner" style={{ marginBottom: 28 }}>
@@ -315,7 +317,8 @@ function DominoContent() {
 
             {game.phase === "finished" && game.winners.length > 0 && (
               <div className="stage-winner">
-                {iWon ? "🎉 ¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(" y ")} ·{" "}
+                <Trophy width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                {iWon ? "¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(" y ")} ·{" "}
                 {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
               </div>
             )}
