@@ -95,9 +95,19 @@ function DominoContent() {
   const feltRef = React.useRef<HTMLDivElement>(null);
   const stageRef = React.useRef<HTMLDivElement>(null);
   const sideRef = React.useRef<"left" | "right" | null>(null);
+  const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
     meIdRef.current = user?.id ?? null;
   }, [user?.id]);
+
+  // ¿Celular? -> modo inmersivo horizontal mientras se juega.
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
 
   const refreshMesas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "domino" }, (res: { tables?: Mesa[] }) =>
@@ -155,6 +165,13 @@ function DominoContent() {
     const felt = feltRef.current;
     if (felt) felt.scrollTop = felt.scrollHeight;
   }, [boardTiles]);
+
+  // Modo inmersivo (celular en mesa): el juego ocupa la pantalla y se ve horizontal.
+  const immersive = isMobile && !!tableId && !!game;
+  React.useEffect(() => {
+    document.body.classList.toggle("immersive-on", immersive);
+    return () => document.body.classList.remove("immersive-on");
+  }, [immersive]);
 
   // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
   // el compañero (offset 2) arriba, y los rivales a izquierda/derecha.
@@ -279,8 +296,12 @@ function DominoContent() {
           </div>
 
           {/* Todo el juego en un solo recuadro (mesa + mano + acciones) */}
-          <div className="game-stage dom-stage" ref={stageRef}>
-            <StageFullscreen targetRef={stageRef} />
+          <div className={`game-stage dom-stage${immersive ? " dom-immersive" : ""}`} ref={stageRef}>
+            {immersive ? (
+              <button className="stage-exit" onClick={leave} aria-label="Salir">Salir</button>
+            ) : (
+              <StageFullscreen targetRef={stageRef} />
+            )}
             <div className="stage-bar">
               <span><i>Pozo</i> {formatBs(game.pot)}</span>
               <span><i>Apuesta</i> {formatBs(game.stake)}</span>
@@ -406,9 +427,9 @@ function DominoContent() {
               </>
             )}
             </div>
-          </div>
 
-          <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+            <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+          </div>
         </div>
       </section>
     </>
