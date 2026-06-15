@@ -1876,6 +1876,21 @@ html, body { overflow-x: clip; max-width: 100%; }
   border: none;
   border-radius: 0;
 }
+/* Pantalla completa simulada (iPhone/Safari, sin Fullscreen API) */
+.game-stage.stage-faux-fs {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  max-width: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+body.stage-faux-open { overflow: hidden; } /* sin scroll detrás */
 
 /* Mesa con jugadores alrededor: arriba / izquierda / derecha y el tablero al centro */
 .dom-table-area {
@@ -2059,28 +2074,33 @@ html, body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 768px) {
   .domino-hand { gap: 5px; }
   .domino-hand .dom-tile { --hs: 24px; } /* mano bien compacta: nunca salta a 2 filas */
-  .dom-hand-label, .dom-turn-ind { font-size: 11px; top: 7px; }
-  .dom-hand-area { padding-top: 26px; }
+
+  /* Etiquetas en su propia fila (no encima de las fichas) */
+  .dom-hand-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .dom-hand-label, .dom-turn-ind { position: static; top: auto; left: auto; right: auto; font-size: 11px; }
   .dom-hand-area { padding: 8px 10px; }
   .dom-hand-area h3 { font-size: 14px; }
   .dom-hand-area .btn { padding: 9px 14px; font-size: 13px; }
   .dom-hand-area .btn-gold { display: block; margin-left: auto; margin-right: auto; }
-  .stage-bar { font-size: 12px; gap: 6px 14px; padding: 6px 10px; }
+
+  /* Estadísticas en rejilla 2×2 (alineadas; nunca se desbordan) */
+  .stage-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; justify-items: center; font-size: 12px; padding: 8px 10px; }
   .stage-bar i { font-size: 11px; }
+
+  .dom-ends { display: none; } /* «extremos X y X» oculto en celular */
+
   .dom-player { padding: 6px 10px 6px 6px; }
   .dom-player-av { width: 32px; height: 32px; }
   .fs-toggle { width: 40px; height: 40px; right: 12px; bottom: 60px; font-size: 15px; }
 
-  /* Jugadores alrededor: laterales muy compactos para dejar ancho al tablero */
+  /* Jugadores alrededor: laterales compactos y sin desbordar el recuadro */
   .dom-table-area { gap: 4px; }
   .dom-seat.left,
-  .dom-seat.right { max-width: 62px; padding: 6px 3px; gap: 3px; }
+  .dom-seat.right { max-width: 74px; padding: 6px 4px; gap: 3px; overflow: hidden; }
   .dom-seat.left .dom-player-av,
   .dom-seat.right .dom-player-av { width: 28px; height: 28px; font-size: 13px; }
   .dom-seat.left .dom-player-name,
-  .dom-seat.right .dom-player-name { font-size: 11px; }
-  .dom-seat.left .dom-player-sub,
-  .dom-seat.right .dom-player-sub { font-size: 10px; }
+  .dom-seat.right .dom-player-name { font-size: 11px; max-width: 64px; }
   .dom-seat.left .dom-backs,
-  .dom-seat.right .dom-backs { transform: scale(0.7); }
+  .dom-seat.right .dom-backs { transform: scale(0.62); transform-origin: center; }
 }

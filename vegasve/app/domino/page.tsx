@@ -382,17 +382,19 @@ function DominoContent() {
               </div>
             ) : (
               <>
-                {/* Etiquetas en las esquinas de arriba; las fichas, centradas */}
-                <span className="dom-hand-label">Tus fichas</span>
-                {game.phase === "playing" && (
-                  <span
-                    className="dom-turn-ind"
-                    style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)" }}
-                  >
-                    {game.myTurn ? "Es tu turno" : "Turno de " + (game.seats.find((s) => s.isTurn)?.name ?? "…")}
-                    <TurnTimer endsAt={game.turnEndsAt} />
-                  </span>
-                )}
+                {/* Etiquetas: en PC ancladas a las esquinas; en celular en una fila propia */}
+                <div className="dom-hand-head">
+                  <span className="dom-hand-label">Tus fichas</span>
+                  {game.phase === "playing" && (
+                    <span
+                      className="dom-turn-ind"
+                      style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)" }}
+                    >
+                      {game.myTurn ? "Es tu turno" : "Turno de " + (game.seats.find((s) => s.isTurn)?.name ?? "…")}
+                      <TurnTimer endsAt={game.turnEndsAt} />
+                    </span>
+                  )}
+                </div>
                 <div className="domino-hand">
                   {game.myHand.length === 0 ? (
                     <span style={{ color: "var(--text-2)" }}>Sin fichas.</span>
