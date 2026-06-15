@@ -333,9 +333,6 @@ function DominoContent() {
                     <div className="dom-player-av">{(s.name[0] ?? "?").toUpperCase()}</div>
                     <div className="dom-player-info">
                       <span className="dom-player-name">{s.name}</span>
-                      <span className="dom-player-sub">
-                        {s.handCount} fichas{game.seatsNeeded === 4 ? ` · Pareja ${s.team + 1}` : ""}
-                      </span>
                     </div>
                     <div className="dom-backs">
                       {Array.from({ length: Math.min(s.handCount, 7) }, (_, i) => (
@@ -351,7 +348,7 @@ function DominoContent() {
               <div className="dom-felt" ref={feltRef}>
                 {game.phase === "waiting" ? (
                   <span className="dom-felt-msg">
-                    Esperando jugadores ({game.seats.length}/{game.seatsNeeded})…
+                    {game.seats.length < 2 ? "Esperando jugadores…" : "Listos para empezar"}
                   </span>
                 ) : game.board.length === 0 ? (
                   <span className="dom-felt-msg">Esperando la salida…</span>
@@ -376,9 +373,9 @@ function DominoContent() {
             <div className="dom-hand-area">
             {game.phase === "waiting" ? (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
-                <p style={{ color: "var(--text-2)", marginBottom: 16 }}>
-                  Esperando jugadores ({game.seats.length}/{game.seatsNeeded}). Pueden iniciar con 2 o más.
-                </p>
+                {game.seats.length < 2 && (
+                  <p style={{ color: "var(--text-2)", marginBottom: 16 }}>Esperando jugadores…</p>
+                )}
                 <button className="btn btn-gold" onClick={() => action("start")} disabled={game.seats.length < 2}>
                   Iniciar partida · {formatBs(game.stake)}
                 </button>

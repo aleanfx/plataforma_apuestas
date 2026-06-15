@@ -1673,8 +1673,8 @@ html, body { overflow-x: clip; max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px 8px 8px;
-  border-radius: 99px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 12px; /* cuadrado ligeramente redondeado */
   background: rgba(13, 11, 30, 0.5);
   border: 1px solid transparent;
 }
@@ -1690,8 +1690,19 @@ html, body { overflow-x: clip; max-width: 100%; }
   align-items: center;
   justify-content: center;
 }
-.dom-player-info { display: flex; flex-direction: column; line-height: 1.2; }
-.dom-player-name { font-weight: 600; color: var(--text); font-size: 14px; }
+.dom-player-info { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.dom-player-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 12px;
+  display: block;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* si no cabe -> … */
+}
+.dom-seat.left .dom-player-name,
+.dom-seat.right .dom-player-name { max-width: 84px; }
 .dom-player-sub { color: var(--text-2); font-size: 12px; }
 .dom-backs { display: flex; }
 .dom-backs .dom-tile { --hs: 15px; }
