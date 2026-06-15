@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { TurnTimer } from "@/components/turn-timer";
 import { TableChat } from "@/components/table-chat";
 import { DominoPiece } from "@/components/domino-piece";
+import { StageFullscreen } from "@/components/stage-fullscreen";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -91,6 +92,7 @@ function DominoContent() {
   const [boardTiles, setBoardTiles] = React.useState<BoardTile[]>([]);
   const chainRef = React.useRef<HTMLDivElement>(null);
   const feltRef = React.useRef<HTMLDivElement>(null);
+  const stageRef = React.useRef<HTMLDivElement>(null);
   const sideRef = React.useRef<"left" | "right" | null>(null);
   const [boardScale, setBoardScale] = React.useState(1);
   React.useEffect(() => {
@@ -171,8 +173,22 @@ function DominoContent() {
 
   React.useEffect(() => {
     window.addEventListener("resize", fitBoard);
-    return () => window.removeEventListener("resize", fitBoard);
+    // Al entrar/salir de pantalla completa el tablero debe re-ajustarse.
+    const onFs = () => setTimeout(fitBoard, 60);
+    document.addEventListener("fullscreenchange", onFs);
+    return () => {
+      window.removeEventListener("resize", fitBoard);
+      document.removeEventListener("fullscreenchange", onFs);
+    };
   }, [fitBoard]);
+
+  // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
+  // el compañero (offset 2) arriba, y los rivales a izquierda/derecha.
+  function seatPos(offset: number, total: number): "top" | "left" | "right" | null {
+    if (total <= 2) return offset === 1 ? "top" : null;
+    if (total === 3) return offset === 1 ? "right" : offset === 2 ? "left" : null;
+    return offset === 1 ? "right" : offset === 2 ? "top" : offset === 3 ? "left" : null;
+  }
 
   function join(id: string) {
     socketRef.current?.emit("table:join", { tableId: id }, (res: { ok: boolean; reason?: string }) => {
@@ -288,7 +304,8 @@ function DominoContent() {
           </div>
 
           {/* Todo el juego en un solo recuadro (mesa + mano + acciones) */}
-          <div className="game-stage dom-stage">
+          <div className="game-stage dom-stage" ref={stageRef}>
+            <StageFullscreen targetRef={stageRef} />
             <div className="stage-bar">
               <span><i>Pozo</i> {formatBs(game.pot)}</span>
               <span><i>Apuesta</i> {formatBs(game.stake)}</span>
@@ -303,12 +320,16 @@ function DominoContent() {
               </div>
             )}
 
-            {/* Rivales (arriba) */}
-            <div className="dom-rivals">
-              {game.seats
-                .filter((s) => s.id !== user?.id)
-                .map((s) => (
-                  <div key={s.id} className={`dom-player${s.isTurn ? " turn" : ""}`}>
+            {/* Mesa: rivales alrededor (arriba / izq / der) y el tablero al centro */}
+            <div className="dom-table-area">
+              {game.seats.map((s, idx) => {
+                if (s.id === user?.id) return null;
+                const n = game.seats.length || 1;
+                const offset = (((idx - game.mySeat) % n) + n) % n;
+                const pos = seatPos(offset, game.seatsNeeded);
+                if (!pos) return null;
+                return (
+                  <div key={s.id} className={`dom-player dom-seat ${pos}${s.isTurn ? " turn" : ""}`}>
                     <div className="dom-player-av">{(s.name[0] ?? "?").toUpperCase()}</div>
                     <div className="dom-player-info">
                       <span className="dom-player-name">{s.name}</span>
@@ -323,31 +344,32 @@ function DominoContent() {
                     </div>
                     {s.isTurn && <TurnTimer endsAt={game.turnEndsAt} />}
                   </div>
-                ))}
-            </div>
+                );
+              })}
 
-            {/* Tablero (cadena de fichas) */}
-            <div className="dom-felt" ref={feltRef}>
-              {game.phase === "waiting" ? (
-                <span className="dom-felt-msg">
-                  Esperando jugadores ({game.seats.length}/{game.seatsNeeded})…
-                </span>
-              ) : game.board.length === 0 ? (
-                <span className="dom-felt-msg">Esperando la salida…</span>
-              ) : (
-                <div
-                  className="dom-chain"
-                  ref={chainRef}
-                  style={{ transform: `scale(${boardScale})` }}
-                >
-                  {boardTiles.map((t) => (
-                    <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
-                  ))}
-                </div>
-              )}
-              {game.board.length > 0 && (
-                <div className="dom-ends">extremos {game.leftEnd} y {game.rightEnd}</div>
-              )}
+              {/* Tablero (cadena de fichas) */}
+              <div className="dom-felt" ref={feltRef}>
+                {game.phase === "waiting" ? (
+                  <span className="dom-felt-msg">
+                    Esperando jugadores ({game.seats.length}/{game.seatsNeeded})…
+                  </span>
+                ) : game.board.length === 0 ? (
+                  <span className="dom-felt-msg">Esperando la salida…</span>
+                ) : (
+                  <div
+                    className="dom-chain"
+                    ref={chainRef}
+                    style={{ transform: `scale(${boardScale})` }}
+                  >
+                    {boardTiles.map((t) => (
+                      <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
+                    ))}
+                  </div>
+                )}
+                {game.board.length > 0 && (
+                  <div className="dom-ends">extremos {game.leftEnd} y {game.rightEnd}</div>
+                )}
+              </div>
             </div>
 
             {/* Mano + acciones (dentro del mismo recuadro) */}

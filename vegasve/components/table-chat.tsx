@@ -73,6 +73,9 @@ export function TableChat({
 
   return (
     <div className="chat-fab-wrap">
+      {/* Al tocar/clic fuera del recuadro del chat se cierra (PC y celular) */}
+      {open && <div className="chat-backdrop" onClick={toggle} aria-hidden />}
+
       {!open && bubbles.length > 0 && (
         <div className="chat-bubbles">
           {bubbles.map((b) => (
