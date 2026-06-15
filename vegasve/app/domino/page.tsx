@@ -382,34 +382,46 @@ function DominoContent() {
               </div>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <h3>Tus fichas</h3>
+                {/* Todo en una sola línea: «Tus fichas» · fichas (centradas) · turno */}
+                <div className="dom-hand-row">
+                  <span className="dom-hand-label">Tus fichas</span>
+                  <div className="domino-hand">
+                    {game.myHand.length === 0 ? (
+                      <span style={{ color: "var(--text-2)" }}>Sin fichas.</span>
+                    ) : (
+                      game.myHand.map((t) => (
+                        <DominoPiece
+                          key={t.id}
+                          a={t.a}
+                          b={t.b}
+                          orientation="v"
+                          legal={game.myTurn && !!legalMap[t.id]}
+                          onClick={game.myTurn && legalMap[t.id] ? () => clickTile(t) : undefined}
+                        />
+                      ))
+                    )}
+                    {/* Sin jugada: capa que oscurece las fichas y el botón Pasar al centro */}
+                    {game.phase === "playing" && game.mustPass && (
+                      <div className="hand-pass-veil">
+                        <button className="btn btn-gold" onClick={() => action("pass")}>
+                          No tengo jugada · Pasar
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   {game.phase === "playing" && (
-                    <span style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)", fontSize: 14, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <span
+                      className="dom-turn-ind"
+                      style={{ color: game.myTurn ? "var(--gold)" : "var(--text-2)" }}
+                    >
                       {game.myTurn ? "Es tu turno" : "Turno de " + (game.seats.find((s) => s.isTurn)?.name ?? "…")}
                       <TurnTimer endsAt={game.turnEndsAt} />
                     </span>
                   )}
                 </div>
-                <div className="domino-hand">
-                  {game.myHand.length === 0 ? (
-                    <span style={{ color: "var(--text-2)" }}>Sin fichas.</span>
-                  ) : (
-                    game.myHand.map((t) => (
-                      <DominoPiece
-                        key={t.id}
-                        a={t.a}
-                        b={t.b}
-                        orientation="v"
-                        legal={game.myTurn && !!legalMap[t.id]}
-                        onClick={game.myTurn && legalMap[t.id] ? () => clickTile(t) : undefined}
-                      />
-                    ))
-                  )}
-                </div>
 
                 {pending && (
-                  <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", justifyContent: "center" }}>
                     <span style={{ color: "var(--text-2)" }}>¿En qué extremo?</span>
                     <button className="btn btn-ghost btn-sm" onClick={() => action("play", { tileId: pending, end: "left" })}>
                       Izquierda ({game.leftEnd})
@@ -418,12 +430,6 @@ function DominoContent() {
                       Derecha ({game.rightEnd})
                     </button>
                   </div>
-                )}
-
-                {game.phase === "playing" && game.mustPass && (
-                  <button className="btn btn-gold" style={{ marginTop: 16 }} onClick={() => action("pass")}>
-                    No tengo jugada · Pasar
-                  </button>
                 )}
               </>
             )}

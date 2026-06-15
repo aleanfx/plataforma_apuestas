@@ -1739,14 +1739,42 @@ html, body { overflow-x: clip; max-width: 100%; }
   border-radius: 99px;
 }
 .domino-hand {
+  position: relative;
   display: flex;
   flex-wrap: nowrap; /* siempre una sola fila; nunca salta a 2 filas */
   gap: 7px;
   justify-content: center;
-  padding-top: 4px;
   overflow-x: auto; /* salvaguarda en pantallas muy estrechas */
 }
 .domino-hand .dom-tile { --hs: 36px; flex-shrink: 0; } /* mano comprimida en PC */
+
+/* «Tus fichas» · fichas (centradas) · turno — todo en la misma línea */
+.dom-hand-row { display: flex; align-items: center; gap: 12px; }
+.dom-hand-row .domino-hand { flex: 1; min-width: 0; }
+.dom-hand-label { flex-shrink: 0; color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.dom-turn-ind {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Sin jugada: capa que aparece progresivamente encima de las fichas */
+.hand-pass-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 20, 12, 0.55);
+  border-radius: 12px;
+  animation: pass-veil 0.45s ease forwards;
+}
+@keyframes pass-veil { from { opacity: 0; } to { opacity: 1; } }
 
 /* ===== Ajustes móviles de las mesas ===== */
 @media (max-width: 768px) {
@@ -2031,6 +2059,8 @@ html, body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 768px) {
   .domino-hand { gap: 5px; }
   .domino-hand .dom-tile { --hs: 24px; } /* mano bien compacta: nunca salta a 2 filas */
+  .dom-hand-row { gap: 7px; }
+  .dom-hand-label, .dom-turn-ind { font-size: 11px; }
   .dom-hand-area { padding: 8px 10px; }
   .dom-hand-area h3 { font-size: 14px; }
   .dom-hand-area .btn { padding: 9px 14px; font-size: 13px; }
