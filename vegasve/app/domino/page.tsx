@@ -283,17 +283,19 @@ function DominoContent() {
 
   return (
     <>
-      <SiteNav variant="in" />
-      <Ticker />
+      {!immersive && <SiteNav variant="in" />}
+      {!immersive && <Ticker />}
       <section className="view">
         <div className="wrap">
-          <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h1>{meta?.name ?? "Dominó"}</h1>
-              <p style={{ color: "var(--text-2)", marginTop: 6 }}>{phaseLabel}</p>
+          {!immersive && (
+            <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h1>{meta?.name ?? "Dominó"}</h1>
+                <p style={{ color: "var(--text-2)", marginTop: 6 }}>{phaseLabel}</p>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={leave}>Salir</button>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={leave}>Salir</button>
-          </div>
+          )}
 
           {/* Todo el juego en un solo recuadro (mesa + mano + acciones) */}
           <div className={`game-stage dom-stage${immersive ? " dom-immersive" : ""}`} ref={stageRef}>

@@ -1930,17 +1930,23 @@ html, body { overflow-x: clip; max-width: 100%; }
 @media (max-width: 768px) {
   .game-stage.dom-immersive {
     position: fixed;
-    z-index: 9000;
+    z-index: 9990;
     max-width: none;
     min-height: 0;
     margin: 0;
-    border-width: 7px;
+    border-width: 6px;
     border-radius: 0;
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
   body.immersive-on .sound-toggle { display: none; }
+  /* Inmersivo: stats en una fila (gana alto) y tablero que puede encoger */
+  .dom-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; padding: 5px 10px; }
+  .dom-immersive .dom-felt { min-height: 0; }
+  .dom-immersive .dom-table-area { gap: 2px; }
 }
-/* Tel. en vertical: giramos 90° para que el juego se vea horizontal */
+/* Tel. en vertical: giramos 90° para que el juego se vea horizontal.
+   Usamos dvw/dvh (viewport visible real) para que NO se corte por las barras
+   del navegador en iPhone; con fallback a vw/vh en navegadores viejos. */
 @media (max-width: 768px) and (orientation: portrait) {
   .game-stage.dom-immersive {
     top: 0;
@@ -1951,12 +1957,18 @@ html, body { overflow-x: clip; max-width: 100%; }
     transform: rotate(90deg);
   }
 }
-/* Tel. ya en horizontal: solo ocupa toda la pantalla */
+@supports (height: 100dvh) {
+  @media (max-width: 768px) and (orientation: portrait) {
+    .game-stage.dom-immersive { left: 100dvw; width: 100dvh; height: 100dvw; }
+  }
+}
+/* Tel. ya en horizontal: solo ocupa toda la pantalla visible */
 @media (max-width: 768px) and (orientation: landscape) {
-  .game-stage.dom-immersive {
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
+  .game-stage.dom-immersive { inset: 0; width: 100vw; height: 100vh; }
+}
+@supports (height: 100dvh) {
+  @media (max-width: 768px) and (orientation: landscape) {
+    .game-stage.dom-immersive { width: 100dvw; height: 100dvh; }
   }
 }
 .stage-exit {
