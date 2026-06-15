@@ -1709,17 +1709,19 @@ html, body { overflow-x: clip; max-width: 100%; }
   overflow-x: hidden;
 }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
-/* Tablero: fichas de tamaño FIJO que se acomodan en filas (no se aleja la vista) */
+/* Tablero en "serpiente": filas de fichas que doblan en L en cada extremo.
+   Tamaño FIJO (no se aleja la vista). Las filas impares van al revés. */
 .dom-chain {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  align-content: center;
   justify-content: center;
-  gap: 6px 4px;
+  gap: 3px;
   width: 100%;
 }
-.dom-chain .dom-tile { --hs: 28px; flex-shrink: 0; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
+.dom-row { display: flex; align-items: center; gap: 3px; }
+.dom-row.rev { flex-direction: row-reverse; }
+.dom-chain .dom-tile { --hs: 26px; flex-shrink: 0; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
 /* Animación: la ficha "cae" desde arriba con un leve giro, como puesta con la mano */
 @keyframes tile-place {
   0% { opacity: 0; transform: translateY(-34px) rotate(-9deg) scale(0.7); }
@@ -1790,7 +1792,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .poker-seats { gap: 8px; }
   .chat-msgs { max-height: 160px; }
   .sound-toggle { width: 40px; height: 40px; right: 12px; bottom: 12px; }
-  .dom-chain .dom-tile { --hs: 22px; }
+  .dom-chain .dom-tile { --hs: 18px; }
   .dom-tile { --hs: 38px; }
   .poker-table { padding: 28px 16px; }
 }
@@ -1940,9 +1942,28 @@ html, body { overflow-x: clip; max-width: 100%; }
   }
   body.immersive-on .sound-toggle { display: none; }
   /* Inmersivo: stats en una fila (gana alto) y tablero que puede encoger */
-  .dom-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; padding: 5px 10px; }
+  .dom-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; padding: 4px 10px; font-size: 11px; }
   .dom-immersive .dom-felt { min-height: 0; }
   .dom-immersive .dom-table-area { gap: 2px; }
+
+  /* Inmersivo: fichas de la mesa pequeñas */
+  .dom-immersive .dom-chain .dom-tile { --hs: 16px; }
+
+  /* Inmersivo: la MANO mucho más compacta (ocupaba demasiado) */
+  .dom-immersive .dom-hand-area { padding: 4px 8px; }
+  .dom-immersive .dom-hand-head { margin-bottom: 1px; }
+  .dom-immersive .dom-hand-label,
+  .dom-immersive .dom-turn-ind { font-size: 10px; }
+  .dom-immersive .domino-hand { gap: 4px; }
+  .dom-immersive .domino-hand .dom-tile { --hs: 17px; }
+
+  /* Inmersivo: jugadores compactos */
+  .dom-immersive .dom-player { padding: 4px 8px 4px 4px; gap: 6px; }
+  .dom-immersive .dom-player-av { width: 24px; height: 24px; font-size: 12px; }
+  .dom-immersive .dom-player-name { font-size: 11px; }
+  .dom-immersive .dom-backs .dom-tile { --hs: 11px; }
+  .dom-immersive .dom-seat.left,
+  .dom-immersive .dom-seat.right { max-width: 78px; }
 }
 /* Tel. en vertical: giramos 90° para que el juego se vea horizontal.
    Usamos dvw/dvh (viewport visible real) para que NO se corte por las barras

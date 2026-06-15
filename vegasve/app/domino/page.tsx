@@ -173,6 +173,31 @@ function DominoContent() {
     return () => document.body.classList.remove("immersive-on");
   }, [immersive]);
 
+  // Cuántas fichas caben por fila (para acomodarlas en "serpiente" doblando en L).
+  const [perRow, setPerRow] = React.useState(8);
+  React.useEffect(() => {
+    const felt = feltRef.current;
+    if (!felt) return;
+    const measure = () => {
+      const tileEl = felt.querySelector(".dom-tile") as HTMLElement | null;
+      const hs = tileEl ? parseFloat(getComputedStyle(tileEl).getPropertyValue("--hs")) || 20 : 20;
+      const tileW = 2 * hs + 16; // dos mitades + relleno + separación
+      const avail = felt.clientWidth - 10;
+      setPerRow(Math.max(1, Math.floor(avail / tileW)));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(felt);
+    return () => ro.disconnect();
+  }, [boardTiles.length, immersive]);
+
+  // Parte la cadena en filas; las filas impares van al revés (serpiente: ─┐ ┌─).
+  const rows = React.useMemo(() => {
+    const out: BoardTile[][] = [];
+    for (let i = 0; i < boardTiles.length; i += perRow) out.push(boardTiles.slice(i, i + perRow));
+    return out;
+  }, [boardTiles, perRow]);
+
   // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
   // el compañero (offset 2) arriba, y los rivales a izquierda/derecha.
   function seatPos(offset: number, total: number): "top" | "left" | "right" | null {
@@ -353,8 +378,12 @@ function DominoContent() {
                   <span className="dom-felt-msg">Esperando la salida…</span>
                 ) : (
                   <div className="dom-chain" ref={chainRef}>
-                    {boardTiles.map((t) => (
-                      <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
+                    {rows.map((row, r) => (
+                      <div key={r} className={`dom-row${r % 2 ? " rev" : ""}`}>
+                        {row.map((t) => (
+                          <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}
