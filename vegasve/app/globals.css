@@ -1704,20 +1704,18 @@ html, body { overflow-x: clip; max-width: 100%; }
   align-items: center;
   justify-content: center;
   padding: 14px;
+  overflow: hidden; /* la cadena se escala para caber; nunca scroll */
 }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
 .dom-chain {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  align-content: center;
-  justify-content: center;
-  gap: 5px;
-  width: 100%;
+  gap: 4px;
   transform-origin: center center;
-  transition: transform 0.25s ease;
+  transition: transform 0.28s ease;
 }
-.dom-chain .dom-tile { --hs: 34px; flex-shrink: 0; animation: tile-place 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
+.dom-chain .dom-tile { --hs: 40px; flex-shrink: 0; animation: tile-place 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 @keyframes tile-place { from { opacity: 0; transform: translateY(-18px) scale(0.82); } to { opacity: 1; transform: none; } }
 .dom-ends {
   position: absolute;
