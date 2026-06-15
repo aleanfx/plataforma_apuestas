@@ -1644,8 +1644,20 @@ html, body { overflow-x: clip; max-width: 100%; }
   padding: 0;
   width: calc(var(--hs) + 6px);
   height: calc(var(--hs) * 1.9);
-  background: linear-gradient(135deg, #4a3a86, #2a1c52);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(168, 150, 255, 0.18);
+  background: linear-gradient(160deg, #f3efe0, #d6d1bf);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+.dom-tile.down::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 2px;
 }
 
 .dom-table {
@@ -1694,8 +1706,20 @@ html, body { overflow-x: clip; max-width: 100%; }
   padding: 14px;
 }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
-.dom-chain { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 3px; }
-.dom-chain .dom-tile { --hs: 34px; }
+.dom-chain {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 8px 6px;
+  scroll-behavior: smooth;
+}
+.dom-chain::-webkit-scrollbar { height: 6px; }
+.dom-chain::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 3px; }
+.dom-chain .dom-tile { --hs: 34px; flex-shrink: 0; animation: tile-place 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
+@keyframes tile-place { from { opacity: 0; transform: translateY(-18px) scale(0.82); } to { opacity: 1; transform: none; } }
 .dom-ends {
   position: absolute;
   right: 12px;

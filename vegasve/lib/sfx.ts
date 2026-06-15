@@ -35,6 +35,31 @@ function beep(freq: number, durMs: number, type: OscillatorType = "sine", gain =
   osc.stop(t0 + durMs / 1000 + 0.03);
 }
 
+// "Clack" de ficha de madera golpeando la mesa: ráfaga corta de ruido filtrada,
+// reforzada con un golpe grave. Suena como un dominó real al colocarse.
+function woodClack(gain = 0.32) {
+  const c = ac();
+  if (!c || muted) return;
+  const dur = 0.07;
+  const buffer = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 4); // decae rápido
+  }
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = 1700;
+  bp.Q.value = 0.7;
+  const g = c.createGain();
+  g.gain.value = gain;
+  src.connect(bp).connect(g).connect(c.destination);
+  src.start();
+  // cuerpo grave del golpe
+  beep(160, 55, "triangle", gain * 0.5);
+}
+
 export const sfx = {
   isMuted() {
     return muted;
@@ -56,8 +81,11 @@ export const sfx = {
     beep(720, 120, "sine", 0.09);
   }, // número cantado
   place() {
+    woodClack();
+  }, // ficha de dominó colocada (golpe de madera)
+  card() {
     beep(180, 90, "triangle", 0.1);
-  }, // ficha / carta colocada
+  }, // carta colocada (póker/bingo)
   turn() {
     beep(880, 130, "sine", 0.09);
     beep(1175, 130, "sine", 0.07, 85);

@@ -101,7 +101,7 @@ function PokerContent() {
     const onState = (p: { table: Meta; game: PokerState }) => {
       const g = p.game;
       if (g.myTurn && !turnRef.current) sfx.turn();
-      if ((g.community?.length ?? 0) > prevCommunity.current) sfx.place();
+      if ((g.community?.length ?? 0) > prevCommunity.current) sfx.card();
       prevCommunity.current = g.community?.length ?? 0;
       if (prevHandActive.current && !g.handActive) {
         const mine = g.showdown?.find((sd) => sd.id === meIdRef.current);

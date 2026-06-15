@@ -41,6 +41,40 @@ type DomState = {
 
 type Meta = { id: string; name: string };
 
+type BoardTile = { id: string; a: number; b: number };
+let DOM_SEQ = 0;
+
+// Asigna un id estable a cada ficha del tablero para que SOLO la recién colocada
+// se anime (las demás conservan su nodo). Detecta el lado de entrada (izq/der)
+// para hacer scroll hacia la jugada.
+function reconcileBoard(
+  prev: BoardTile[],
+  board: { a: number; b: number }[],
+  sideRef: React.MutableRefObject<"left" | "right" | null>,
+): BoardTile[] {
+  if (board.length === 0) {
+    sideRef.current = null;
+    return prev.length ? [] : prev;
+  }
+  if (prev.length === 0) {
+    sideRef.current = "right";
+    return board.map((t) => ({ id: `d${DOM_SEQ++}`, a: t.a, b: t.b }));
+  }
+  if (board.length === prev.length) return prev;
+  if (board.length === prev.length + 1) {
+    const frontChanged = board[0].a !== prev[0].a || board[0].b !== prev[0].b;
+    if (frontChanged) {
+      sideRef.current = "left";
+      return [{ id: `d${DOM_SEQ++}`, a: board[0].a, b: board[0].b }, ...prev];
+    }
+    sideRef.current = "right";
+    const last = board[board.length - 1];
+    return [...prev, { id: `d${DOM_SEQ++}`, a: last.a, b: last.b }];
+  }
+  sideRef.current = "right";
+  return board.map((t) => ({ id: `d${DOM_SEQ++}`, a: t.a, b: t.b }));
+}
+
 function DominoContent() {
   const { user, refreshUser } = useAuth();
   const [mesas, setMesas] = React.useState<Mesa[]>([]);
@@ -54,6 +88,9 @@ function DominoContent() {
   const prevBoard = React.useRef(0);
   const prevPhase = React.useRef("");
   const meIdRef = React.useRef<string | null>(null);
+  const [boardTiles, setBoardTiles] = React.useState<BoardTile[]>([]);
+  const chainRef = React.useRef<HTMLDivElement>(null);
+  const sideRef = React.useRef<"left" | "right" | null>(null);
   React.useEffect(() => {
     meIdRef.current = user?.id ?? null;
   }, [user?.id]);
@@ -82,6 +119,7 @@ function DominoContent() {
       setMeta(p.table);
       setGame(g);
       setPending(null);
+      setBoardTiles((prev) => reconcileBoard(prev, g.board, sideRef));
       if (g.phase === "finished") refreshUser();
     };
     s.on("table:state", onState);
@@ -107,6 +145,14 @@ function DominoContent() {
       if (tableRef.current) s.emit("table:leave", { tableId: tableRef.current });
     };
   }, [refreshMesas, refreshUser]);
+
+  // Desplaza la cadena hacia la última ficha colocada (para seguir la jugada).
+  React.useEffect(() => {
+    const el = chainRef.current;
+    if (!el) return;
+    if (sideRef.current === "left") el.scrollTo({ left: 0, behavior: "smooth" });
+    else el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
+  }, [boardTiles]);
 
   function join(id: string) {
     socketRef.current?.emit("table:join", { tableId: id }, (res: { ok: boolean; reason?: string }) => {
@@ -269,9 +315,9 @@ function DominoContent() {
               ) : game.board.length === 0 ? (
                 <span className="dom-felt-msg">Esperando la salida…</span>
               ) : (
-                <div className="dom-chain">
-                  {game.board.map((t, i) => (
-                    <DominoPiece key={i} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
+                <div className="dom-chain" ref={chainRef}>
+                  {boardTiles.map((t) => (
+                    <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
                   ))}
                 </div>
               )}
