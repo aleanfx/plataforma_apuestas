@@ -9,6 +9,7 @@ import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { TurnTimer } from "@/components/turn-timer";
 import { TableChat } from "@/components/table-chat";
+import { DominoPiece } from "@/components/domino-piece";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -39,31 +40,6 @@ type DomState = {
 };
 
 type Meta = { id: string; name: string };
-
-function Piece({
-  a,
-  b,
-  onClick,
-  legal,
-  vertical,
-}: {
-  a: number;
-  b: number;
-  onClick?: () => void;
-  legal?: boolean;
-  vertical?: boolean;
-}) {
-  return (
-    <div
-      className={`domino-piece${legal ? " legal" : ""}${onClick ? " clickable" : ""}${vertical ? " vert" : ""}`}
-      onClick={onClick}
-    >
-      <span className="domino-half">{a}</span>
-      <span className="domino-div" />
-      <span className="domino-half">{b}</span>
-    </div>
-  );
-}
 
 function DominoContent() {
   const { user, refreshUser } = useAuth();
@@ -259,29 +235,51 @@ function DominoContent() {
             </div>
           )}
 
-          {/* Jugadores */}
-          <div className="domino-seats">
-            {game.seats.map((s) => (
-              <div key={s.id} className={`domino-seat${s.isTurn ? " turn" : ""}`}>
-                <div className="domino-seat-name">{s.name}{s.id === user?.id ? " (tú)" : ""}</div>
-                <div className="domino-seat-sub">{s.handCount} fichas{game.seatsNeeded === 4 ? ` · Pareja ${s.team + 1}` : ""}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Mesa / tablero */}
-          {game.phase !== "waiting" && (
-            <div className="game-panel" style={{ marginBottom: 22 }}>
-              <h3 style={{ marginBottom: 14 }}>Mesa {game.board.length > 0 ? `· extremos ${game.leftEnd} y ${game.rightEnd}` : ""}</h3>
-              <div className="domino-board">
-                {game.board.length === 0 ? (
-                  <span style={{ color: "var(--text-2)" }}>Esperando la salida…</span>
-                ) : (
-                  game.board.map((t, i) => <Piece key={i} a={t.a} b={t.b} vertical={t.a === t.b} />)
-                )}
-              </div>
+          {/* Mesa de fieltro con jugadores alrededor */}
+          <div className="dom-table">
+            {/* Rivales (arriba) */}
+            <div className="dom-rivals">
+              {game.seats
+                .filter((s) => s.id !== user?.id)
+                .map((s) => (
+                  <div key={s.id} className={`dom-player${s.isTurn ? " turn" : ""}`}>
+                    <div className="dom-player-av">{(s.name[0] ?? "?").toUpperCase()}</div>
+                    <div className="dom-player-info">
+                      <span className="dom-player-name">{s.name}</span>
+                      <span className="dom-player-sub">
+                        {s.handCount} fichas{game.seatsNeeded === 4 ? ` · Pareja ${s.team + 1}` : ""}
+                      </span>
+                    </div>
+                    <div className="dom-backs">
+                      {Array.from({ length: Math.min(s.handCount, 7) }, (_, i) => (
+                        <DominoPiece key={i} a={0} b={0} orientation="v" faceDown />
+                      ))}
+                    </div>
+                    {s.isTurn && <TurnTimer endsAt={game.turnEndsAt} />}
+                  </div>
+                ))}
             </div>
-          )}
+
+            {/* Tablero (cadena de fichas) */}
+            <div className="dom-felt">
+              {game.phase === "waiting" ? (
+                <span className="dom-felt-msg">
+                  Esperando jugadores ({game.seats.length}/{game.seatsNeeded})…
+                </span>
+              ) : game.board.length === 0 ? (
+                <span className="dom-felt-msg">Esperando la salida…</span>
+              ) : (
+                <div className="dom-chain">
+                  {game.board.map((t, i) => (
+                    <DominoPiece key={i} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
+                  ))}
+                </div>
+              )}
+              {game.board.length > 0 && (
+                <div className="dom-ends">extremos {game.leftEnd} y {game.rightEnd}</div>
+              )}
+            </div>
+          </div>
 
           {/* Acciones / mano */}
           <div className="game-panel">
@@ -310,10 +308,11 @@ function DominoContent() {
                     <span style={{ color: "var(--text-2)" }}>Sin fichas.</span>
                   ) : (
                     game.myHand.map((t) => (
-                      <Piece
+                      <DominoPiece
                         key={t.id}
                         a={t.a}
                         b={t.b}
+                        orientation="v"
                         legal={game.myTurn && !!legalMap[t.id]}
                         onClick={game.myTurn && legalMap[t.id] ? () => clickTile(t) : undefined}
                       />

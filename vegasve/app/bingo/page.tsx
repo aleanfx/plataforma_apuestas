@@ -333,14 +333,24 @@ function BingoContent() {
               </div>
 
               <div className="game-panel">
-                <h3 style={{ marginBottom: 12 }}>Cantados ({game.called.length})</h3>
-                <div className="bingo-called">
-                  {game.called.length === 0 ? (
-                    <span style={{ color: "var(--text-2)" }}>Aún no empieza.</span>
-                  ) : (
-                    game.called.map((n) => (
-                      <span key={n} className="bingo-ball">{n}</span>
-                    ))
+                <h3 style={{ marginBottom: 12 }}>Tablero ({game.called.length}/75)</h3>
+                <div className="bingo-board">
+                  {([["B", 1], ["I", 16], ["N", 31], ["G", 46], ["O", 61]] as [string, number][]).map(
+                    ([letter, start]) => (
+                      <div className="bingo-board-row" key={letter}>
+                        <span className="bingo-board-letter">{letter}</span>
+                        {Array.from({ length: 15 }, (_, i) => {
+                          const n = start + i;
+                          const on = game.called.includes(n);
+                          const last = n === game.lastCalled;
+                          return (
+                            <span key={n} className={`bingo-cell-n${on ? " on" : ""}${last ? " last" : ""}`}>
+                              {n}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ),
                   )}
                 </div>
               </div>

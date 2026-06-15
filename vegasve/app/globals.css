@@ -1601,10 +1601,181 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 .social-row .gsi-btn { display: flex; justify-content: center; width: 100%; }
 
+/* ============================================================
+   Dominó — fichas con puntos reales + mesa de fieltro
+   ============================================================ */
+.dom-tile {
+  --hs: 44px; /* tamaño de cada mitad */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 9px;
+  background: linear-gradient(160deg, #fdfdf5, #e9e6d6);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.dom-tile.v { flex-direction: column; }
+.dom-tile.h { flex-direction: row; }
+.dom-half {
+  width: var(--hs);
+  height: var(--hs);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 11%;
+  box-sizing: border-box;
+}
+.dom-pip {
+  align-self: center;
+  justify-self: center;
+  width: 62%;
+  max-width: 10px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: transparent;
+}
+.dom-pip.on { background: #2a1c52; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4); }
+.dom-tile.v .dom-divider { width: 80%; height: 2px; margin: 1px 0; background: rgba(0, 0, 0, 0.22); border-radius: 2px; }
+.dom-tile.h .dom-divider { width: 2px; height: 80%; margin: 0 1px; background: rgba(0, 0, 0, 0.22); border-radius: 2px; }
+.dom-tile.clickable { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.dom-tile.clickable:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); }
+.dom-tile.legal { outline: 2px solid var(--green-bright); outline-offset: 1px; }
+.dom-tile.down {
+  padding: 0;
+  width: calc(var(--hs) + 6px);
+  height: calc(var(--hs) * 1.9);
+  background: linear-gradient(135deg, #4a3a86, #2a1c52);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(168, 150, 255, 0.18);
+}
+
+.dom-table {
+  background: radial-gradient(ellipse at 50% 38%, #1f6b3a, #0d3a1f 78%);
+  border: 7px solid #5a3a1e;
+  border-radius: 26px;
+  padding: 18px 16px;
+  margin-bottom: 22px;
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.55), var(--shadow);
+}
+.dom-rivals { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+.dom-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 99px;
+  background: rgba(13, 11, 30, 0.5);
+  border: 1px solid transparent;
+}
+.dom-player.turn { border-color: var(--gold); box-shadow: 0 0 16px -3px var(--gold); }
+.dom-player-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dom-player-info { display: flex; flex-direction: column; line-height: 1.2; }
+.dom-player-name { font-weight: 600; color: var(--text); font-size: 14px; }
+.dom-player-sub { color: var(--text-2); font-size: 12px; }
+.dom-backs { display: flex; }
+.dom-backs .dom-tile { --hs: 15px; }
+.dom-backs .dom-tile + .dom-tile { margin-left: -9px; }
+
+.dom-felt {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+.dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
+.dom-chain { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 3px; }
+.dom-chain .dom-tile { --hs: 34px; }
+.dom-ends {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.domino-hand { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; padding-top: 6px; }
+
 /* ===== Ajustes móviles de las mesas ===== */
 @media (max-width: 768px) {
   .domino-board { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
   .poker-seats { gap: 8px; }
   .chat-msgs { max-height: 160px; }
   .sound-toggle { width: 40px; height: 40px; right: 12px; bottom: 12px; }
+  .dom-chain .dom-tile { --hs: 26px; }
+  .dom-tile { --hs: 38px; }
+  .poker-table { padding: 28px 16px; }
+}
+
+/* ============================================================
+   Bingo — bola 3D + tablero 1-75 ; Póker — mesa ovalada
+   (overrides intencionales: van al final para ganar especificidad)
+   ============================================================ */
+.bingo-last {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: #04210f;
+  line-height: 1;
+  background: radial-gradient(circle at 32% 28%, #ffe9a8, var(--gold) 56%, var(--gold-deep));
+  box-shadow: inset -6px -8px 14px rgba(0, 0, 0, 0.28), inset 4px 5px 10px rgba(255, 255, 255, 0.55),
+    0 8px 18px -6px rgba(0, 0, 0, 0.6);
+}
+
+.bingo-board { display: flex; flex-direction: column; gap: 5px; }
+.bingo-board-row { display: flex; gap: 4px; align-items: center; }
+.bingo-board-letter { width: 20px; flex-shrink: 0; text-align: center; font-weight: 800; color: var(--gold); }
+.bingo-cell-n {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  border-radius: 5px;
+  background: rgba(168, 150, 255, 0.07);
+  color: var(--text-3);
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.bingo-cell-n.on { background: var(--purple-bright); color: #fff; font-weight: 700; box-shadow: 0 0 8px -2px var(--purple-bright); }
+.bingo-cell-n.last { background: var(--gold); color: #04210f; transform: scale(1.14); box-shadow: 0 0 12px -1px var(--gold); }
+
+.poker-table {
+  position: relative;
+  max-width: 580px;
+  margin: 0 auto 24px;
+  padding: 44px 30px;
+  text-align: center;
+  border-radius: 50% / 34%;
+  background: radial-gradient(ellipse at center, #1f7a4e 0%, #114a30 72%);
+  border: 11px solid #3a2a1e;
+  box-shadow: inset 0 0 55px rgba(0, 0, 0, 0.5), 0 14px 34px -12px rgba(0, 0, 0, 0.75);
+}
+.poker-pot {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  padding: 6px 18px;
+  border-radius: 99px;
 }
