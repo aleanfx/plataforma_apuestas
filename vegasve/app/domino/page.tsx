@@ -83,21 +83,28 @@ type Placed = { id: string; a: number; b: number; orient: "h" | "v"; left: numbe
 /**
  * Recorre la cadena con un "cursor" que avanza en horizontal. Cuando la próxima
  * ficha no cabe contra el borde, esa ficha se coloca VERTICAL (esquina en L) y la
- * cadena baja una fila y continúa en sentido contrario. Las posiciones se calculan
- * en píxeles a partir de la geometría de la ficha (no es una rejilla de filas).
- * Las dobles van perpendiculares (verticales) dentro del tramo horizontal.
+ * cadena baja una fila y continúa en sentido contrario.
+ *
+ * Coincidencia número con número: el motor del backend mantiene el invariante
+ * board[i].b === board[i+1].a. Por eso:
+ *  - tramo hacia la DERECHA: la ficha se muestra [a|b] (b queda a la derecha y
+ *    coincide con la a de la siguiente).
+ *  - tramo hacia la IZQUIERDA: se muestra INVERTIDA [b|a] para mantener la unión.
+ *  - esquina vertical: a arriba (conecta con la fila de arriba) y b abajo.
+ *
+ * Usa el tamaño REAL medido de la ficha (S corto, L largo).
  */
-function computeSnake(tiles: BoardTile[], maxW: number, hs: number): { items: Placed[]; width: number; height: number } {
-  // Geometría EXACTA: con relleno 1px + divisor 2px en la ficha del tablero,
-  // el lado largo L mide justo el doble del corto S. Así la esquina vertical
-  // (alto L) abarca exactamente las dos filas (alto S c/u) y la "L" cuadra.
+function computeSnake(
+  tiles: BoardTile[],
+  maxW: number,
+  S: number,
+  L: number,
+): { items: Placed[]; width: number; height: number } {
   const g = 2; // separación entre fichas
-  const S = hs + 2; // lado corto (alto de una ficha horizontal)
-  const L = 2 * hs + 4; // lado largo (ancho de una ficha horizontal) = 2·S
   const m = 6; // margen
-  const right = Math.max(maxW - m, S * 2 + m);
-  const rowDrop = L - S; // baja una fila; la esquina vertical une ambas filas
-  const reserve = S + g; // espacio que se guarda para la esquina al final de la fila
+  const right = Math.max(maxW - m, L + m);
+  const rowDrop = Math.round(L - S / 2 + 4); // separación vertical entre filas (sin choques)
+  const reserve = S + g; // hueco que se guarda para la esquina al final de la fila
   const raw: Placed[] = [];
   let dir: 1 | -1 = 1; // 1 = derecha, -1 = izquierda
   let rowTop = m;
@@ -107,36 +114,36 @@ function computeSnake(tiles: BoardTile[], maxW: number, hs: number): { items: Pl
     const t = tiles[i];
     const isDouble = t.a === t.b;
     const wRun = isDouble ? S : L; // ancho que ocupa en el tramo horizontal
-    // ¿Cabe la ficha dejando hueco para una posible esquina al borde?
     const fits = dir === 1 ? x + wRun <= right - reserve : x - wRun >= m + reserve;
 
     if (!fits && raw.length > 0) {
-      // No cabe: esta ficha es la ESQUINA -> vertical, conectando hacia abajo.
-      // La fila siguiente continúa PEGADA al mismo lado de la esquina (la "L").
+      // ESQUINA -> vertical (a arriba, b abajo). La fila sigue pegada al mismo lado.
       const cl = dir === 1 ? x : x - S;
       raw.push({ id: t.id, a: t.a, b: t.b, orient: "v", left: cl, top: rowTop });
       if (dir === 1) {
         dir = -1;
-        x = cl; // dobla a la derecha: la fila de abajo sale del borde IZQ. de la esquina, hacia la izquierda
+        x = cl; // dobla a la derecha: la fila baja sale del borde IZQ. de la esquina, hacia la izquierda
       } else {
         dir = 1;
-        x = cl + S; // dobla a la izquierda: la fila de abajo sale del borde DER. de la esquina, hacia la derecha
+        x = cl + S; // dobla a la izquierda: la fila baja sale del borde DER. de la esquina, hacia la derecha
       }
       rowTop += rowDrop;
       continue;
     }
 
-    const orient: "h" | "v" = isDouble ? "v" : "h";
-    const top = isDouble ? rowTop - (L - S) / 2 : rowTop; // dobles centradas en la línea
-    let left: number;
-    if (dir === 1) {
-      left = x;
-      x += wRun + g;
+    if (isDouble) {
+      // Doble perpendicular (vertical), centrada en la línea de la fila.
+      const left = dir === 1 ? x : x - S;
+      raw.push({ id: t.id, a: t.a, b: t.b, orient: "v", left, top: rowTop - (L - S) / 2 });
+      x += dir === 1 ? S + g : -(S + g);
     } else {
-      left = x - wRun;
-      x -= wRun + g;
+      // Ficha horizontal; invertida si la fila avanza hacia la izquierda.
+      const left = dir === 1 ? x : x - L;
+      const a = dir === 1 ? t.a : t.b;
+      const b = dir === 1 ? t.b : t.a;
+      raw.push({ id: t.id, a, b, orient: "h", left, top: rowTop });
+      x += dir === 1 ? L + g : -(L + g);
     }
-    raw.push({ id: t.id, a: t.a, b: t.b, orient, left, top });
   }
 
   // Normaliza a (0,0) y calcula el tamaño total (para centrar el bloque).
@@ -255,19 +262,20 @@ function DominoContent() {
     return () => document.body.classList.remove("immersive-on");
   }, [immersive]);
 
-  // Mide el ancho disponible del tablero y el tamaño real de ficha (--hs) para
-  // calcular la cadena en serpiente.
+  // Mide el ancho del tablero y el tamaño REAL de la ficha (lado corto/largo)
+  // para calcular la cadena en serpiente. offsetWidth/Height ignoran transforms.
   const [feltW, setFeltW] = React.useState(0);
-  const [hs, setHs] = React.useState(18);
+  const [dims, setDims] = React.useState({ S: 20, L: 40 });
   React.useEffect(() => {
     const felt = feltRef.current;
     if (!felt) return;
     const measure = () => {
       setFeltW(felt.clientWidth);
       const tileEl = felt.querySelector(".dom-tile") as HTMLElement | null;
-      if (tileEl) {
-        const v = parseFloat(getComputedStyle(tileEl).getPropertyValue("--hs"));
-        if (v) setHs(v);
+      if (tileEl && tileEl.offsetWidth && tileEl.offsetHeight) {
+        const a = tileEl.offsetWidth;
+        const b = tileEl.offsetHeight;
+        setDims({ S: Math.min(a, b), L: Math.max(a, b) });
       }
     };
     measure();
@@ -277,8 +285,8 @@ function DominoContent() {
   }, [boardTiles.length, immersive]);
 
   const layout = React.useMemo(
-    () => computeSnake(boardTiles, feltW || 600, hs),
-    [boardTiles, feltW, hs],
+    () => computeSnake(boardTiles, feltW || 600, dims.S, dims.L),
+    [boardTiles, feltW, dims],
   );
 
   // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
