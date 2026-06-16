@@ -77,6 +77,82 @@ function reconcileBoard(
   return board.map((t) => ({ id: `d${DOM_SEQ++}`, a: t.a, b: t.b }));
 }
 
+// --- Motor de layout del tablero (cadena en serpiente que dobla en L) ---------
+type Placed = { id: string; a: number; b: number; orient: "h" | "v"; left: number; top: number };
+
+/**
+ * Recorre la cadena con un "cursor" que avanza en horizontal. Cuando la próxima
+ * ficha no cabe contra el borde, esa ficha se coloca VERTICAL (esquina en L) y la
+ * cadena baja una fila y continúa en sentido contrario. Las posiciones se calculan
+ * en píxeles a partir de la geometría de la ficha (no es una rejilla de filas).
+ * Las dobles van perpendiculares (verticales) dentro del tramo horizontal.
+ */
+function computeSnake(tiles: BoardTile[], maxW: number, hs: number): { items: Placed[]; width: number; height: number } {
+  const g = 3; // separación entre fichas
+  const S = hs + 10; // lado corto (alto de una ficha horizontal)
+  const L = 2 * hs + 12; // lado largo (ancho de una ficha horizontal)
+  const m = 6; // margen
+  const right = Math.max(maxW - m, S * 2 + m);
+  const rowDrop = L - S + g; // cuánto baja la cadena al doblar (la esquina conecta filas)
+  const raw: Placed[] = [];
+  let dir: 1 | -1 = 1; // 1 = derecha, -1 = izquierda
+  let rowTop = m;
+  let x = m; // dir 1: borde izq. de la próxima ficha · dir -1: borde der. de la próxima ficha
+
+  for (let i = 0; i < tiles.length; i++) {
+    const t = tiles[i];
+    const isDouble = t.a === t.b;
+    const wRun = isDouble ? S : L; // ancho que ocupa en el tramo horizontal
+    const fits = dir === 1 ? x + wRun <= right : x - wRun >= m;
+
+    if (!fits && raw.length > 0) {
+      // No cabe: esta ficha es la ESQUINA -> vertical, conectando hacia abajo.
+      const cl = dir === 1 ? Math.min(x, right - S) : Math.max(x - S, m);
+      raw.push({ id: t.id, a: t.a, b: t.b, orient: "v", left: cl, top: rowTop });
+      if (dir === 1) {
+        dir = -1;
+        x = cl + S; // la siguiente fila arranca bajo la esquina, hacia la izquierda
+      } else {
+        dir = 1;
+        x = cl; // ...hacia la derecha
+      }
+      rowTop += rowDrop;
+      continue;
+    }
+
+    const orient: "h" | "v" = isDouble ? "v" : "h";
+    const top = isDouble ? rowTop - (L - S) / 2 : rowTop; // dobles centradas en la línea
+    let left: number;
+    if (dir === 1) {
+      left = x;
+      x += wRun + g;
+    } else {
+      left = x - wRun;
+      x -= wRun + g;
+    }
+    raw.push({ id: t.id, a: t.a, b: t.b, orient, left, top });
+  }
+
+  // Normaliza a (0,0) y calcula el tamaño total (para centrar el bloque).
+  let minL = Infinity, minT = Infinity;
+  for (const p of raw) {
+    minL = Math.min(minL, p.left);
+    minT = Math.min(minT, p.top);
+  }
+  if (!isFinite(minL)) return { items: [], width: 0, height: 0 };
+  let width = 0, height = 0;
+  const items = raw.map((p) => {
+    const left = p.left - minL;
+    const top = p.top - minT;
+    const w = p.orient === "v" ? S : L;
+    const h = p.orient === "v" ? L : S;
+    width = Math.max(width, left + w);
+    height = Math.max(height, top + h);
+    return { ...p, left, top };
+  });
+  return { items, width: width + 2, height: height + 2 };
+}
+
 function DominoContent() {
   const { user, refreshUser } = useAuth();
   const [mesas, setMesas] = React.useState<Mesa[]>([]);
@@ -173,17 +249,20 @@ function DominoContent() {
     return () => document.body.classList.remove("immersive-on");
   }, [immersive]);
 
-  // Cuántas fichas caben por fila (para acomodarlas en "serpiente" doblando en L).
-  const [perRow, setPerRow] = React.useState(8);
+  // Mide el ancho disponible del tablero y el tamaño real de ficha (--hs) para
+  // calcular la cadena en serpiente.
+  const [feltW, setFeltW] = React.useState(0);
+  const [hs, setHs] = React.useState(18);
   React.useEffect(() => {
     const felt = feltRef.current;
     if (!felt) return;
     const measure = () => {
+      setFeltW(felt.clientWidth);
       const tileEl = felt.querySelector(".dom-tile") as HTMLElement | null;
-      const hs = tileEl ? parseFloat(getComputedStyle(tileEl).getPropertyValue("--hs")) || 20 : 20;
-      const tileW = 2 * hs + 16; // dos mitades + relleno + separación
-      const avail = felt.clientWidth - 10;
-      setPerRow(Math.max(1, Math.floor(avail / tileW)));
+      if (tileEl) {
+        const v = parseFloat(getComputedStyle(tileEl).getPropertyValue("--hs"));
+        if (v) setHs(v);
+      }
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -191,12 +270,10 @@ function DominoContent() {
     return () => ro.disconnect();
   }, [boardTiles.length, immersive]);
 
-  // Parte la cadena en filas; las filas impares van al revés (serpiente: ─┐ ┌─).
-  const rows = React.useMemo(() => {
-    const out: BoardTile[][] = [];
-    for (let i = 0; i < boardTiles.length; i += perRow) out.push(boardTiles.slice(i, i + perRow));
-    return out;
-  }, [boardTiles, perRow]);
+  const layout = React.useMemo(
+    () => computeSnake(boardTiles, feltW || 600, hs),
+    [boardTiles, feltW, hs],
+  );
 
   // Coloca a cada rival alrededor de la mesa según su posición relativa a mí:
   // el compañero (offset 2) arriba, y los rivales a izquierda/derecha.
@@ -377,12 +454,14 @@ function DominoContent() {
                 ) : game.board.length === 0 ? (
                   <span className="dom-felt-msg">Esperando la salida…</span>
                 ) : (
-                  <div className="dom-chain" ref={chainRef}>
-                    {rows.map((row, r) => (
-                      <div key={r} className={`dom-row${r % 2 ? " rev" : ""}`}>
-                        {row.map((t) => (
-                          <DominoPiece key={t.id} a={t.a} b={t.b} orientation={t.a === t.b ? "v" : "h"} />
-                        ))}
+                  <div
+                    className="dom-chain"
+                    ref={chainRef}
+                    style={{ width: layout.width, height: layout.height }}
+                  >
+                    {layout.items.map((p) => (
+                      <div key={p.id} className="dom-place" style={{ left: p.left, top: p.top }}>
+                        <DominoPiece a={p.a} b={p.b} orientation={p.orient} />
                       </div>
                     ))}
                   </div>

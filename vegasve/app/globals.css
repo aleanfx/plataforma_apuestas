@@ -1722,19 +1722,11 @@ html, body { overflow-x: clip; max-width: 100%; }
   overflow-x: hidden;
 }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
-/* Tablero en "serpiente": filas de fichas que doblan en L en cada extremo.
-   Tamaño FIJO (no se aleja la vista). Las filas impares van al revés. */
-.dom-chain {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  width: 100%;
-}
-.dom-row { display: flex; align-items: center; gap: 3px; }
-.dom-row.rev { flex-direction: row-reverse; }
-.dom-chain .dom-tile { --hs: 26px; flex-shrink: 0; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
+/* Tablero en "serpiente": cadena continua que dobla en L (esquina vertical) al
+   llegar al borde. Cada ficha se posiciona en absoluto según la geometría. */
+.dom-chain { position: relative; margin: auto; flex-shrink: 0; }
+.dom-place { position: absolute; transition: left 0.25s ease, top 0.25s ease; }
+.dom-chain .dom-tile { --hs: 26px; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
 /* Animación: la ficha "cae" desde arriba con un leve giro, como puesta con la mano */
 @keyframes tile-place {
   0% { opacity: 0; transform: translateY(-34px) rotate(-9deg) scale(0.7); }
