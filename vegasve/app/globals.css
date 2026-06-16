@@ -1731,8 +1731,16 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 .dom-felt-msg { color: rgba(255, 255, 255, 0.6); font-size: 15px; }
 /* Tablero en "serpiente": cadena continua que dobla en L (esquina vertical) al
-   llegar al borde. Cada ficha se posiciona en absoluto según la geometría. */
-.dom-chain { position: relative; margin: auto; flex-shrink: 0; }
+   llegar al borde. Cada ficha se posiciona en absoluto según la geometría.
+   La perspectiva inclina TODO el tablero, como una cámara mirando la mesa
+   desde un ángulo (no completamente desde arriba). */
+.dom-chain {
+  position: relative;
+  margin: auto;
+  flex-shrink: 0;
+  transform: perspective(820px) rotateX(22deg);
+  transform-origin: center 62%;
+}
 .dom-place { position: absolute; transition: left 0.25s ease, top 0.25s ease; }
 /* Relleno 1px (divisor 2px) -> el lado largo mide EXACTO 2× el corto, para que
    la esquina en L cuadre con las dos filas. */
