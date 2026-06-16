@@ -1726,7 +1726,9 @@ html, body { overflow-x: clip; max-width: 100%; }
    llegar al borde. Cada ficha se posiciona en absoluto según la geometría. */
 .dom-chain { position: relative; margin: auto; flex-shrink: 0; }
 .dom-place { position: absolute; transition: left 0.25s ease, top 0.25s ease; }
-.dom-chain .dom-tile { --hs: 26px; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
+/* Relleno 1px (divisor 2px) -> el lado largo mide EXACTO 2× el corto, para que
+   la esquina en L cuadre con las dos filas. */
+.dom-chain .dom-tile { --hs: 26px; padding: 1px; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
 /* Animación: la ficha "cae" desde arriba con un leve giro, como puesta con la mano */
 @keyframes tile-place {
   0% { opacity: 0; transform: translateY(-34px) rotate(-9deg) scale(0.7); }

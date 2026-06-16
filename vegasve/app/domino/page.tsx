@@ -88,33 +88,39 @@ type Placed = { id: string; a: number; b: number; orient: "h" | "v"; left: numbe
  * Las dobles van perpendiculares (verticales) dentro del tramo horizontal.
  */
 function computeSnake(tiles: BoardTile[], maxW: number, hs: number): { items: Placed[]; width: number; height: number } {
-  const g = 3; // separación entre fichas
-  const S = hs + 10; // lado corto (alto de una ficha horizontal)
-  const L = 2 * hs + 12; // lado largo (ancho de una ficha horizontal)
+  // Geometría EXACTA: con relleno 1px + divisor 2px en la ficha del tablero,
+  // el lado largo L mide justo el doble del corto S. Así la esquina vertical
+  // (alto L) abarca exactamente las dos filas (alto S c/u) y la "L" cuadra.
+  const g = 2; // separación entre fichas
+  const S = hs + 2; // lado corto (alto de una ficha horizontal)
+  const L = 2 * hs + 4; // lado largo (ancho de una ficha horizontal) = 2·S
   const m = 6; // margen
   const right = Math.max(maxW - m, S * 2 + m);
-  const rowDrop = L - S + g; // cuánto baja la cadena al doblar (la esquina conecta filas)
+  const rowDrop = L - S; // baja una fila; la esquina vertical une ambas filas
+  const reserve = S + g; // espacio que se guarda para la esquina al final de la fila
   const raw: Placed[] = [];
   let dir: 1 | -1 = 1; // 1 = derecha, -1 = izquierda
   let rowTop = m;
-  let x = m; // dir 1: borde izq. de la próxima ficha · dir -1: borde der. de la próxima ficha
+  let x = m; // dir 1: borde IZQ. de la próxima ficha · dir -1: borde DER. de la próxima ficha
 
   for (let i = 0; i < tiles.length; i++) {
     const t = tiles[i];
     const isDouble = t.a === t.b;
     const wRun = isDouble ? S : L; // ancho que ocupa en el tramo horizontal
-    const fits = dir === 1 ? x + wRun <= right : x - wRun >= m;
+    // ¿Cabe la ficha dejando hueco para una posible esquina al borde?
+    const fits = dir === 1 ? x + wRun <= right - reserve : x - wRun >= m + reserve;
 
     if (!fits && raw.length > 0) {
       // No cabe: esta ficha es la ESQUINA -> vertical, conectando hacia abajo.
-      const cl = dir === 1 ? Math.min(x, right - S) : Math.max(x - S, m);
+      // La fila siguiente continúa PEGADA al mismo lado de la esquina (la "L").
+      const cl = dir === 1 ? x : x - S;
       raw.push({ id: t.id, a: t.a, b: t.b, orient: "v", left: cl, top: rowTop });
       if (dir === 1) {
         dir = -1;
-        x = cl + S; // la siguiente fila arranca bajo la esquina, hacia la izquierda
+        x = cl; // dobla a la derecha: la fila de abajo sale del borde IZQ. de la esquina, hacia la izquierda
       } else {
         dir = 1;
-        x = cl; // ...hacia la derecha
+        x = cl + S; // dobla a la izquierda: la fila de abajo sale del borde DER. de la esquina, hacia la derecha
       }
       rowTop += rowDrop;
       continue;
