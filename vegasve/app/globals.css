@@ -1633,11 +1633,13 @@ html, body { overflow-x: clip; max-width: 100%; }
 .dom-half {
   width: var(--hs);
   height: var(--hs);
+  flex-shrink: 0;
   display: block;
   overflow: visible;
 }
-.dom-tile.v .dom-divider { width: 84%; height: 2px; margin: 1px 0; background: rgba(0, 0, 0, 0.34); border-radius: 2px; }
-.dom-tile.h .dom-divider { width: 2px; height: 84%; margin: 0 1px; background: rgba(0, 0, 0, 0.34); border-radius: 2px; }
+.dom-divider { flex-shrink: 0; }
+.dom-tile.v .dom-divider { width: 86%; height: 2px; margin: 1px 0; background: rgba(0, 0, 0, 0.42); border-radius: 2px; }
+.dom-tile.h .dom-divider { width: 2px; height: 86%; margin: 0 1px; background: rgba(0, 0, 0, 0.42); border-radius: 2px; }
 .dom-tile.clickable { cursor: pointer; transition: transform 0.12s ease; }
 .dom-tile.clickable:hover { transform: translateY(-5px); }
 /* Borde de selección que SIGUE la forma redondeada de la ficha */
