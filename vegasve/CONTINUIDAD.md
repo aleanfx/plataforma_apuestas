@@ -2,7 +2,7 @@
 
 > **Léeme primero.** Este documento es el "estado de la verdad" para retomar el proyecto en
 > una sesión nueva sin contexto previo. Resume QUÉ es, CÓMO está construido, DÓNDE está cada
-> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **12 de junio de 2026**.
+> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **15 de junio de 2026**.
 >
 > **🔧 NOVEDAD (jun 2026): ya hay BACKEND.** El proyecto dejó de ser solo-frontend. Hay un
 > backend real en [`../server/`](../server/) (Node/TS + Express + Socket.IO + Prisma + Neon).
@@ -164,8 +164,12 @@ nombres claros ("Criptomonedas").
 - ⏸️ **Login con Google:** código listo (`/auth/google` + `components/google-signin.tsx`); falta crear el
   OAuth Client ID (cuenta `betmarplay@gmail.com` en revisión por Google) y poner `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
   (Vercel) + `GOOGLE_CLIENT_ID` (Render).
-- 🎨 **Rediseño visual de los juegos:** Dominó ya rediseñado (recuadro único, fichas de puntos, tablero
-  auto-escalado, chat flotante). **Falta** subir Póker y Bingo al mismo nivel.
+- 🎨 **Rediseño visual:** **Dominó muy pulido** (15/06): jugadores alrededor de la mesa, **tablero en
+  serpiente que dobla en L** (`computeSnake`, fichas de tamaño fijo que **coinciden número con número**),
+  **fichas planas 2D** (el cliente descartó el 3D), inclinación de cámara, **modo inmersivo horizontal en
+  celular** (giro CSS, funciona en iPhone), pantalla completa solo del juego (`components/stage-fullscreen.tsx`),
+  chat que cierra al tocar fuera, iconos SVG (`components/icons.tsx`). Backend: **límite de 1 mesa activa
+  por usuario**. **Falta** subir **Póker y Bingo** al nivel del Dominó. Ver [`BITACORA.md`](../BITACORA.md) §14.
 - **Parley y Caballos:** Fase 2 (siguen como prototipo).
 
 > Auth, billetera, lobby, perfil, admin y los 3 juegos ya usan datos reales. Solo parley/caballos
@@ -181,8 +185,14 @@ nombres claros ("Criptomonedas").
 
 ## 12. Registro de cambios recientes (changelog)
 
-Orden cronológico inverso. La punta de `main` en la última sesión documentada fue **`4020a48`**.
+Orden cronológico inverso.
 
+- **Pulido del Dominó (15/06/2026)** — jugadores alrededor de la mesa; **tablero en serpiente que dobla
+  en L** (`computeSnake`, fichas fijas que coinciden número con número); **fichas planas 2D** más grandes;
+  inclinación de cámara; **modo inmersivo horizontal en celular** (giro CSS, sirve en iPhone); pantalla
+  completa solo del juego (`components/stage-fullscreen.tsx`, iPhone simulada); chat cierra al tocar fuera;
+  emojis→SVG (`components/icons.tsx`); backend **1 mesa por usuario**; fix perfil `.pcard`→`.pkcard`;
+  overlay de servidor con pre-encendido. Detalle en [`BITACORA.md`](../BITACORA.md) §14.
 - **backend M8 (hardening+deploy)** — rate-limit (`server/src/middleware/rateLimit.ts`), helmet, morgan,
   `trust proxy`, límite de body. `render.yaml`/`Dockerfile` listos (Render free). Guía `server/DESPLIEGUE.md`.
 - **backend M7 (admin)** — `/admin/metrics|users|tables`, suspender/reactivar; `components/admin-metrics|users|tables.tsx`.

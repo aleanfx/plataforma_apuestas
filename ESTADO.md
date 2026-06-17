@@ -1,6 +1,6 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **14 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **15 de junio de 2026**.
 > 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
@@ -87,8 +87,27 @@ plataforma_apuestas/
   en **línea única que se auto-escala** (sin scroll ni wrap), animación de colocación, clack de madera,
   fichas del rival como dominó de espalda. **Chat flotante** (botón + burbujas notificación). Bingo:
   tablero 1-75 + bola 3D. Póker: mesa ovalada. **Falta:** llevar Póker y Bingo al nivel de Dominó.
-- **🖥️ Pantalla completa** (`components/fullscreen-toggle.tsx`, PC + Android). Práctica de **Dominó a 4**
-  (parejas, verificado).
+- **🖥️ Pantalla completa** y práctica de **Dominó a 4** (parejas). (Ver actualización del 15/06 abajo.)
+
+## Pulido del Dominó (15/06/2026)
+
+Iteración visual completa del Dominó (afinada con capturas del cliente). Detalle técnico en
+[`BITACORA.md`](./BITACORA.md) §14.
+
+- **Jugadores alrededor de la mesa:** compañero arriba, rivales a los lados, tú abajo.
+- **Tablero en serpiente que dobla en L** (`computeSnake` en `app/domino/page.tsx`): cadena continua que,
+  al llegar al borde, gira con una **ficha vertical (esquina)** y sigue en sentido contrario. Fichas de
+  **tamaño fijo** (no se aleja la vista) y **coinciden número con número** en cada junta (aprovecha el
+  invariante `board[i].b===board[i+1].a` del motor).
+- **Fichas planas 2D** (decisión final del cliente, tras probar 3D), más grandes, puntos sólidos.
+- **Inclinación de cámara** (`perspective + rotateX`) del tablero.
+- **Modo inmersivo horizontal en celular:** en una mesa, el juego ocupa la pantalla y, en vertical, se
+  **gira 90° por CSS** (funciona en iPhone, donde no se puede forzar la orientación).
+- **Pantalla completa SOLO del juego** (`components/stage-fullscreen.tsx`; en iPhone, simulada por CSS).
+- **Chat flotante** que cierra al tocar fuera; **emojis → iconos SVG** (`components/icons.tsx`).
+- **Límite de 1 mesa activa por usuario** (backend) para evitar choques entre dispositivos.
+- **Fix:** perfil roto por colisión de clase `.pcard` (perfil vs carta de póker) → carta de póker = `.pkcard`.
+- **Overlay "servidor despertando"** con pre-encendido + botones Reintentar/Recargar.
 
 ## Lo que falta (acción tuya)
 

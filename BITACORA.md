@@ -400,3 +400,83 @@ Práctica de Dominó cambiada a **4 jugadores (parejas)** en `src/games/practice
 **Iteración de UX (lecciones, blind):** el tablero pasó por scroll horizontal → wrap en filas (ambos
 se veían feos) → **línea única auto-escalada** (la que funcionó). Construido sin ver el render: cada pase
 se desplegó y se afinó con capturas del dueño.
+
+## 14. Pulido del Dominó (mesa, móvil, tablero en serpiente, fichas) (15/06/2026)
+
+Sesión larga de iteración visual del **Dominó** (todo afinado con capturas del cliente). Resumen:
+
+**Jugadores alrededor de la mesa** (`app/domino/page.tsx` + `.dom-table-area` en `globals.css`):
+- Grid: compañero **arriba**, rivales **izquierda/derecha**, yo **abajo** (la mano). `seatPos(offset,total)`
+  usa el offset del asiento relativo al mío (`mySeat`). Etiqueta de nombre cuadrada-redondeada con `…`.
+- Se quitó el sub-texto "X fichas · Pareja Y" (redundante y mostraba "Pareja 3"). "Esperando jugadores"
+  solo aparece si faltan (<2); si ya están, solo el botón Iniciar.
+
+**Recuadro/HUD:** `.game-stage` más ancho en PC (`min(1180px,96vw)`). «Tus fichas» y «Es tu turno · Xs»
+anclados en las **esquinas** del área de mano. **Botón Pasar superpuesto**: cuando `mustPass`, una capa
+(`.hand-pass-veil`) oscurece las fichas y el botón queda centrado encima. Mano en **una sola fila** (nunca
+2 filas). Stats en celular en **rejilla 2×2** (no se desbordan). «extremos X y X» oculto en celular.
+
+**Chat flotante:** se cierra al **tocar fuera** (PC y celular) con un `.chat-backdrop` (capa invisible).
+Iconos del chat/sonido/pantalla-completa pasaron de **emoji a SVG** (`components/icons.tsx`: Chat, SoundOn/Off,
+Expand/Compress, Cpu, Trophy).
+
+**Pantalla completa SOLO del juego** (`components/stage-fullscreen.tsx`, reemplaza al global
+`fullscreen-toggle.tsx` que se borró):
+- PC/Android: Fullscreen API sobre el `.game-stage`.
+- **iPhone/Safari NO permite** pantalla completa de un `<div>` (solo video) → **fullscreen simulado**:
+  `position:fixed` que cubre la pantalla. ⚠️ `body{overflow:hidden}` **rompe** los `position:fixed` en iOS
+  (bug de Safari) → NO usarlo. El botón de salir va `fixed` + `env(safe-area-inset-*)` para no quedar bajo
+  el notch ni desplazarse con el scroll.
+
+**Modo inmersivo horizontal en celular** (lo pidió el cliente):
+- En celular, al estar en una mesa, el `.game-stage` toma toda la pantalla y, **en vertical, se gira 90°
+  por CSS** (`transform: rotate(90deg)` + `width/height` con **`dvw/dvh`** —NO `vw/vh`, que en iPhone
+  incluyen las barras del navegador y cortan el contenido). En horizontal real solo ocupa la pantalla.
+- iOS no deja **forzar** la orientación; el truco CSS lo resuelve. Se oculta nav/ticker/sonido; el
+  `<TableChat>` se movió **dentro** del `.game-stage` (un ancestro con `transform` ancla sus hijos
+  `position:fixed` a él → el chat queda bien dentro del juego girado). Botón **Salir** dentro.
+
+**Tablero en SERPIENTE que dobla en L** (lo más importante; varias iteraciones — `computeSnake` en
+`app/domino/page.tsx`):
+- Motor propio: recorre la cadena con un cursor que avanza horizontal y, al no caber contra el borde,
+  coloca la ficha **vertical (esquina en L)**, baja una fila y sigue en sentido contrario (no son filas
+  tipo "procesador de texto"; cada ficha se posiciona en **absoluto** según la geometría de la anterior).
+- **Coincidencia número con número:** el motor del backend mantiene el invariante **`board[i].b ===
+  board[i+1].a`**. Por eso, tramo a la **derecha** se muestra `[a|b]`, a la **izquierda** invertido `[b|a]`,
+  y la **esquina** vertical con `a` arriba (conecta con la fila de arriba) / `b` abajo.
+- Geometría: se **mide** el tamaño real de la ficha con `offsetWidth/offsetHeight` (ignoran `transform`;
+  estimar con padding/márgenes del divisor fallaba y las fichas se montaban). `rowDrop = L - S/2 + 4` da
+  separación sin choques (las dobles sobresalen perpendiculares sin pisar la fila siguiente). `reserve`
+  guarda el hueco de la esquina al final de la fila.
+- **Tamaño FIJO** (no se aleja la vista): se quitó el `fitBoard`/escala. Bloque centrado; transición suave
+  al reacomodarse.
+
+**Perspectiva de cámara:** `.dom-chain { transform: perspective(820px) rotateX(22deg) }` inclina el tablero
+hacia el jugador (al cliente le gustó). No requiere rehacer los SVG.
+
+**Fichas — historia (el cliente cambió de opinión):** plana → SVG con puntos redondos (`<circle>`, no
+`<div>` con % que se deformaban) → 3D con canto/bisel → **de vuelta a PLANAS 2D y más grandes** (decisión
+final): `.dom-tile` marfil con sombra sutil, puntos **sólidos** (`PIP_COLOR`), divisor fino. Tamaños
+subidos. El **borde verde de selección** usa `::after` con `border-radius` (sigue la forma redondeada;
+antes `outline` se veía rectangular).
+
+**Límite de 1 mesa por usuario** (backend, evita choque entre dispositivos): `Hub.findUserTable` /
+`busyTable` (`src/realtime/hub.ts`); `join` y `table:practice` rechazan si ya hay otra mesa con aviso
+("Ya tienes una partida abierta (quizá en otro dispositivo)…"). El re-join a la **misma** mesa sí se permite.
+
+**Bug del perfil (.pcard):** el perfil se veía como una "cajita blanca". Causa: **colisión de clase** —
+`.pcard` se usaba para la tarjeta del perfil **y** para la carta de póker (46×64 blanca, regla global que
+pisaba). Solución: la carta de póker pasó a **`.pkcard`** (`app/poker/page.tsx` + reglas en `globals.css`).
+
+**Overlay "servidor despertando" mejorado** (`lib/server-status.ts`, `components/server-wake-overlay.tsx`):
+`prewarmServer()` hace ping a `/health` al abrir la web (despierta Render antes), botón **"Reintentar ahora"**
+y, a los 60 s, **"Recargar página"**. Recordatorio: en Render free **cada push redepliega el backend** (~2–4
+min) y duerme tras 15 min → el overlay puede aparecer al probar justo después de subir. (Opción no aplicada:
+**Build Filters** en Render para que solo redepliegue con cambios en `server/`.)
+
+**Lecciones nuevas:**
+- iOS Safari: sin Fullscreen API para `<div>`; `body{overflow:hidden}` rompe `fixed`; usar `dvw/dvh`.
+- Un ancestro con `transform` reancla los `position:fixed` descendientes (útil: chat dentro del tablero girado).
+- Para layouts pixel-exactos de fichas: **medir** con `offsetWidth/Height`, no estimar.
+- El motor de dominó ya entrega la cadena con `board[i].b===board[i+1].a` → orientar por dirección basta.
+- Colisiones de nombres de clase CSS entre módulos (`.pcard`) → usar prefijos por feature.
