@@ -46,7 +46,6 @@ type TableMeta = {
 };
 
 const COLS = ["B", "I", "N", "G", "O"];
-const BOARD_RANGES: [string, number][] = [["B", 1], ["I", 16], ["N", 31], ["G", 46], ["O", 61]];
 
 // Todas las líneas posibles de un cartón 5x5 (filas, columnas y 2 diagonales).
 const ALL_LINES: [number, number][][] = (() => {
@@ -103,6 +102,99 @@ function CartonView({ carton, n }: { carton: Carton; n: number }) {
           }),
         )}
       </div>
+    </div>
+  );
+}
+
+// Bombo 3D estilo bingo real: bolas de colores flotando por "aire comprimido"
+// (turbulencia en un <canvas>). Cada vez que sale una bola nueva, da un soplo
+// extra. Sin librerías 3D: simulación 2D ligera con rebote en la esfera.
+function BingoMachine({ lastCalled, playing }: { lastCalled: number | null; playing: boolean }) {
+  const ref = React.useRef<HTMLCanvasElement>(null);
+  const boostRef = React.useRef(0);
+
+  // Soplo extra al salir cada bola.
+  React.useEffect(() => {
+    boostRef.current = 1.4;
+  }, [lastCalled]);
+
+  React.useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const SIZE = 210;
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = SIZE * DPR;
+    canvas.height = SIZE * DPR;
+    ctx.scale(DPR, DPR);
+
+    const cx = SIZE / 2;
+    const cy = SIZE / 2;
+    const R = SIZE / 2 - 8;
+    const rr = 10;
+    const COLORS = ["#e84393", "#f0932b", "#2f9e44", "#1976d2", "#8e44ad"];
+    const N = 34;
+    const balls = Array.from({ length: N }, () => ({
+      x: cx + (Math.random() - 0.5) * R,
+      y: cy + (Math.random() - 0.5) * R,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      c: COLORS[Math.floor(Math.random() * COLORS.length)],
+      n: 1 + Math.floor(Math.random() * 75),
+    }));
+
+    let raf = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      const blow = playing ? 0.5 : 0.12; // intensidad del aire
+      const boost = boostRef.current;
+      if (boostRef.current > 0) boostRef.current = Math.max(0, boostRef.current - 0.02);
+      for (const b of balls) {
+        b.vy += 0.07; // gravedad
+        b.vx += (Math.random() - 0.5) * (blow + boost);
+        b.vy += (Math.random() - 0.62) * (blow + boost) * 1.7; // sesgo hacia arriba = soplido
+        b.vx *= 0.985;
+        b.vy *= 0.985;
+        b.x += b.vx;
+        b.y += b.vy;
+        const dx = b.x - cx;
+        const dy = b.y - cy;
+        const d = Math.hypot(dx, dy) || 1;
+        if (d > R - rr) {
+          const nx = dx / d;
+          const ny = dy / d;
+          b.x = cx + nx * (R - rr);
+          b.y = cy + ny * (R - rr);
+          const dot = b.vx * nx + b.vy * ny;
+          b.vx = (b.vx - 2 * dot * nx) * 0.82;
+          b.vy = (b.vy - 2 * dot * ny) * 0.82;
+        }
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, rr, 0, Math.PI * 2);
+        ctx.fillStyle = b.c;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(b.x - rr * 0.32, b.y - rr * 0.32, rr * 0.34, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.font = "600 9px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(b.n), b.x, b.y);
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+
+  return (
+    <div className="bingo-machine">
+      <span className="bingo-machine-spout" />
+      <canvas ref={ref} className="bingo-machine-canvas" style={{ width: 210, height: 210 }} />
+      <span className="bingo-machine-glass" />
     </div>
   );
 }
@@ -289,7 +381,6 @@ function BingoContent() {
   const myCount = game.myCartones.length;
   const phaseLabel =
     game.phase === "buying" ? "Comprando cartones" : game.phase === "playing" ? "En juego" : "Ronda terminada";
-  const history = game.called.slice(-7).reverse(); // últimas bolas (la más nueva primero)
 
   return (
     <>
@@ -331,8 +422,9 @@ function BingoContent() {
             )}
 
             <div className="bingo-arena">
-              {/* Columna del cantor: bola 3D + tablero 1-75 + acciones */}
+              {/* Columna del cantor: bombo 3D + número que sale + acciones + jugadores */}
               <div className="bingo-caller">
+                <BingoMachine lastCalled={game.lastCalled} playing={game.phase === "playing"} />
                 <div className="bingo-ball-wrap">
                   <div className="bingo-last" key={game.lastCalled ?? "none"}>{game.lastLabel ?? "—"}</div>
                   <div className="bingo-caller-state">
@@ -342,16 +434,6 @@ function BingoContent() {
                         ? `Bola ${game.called.length} de 75`
                         : "Ronda terminada"}
                   </div>
-                  {history.length > 0 && (
-                    <div className="bingo-history">
-                      {history.map((n, i) => (
-                        <span key={`${n}-${i}`} className={`bingo-history-ball${i === 0 ? " last" : ""}`}>
-                          {COLS[Math.floor((n - 1) / 15)]}
-                          {n}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {game.phase === "buying" && (
@@ -374,23 +456,16 @@ function BingoContent() {
                   </div>
                 )}
 
-                <div className="bingo-board">
-                  {BOARD_RANGES.map(([letter, startN]) => (
-                    <div className="bingo-board-row" key={letter}>
-                      <span className="bingo-board-letter">{letter}</span>
-                      {Array.from({ length: 15 }, (_, i) => {
-                        const num = startN + i;
-                        const on = game.called.includes(num);
-                        const last = num === game.lastCalled;
-                        return (
-                          <span key={num} className={`bingo-cell-n${on ? " on" : ""}${last ? " last" : ""}`}>
-                            {num}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+                {game.players.length > 1 && (
+                  <div className="bingo-players">
+                    <span className="bingo-players-title">Jugadores</span>
+                    {game.players.map((p) => (
+                      <span key={p.id} className={`bingo-player-chip${p.id === user?.id ? " me" : ""}`}>
+                        {p.name} · {p.cartones}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Cartones del jugador */}
@@ -412,16 +487,6 @@ function BingoContent() {
                   <div className={`bingo-cartones n${myCount}`}>
                     {game.myCartones.map((c, i) => (
                       <CartonView key={c.id} carton={c} n={i + 1} />
-                    ))}
-                  </div>
-                )}
-
-                {game.players.length > 1 && (
-                  <div className="bingo-players">
-                    {game.players.map((p) => (
-                      <span key={p.id} className={`bingo-player-chip${p.id === user?.id ? " me" : ""}`}>
-                        {p.name} · {p.cartones}
-                      </span>
                     ))}
                   </div>
                 )}
