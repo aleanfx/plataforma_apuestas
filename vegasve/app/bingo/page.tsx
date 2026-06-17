@@ -8,6 +8,8 @@ import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { TableChat } from "@/components/table-chat";
+import { StageFullscreen } from "@/components/stage-fullscreen";
+import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -44,13 +46,43 @@ type TableMeta = {
 };
 
 const COLS = ["B", "I", "N", "G", "O"];
+const BOARD_RANGES: [string, number][] = [["B", 1], ["I", 16], ["N", 31], ["G", 46], ["O", 61]];
 
-function CartonView({ carton }: { carton: Carton }) {
+// Todas las líneas posibles de un cartón 5x5 (filas, columnas y 2 diagonales).
+const ALL_LINES: [number, number][][] = (() => {
+  const lines: [number, number][][] = [];
+  for (let r = 0; r < 5; r++) lines.push([0, 1, 2, 3, 4].map((c) => [r, c] as [number, number]));
+  for (let c = 0; c < 5; c++) lines.push([0, 1, 2, 3, 4].map((r) => [r, c] as [number, number]));
+  lines.push([0, 1, 2, 3, 4].map((i) => [i, i] as [number, number]));
+  lines.push([0, 1, 2, 3, 4].map((i) => [i, 4 - i] as [number, number]));
+  return lines;
+})();
+
+/** La mejor línea del cartón: cuántas casillas le faltan y cuáles son. */
+function bestLine(carton: Carton): { remaining: number; cells: [number, number][] } {
+  let best: { remaining: number; cells: [number, number][] } = { remaining: 99, cells: [] };
+  for (const line of ALL_LINES) {
+    const rem = line.filter(([r, c]) => !carton.marked[r][c]).length;
+    if (rem < best.remaining) best = { remaining: rem, cells: line };
+  }
+  return best;
+}
+
+function CartonView({ carton, n }: { carton: Carton; n: number }) {
+  const info = bestLine(carton);
+  const win = carton.hasLine;
+  const ready = !win && info.remaining === 1; // a una bola de cantar línea
+  const winCells = win ? new Set(info.cells.map(([r, c]) => r * 5 + c)) : null;
   return (
-    <div className={`bingo-carton${carton.hasLine ? " win" : ""}`}>
+    <div className={`bingo-carton${win ? " win" : ready ? " ready" : ""}`}>
+      <div className="bingo-carton-top">
+        <span className="bingo-carton-tag">Cartón {n}</span>
+        {win && <span className="bingo-carton-badge win">¡LÍNEA!</span>}
+        {ready && <span className="bingo-carton-badge">¡Te falta 1!</span>}
+      </div>
       <div className="bingo-head">
-        {COLS.map((c) => (
-          <div key={c} className="bingo-col">{c}</div>
+        {COLS.map((c, i) => (
+          <div key={c} className={`bingo-col col-${i}`}>{c}</div>
         ))}
       </div>
       <div className="bingo-cells">
@@ -59,17 +91,13 @@ function CartonView({ carton }: { carton: Carton }) {
             const v = carton.grid[row][col];
             const marked = carton.marked[row][col];
             const free = v === 0;
+            const onWin = winCells?.has(row * 5 + col);
             return (
               <div
                 key={`${row}-${col}`}
-                className="game-cell"
-                style={{
-                  background: marked ? "var(--green-bright)" : "var(--purple)",
-                  color: marked ? "#04210f" : "#fff",
-                  fontSize: free ? 12 : 16,
-                }}
+                className={`bingo-cell col-${col}${marked ? " marked" : ""}${free ? " free" : ""}${onWin ? " winline" : ""}`}
               >
-                {free ? "★" : v}
+                <span className="bingo-cell-num">{free ? "★" : v}</span>
               </div>
             );
           }),
@@ -87,8 +115,19 @@ function BingoContent() {
   const [meta, setMeta] = React.useState<TableMeta | null>(null);
   const socketRef = React.useRef<Socket | null>(null);
   const tableRef = React.useRef<string | null>(null);
+  const stageRef = React.useRef<HTMLDivElement>(null);
   const prevCalled = React.useRef(0);
   const prevPhase = React.useRef("");
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  // ¿Celular? -> modo inmersivo (pantalla completa) mientras se juega.
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
 
   const refreshSalas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "bingo" }, (res: { tables?: Sala[] }) => {
@@ -138,6 +177,13 @@ function BingoContent() {
       if (tableRef.current) s.emit("table:leave", { tableId: tableRef.current });
     };
   }, [refreshSalas, refreshUser]);
+
+  // Modo inmersivo (celular en sala): el juego ocupa la pantalla completa.
+  const immersive = isMobile && !!tableId && !!game;
+  React.useEffect(() => {
+    document.body.classList.toggle("immersive-on", immersive);
+    return () => document.body.classList.remove("immersive-on");
+  }, [immersive]);
 
   function join(id: string) {
     socketRef.current?.emit("table:join", { tableId: id }, (res: { ok: boolean; reason?: string }) => {
@@ -202,10 +248,11 @@ function BingoContent() {
             <div className="lobby-head">
               <h1>Bingo</h1>
               <p style={{ color: "var(--text-2)", marginTop: 8 }}>
-                Elige una sala, compra tu cartón y el primero en hacer línea gana el pozo.
+                Elige una sala, compra hasta 4 cartones y el primero en hacer línea gana el pozo.
               </p>
               <button className="btn btn-ghost btn-sm practice-cta" onClick={practice}>
-                🤖 Practicar vs CPU · gratis
+                <Cpu width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                Practicar vs CPU · gratis
               </button>
             </div>
 
@@ -238,126 +285,151 @@ function BingoContent() {
   }
 
   // --- Vista: dentro de la sala -----------------------------------------
+  const iWon = game.winners.some((w) => w.id === user?.id);
+  const myCount = game.myCartones.length;
   const phaseLabel =
     game.phase === "buying" ? "Comprando cartones" : game.phase === "playing" ? "En juego" : "Ronda terminada";
-  const iWon = game.winners.some((w) => w.id === user?.id);
+  const history = game.called.slice(-7).reverse(); // últimas bolas (la más nueva primero)
 
   return (
     <>
-      <SiteNav variant="in" />
-      <Ticker />
+      {!immersive && <SiteNav variant="in" />}
+      {!immersive && <Ticker />}
       <section className="view">
         <div className="wrap">
-          <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h1>{meta?.name ?? "Bingo"}</h1>
-              <p style={{ color: "var(--text-2)", marginTop: 6 }}>{phaseLabel}</p>
-            </div>
-            <button className="btn btn-ghost btn-sm" onClick={leave}>Salir</button>
-          </div>
-
-          {/* Resumen de la sala */}
-          <div className="bal-banner" style={{ marginBottom: 28 }}>
-            <div className="cell">
-              <div className="k">Pozo</div>
-              <div className="big">{formatBs(game.pot)}</div>
-            </div>
-            <div className="cell">
-              <div className="k">Cartón</div>
-              <div className="mid">{formatBs(game.stake)}</div>
-            </div>
-            <div className="cell">
-              <div className="k">Jugadores</div>
-              <div className="mid">{game.players.length}</div>
-            </div>
-            <div className="cell">
-              <div className="k">Tu saldo</div>
-              <div className="mid">{formatBs(user?.balance ?? 0)}</div>
-            </div>
-          </div>
-
-          {/* Ganadores */}
-          {game.phase === "finished" && game.winners.length > 0 && (
-            <div className="bingo-winner">
-              {iWon ? "🎉 ¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(", ")} ·{" "}
-              {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))} repartidos
+          {!immersive && (
+            <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h1>{meta?.name ?? "Bingo"}</h1>
+                <p style={{ color: "var(--text-2)", marginTop: 6 }}>{phaseLabel}</p>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={leave}>Salir</button>
             </div>
           )}
 
-          <div className="game-layout">
-            {/* Cartones */}
-            <div className="game-panel">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <h2 style={{ fontSize: 20 }}>Tus cartones</h2>
-                {game.phase === "buying" && (
-                  <button className="btn btn-gold btn-sm" onClick={buy}>
-                    Comprar cartón · {formatBs(game.stake)}
-                  </button>
-                )}
-              </div>
-              {game.myCartones.length === 0 ? (
-                <div style={{ color: "var(--text-2)", padding: "24px 0", textAlign: "center" }}>
-                  {game.phase === "buying"
-                    ? "Compra un cartón para jugar."
-                    : "No compraste cartón en esta ronda."}
-                </div>
-              ) : (
-                <div className="bingo-cartones">
-                  {game.myCartones.map((c) => (
-                    <CartonView key={c.id} carton={c} />
-                  ))}
-                </div>
-              )}
+          {/* Todo el juego en un solo recuadro (bola + tablero + cartones) */}
+          <div className={`game-stage bingo-stage${immersive ? " bingo-immersive" : ""}`} ref={stageRef}>
+            {immersive ? (
+              <button className="stage-exit" onClick={leave} aria-label="Salir">Salir</button>
+            ) : (
+              <StageFullscreen targetRef={stageRef} />
+            )}
+
+            <div className="stage-bar">
+              <span><i>Pozo</i> {formatBs(game.pot)}</span>
+              <span><i>Cartón</i> {formatBs(game.stake)}</span>
+              <span><i>Jugadores</i> {game.players.length}</span>
+              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
             </div>
 
-            {/* Panel derecho */}
-            <div className="game-side">
-              <div className="game-panel">
-                <h2 style={{ fontSize: 20, marginBottom: 14 }}>Número cantado</h2>
-                <div className="bingo-last" key={game.lastCalled ?? "none"}>{game.lastLabel ?? "—"}</div>
+            {game.phase === "finished" && game.winners.length > 0 && (
+              <div className="stage-winner">
+                <Trophy width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                {iWon ? "¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(", ")} ·{" "}
+                {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
+              </div>
+            )}
+
+            <div className="bingo-arena">
+              {/* Columna del cantor: bola 3D + tablero 1-75 + acciones */}
+              <div className="bingo-caller">
+                <div className="bingo-ball-wrap">
+                  <div className="bingo-last" key={game.lastCalled ?? "none"}>{game.lastLabel ?? "—"}</div>
+                  <div className="bingo-caller-state">
+                    {game.phase === "buying"
+                      ? "Compra tus cartones"
+                      : game.phase === "playing"
+                        ? `Bola ${game.called.length} de 75`
+                        : "Ronda terminada"}
+                  </div>
+                  {history.length > 0 && (
+                    <div className="bingo-history">
+                      {history.map((n, i) => (
+                        <span key={`${n}-${i}`} className={`bingo-history-ball${i === 0 ? " last" : ""}`}>
+                          {COLS[Math.floor((n - 1) / 15)]}
+                          {n}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {game.phase === "buying" && (
-                  <button
-                    className="btn btn-gold btn-block"
-                    style={{ marginTop: 16 }}
-                    onClick={start}
-                    disabled={game.myCartones.length === 0 && game.players.every((p) => p.cartones === 0)}
-                  >
-                    Iniciar ronda
-                  </button>
+                  <div className="bingo-actions">
+                    <button
+                      className="btn btn-gold btn-block"
+                      onClick={buy}
+                      disabled={myCount >= 4}
+                    >
+                      {myCount >= 4 ? "Máximo 4 cartones" : `Comprar cartón · ${formatBs(game.stake)}`}
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-block"
+                      style={{ marginTop: 8 }}
+                      onClick={start}
+                      disabled={myCount === 0 && game.players.every((p) => p.cartones === 0)}
+                    >
+                      Iniciar ronda
+                    </button>
+                  </div>
                 )}
-                {game.phase === "playing" && (
-                  <div style={{ color: "var(--text-2)", fontSize: 13, marginTop: 12, textAlign: "center" }}>
-                    Cantando números automáticamente…
+
+                <div className="bingo-board">
+                  {BOARD_RANGES.map(([letter, startN]) => (
+                    <div className="bingo-board-row" key={letter}>
+                      <span className="bingo-board-letter">{letter}</span>
+                      {Array.from({ length: 15 }, (_, i) => {
+                        const num = startN + i;
+                        const on = game.called.includes(num);
+                        const last = num === game.lastCalled;
+                        return (
+                          <span key={num} className={`bingo-cell-n${on ? " on" : ""}${last ? " last" : ""}`}>
+                            {num}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cartones del jugador */}
+              <div className="bingo-cards">
+                <div className="bingo-cards-head">
+                  <h2>Tus cartones {myCount > 0 && <span className="bingo-cards-count">{myCount}/4</span>}</h2>
+                  {game.phase === "buying" && myCount < 4 && (
+                    <button className="btn btn-gold btn-sm" onClick={buy}>+ Cartón</button>
+                  )}
+                </div>
+
+                {myCount === 0 ? (
+                  <div className="bingo-empty">
+                    {game.phase === "buying"
+                      ? "Compra un cartón para entrar a la ronda."
+                      : "No compraste cartón en esta ronda."}
+                  </div>
+                ) : (
+                  <div className={`bingo-cartones n${myCount}`}>
+                    {game.myCartones.map((c, i) => (
+                      <CartonView key={c.id} carton={c} n={i + 1} />
+                    ))}
+                  </div>
+                )}
+
+                {game.players.length > 1 && (
+                  <div className="bingo-players">
+                    {game.players.map((p) => (
+                      <span key={p.id} className={`bingo-player-chip${p.id === user?.id ? " me" : ""}`}>
+                        {p.name} · {p.cartones}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
-
-              <div className="game-panel">
-                <h3 style={{ marginBottom: 12 }}>Tablero ({game.called.length}/75)</h3>
-                <div className="bingo-board">
-                  {([["B", 1], ["I", 16], ["N", 31], ["G", 46], ["O", 61]] as [string, number][]).map(
-                    ([letter, start]) => (
-                      <div className="bingo-board-row" key={letter}>
-                        <span className="bingo-board-letter">{letter}</span>
-                        {Array.from({ length: 15 }, (_, i) => {
-                          const n = start + i;
-                          const on = game.called.includes(n);
-                          const last = n === game.lastCalled;
-                          return (
-                            <span key={n} className={`bingo-cell-n${on ? " on" : ""}${last ? " last" : ""}`}>
-                              {n}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
             </div>
-          </div>
 
-          <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+            <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+          </div>
         </div>
       </section>
     </>
