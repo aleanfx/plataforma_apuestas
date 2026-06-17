@@ -21,7 +21,17 @@ services:
     rootDir: server             # el Dockerfile y el código están en server/
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
-    autoDeploy: true            # cada push a main redepliega
+    autoDeploy: true            # redepliega en cada push a main...
+    # ...pero SOLO si el cambio toca el backend. Así un push del frontend
+    # (vegasve/) ya NO tumba el servidor 2-4 min. Las rutas son relativas a la
+    # raíz del repo.
+    buildFilter:
+      paths:
+        - server/**
+        - render.yaml
+      ignoredPaths:
+        - vegasve/**
+        - "**/*.md"
     envVars:
       # PORT lo inyecta Render automáticamente; la app lo lee de process.env.PORT.
       - key: NODE_ENV
