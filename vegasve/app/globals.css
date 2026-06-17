@@ -1619,27 +1619,14 @@ html, body { overflow-x: clip; max-width: 100%; }
    ============================================================ */
 .dom-tile {
   --hs: 44px; /* tamaño de cada mitad */
-  --edge: 5px; /* grosor 3D de la ficha (canto visible) */
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 5px;
-  border-radius: 14% / 9%;
-  background: linear-gradient(157deg, #fffdf4 0%, #f3edd9 55%, #e5dec4 100%);
-  /* Canto lateral en tonos crema-tostado (cada vez más oscuro) = grosor 3D
-     visible; + sombra sobre la mesa; + bisel tallado en la cara (brillo arriba,
-     sombra abajo, hairline de corte alrededor). */
-  box-shadow:
-    0 1px 0 #efe9d6,
-    0 2px 0 #e4ddc6,
-    0 calc(var(--edge) - 2px) 0 #d6cdb1,
-    0 calc(var(--edge) - 1px) 0 #c8bd9b,
-    0 var(--edge) 0 #b9ad86,
-    0 calc(var(--edge) + 1px) 1px #aa9d76,
-    0 calc(var(--edge) + 9px) 13px rgba(0, 0, 0, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -3px 3px rgba(150, 125, 70, 0.3),
-    inset 0 0 0 1px rgba(95, 72, 28, 0.24);
+  border-radius: 11%;
+  background: #fbfaf3; /* marfil claro, PLANA 2D */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .dom-tile.v { flex-direction: column; }
 .dom-tile.h { flex-direction: row; }
@@ -1649,11 +1636,20 @@ html, body { overflow-x: clip; max-width: 100%; }
   display: block;
   overflow: visible;
 }
-.dom-tile.v .dom-divider { width: 84%; height: 2px; margin: 1px 0; background: rgba(70, 50, 18, 0.38); border-radius: 2px; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8); }
-.dom-tile.h .dom-divider { width: 2px; height: 84%; margin: 0 1px; background: rgba(70, 50, 18, 0.38); border-radius: 2px; box-shadow: 1px 0 0 rgba(255, 255, 255, 0.8); }
+.dom-tile.v .dom-divider { width: 84%; height: 2px; margin: 1px 0; background: rgba(0, 0, 0, 0.22); border-radius: 2px; }
+.dom-tile.h .dom-divider { width: 2px; height: 84%; margin: 0 1px; background: rgba(0, 0, 0, 0.22); border-radius: 2px; }
 .dom-tile.clickable { cursor: pointer; transition: transform 0.12s ease; }
-.dom-tile.clickable:hover { transform: translateY(-6px); } /* levanta la ficha 3D (la sombra se mantiene) */
-.dom-tile.legal { outline: 2px solid var(--green-bright); outline-offset: 1px; }
+.dom-tile.clickable:hover { transform: translateY(-5px); }
+/* Borde de selección que SIGUE la forma redondeada de la ficha */
+.dom-tile.legal::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--green-bright);
+  border-radius: 14%;
+  pointer-events: none;
+  box-shadow: 0 0 8px -1px var(--green-bright);
+}
 .dom-tile.down {
   padding: 0;
   width: calc(var(--hs) + 6px);
@@ -1747,7 +1743,7 @@ html, body { overflow-x: clip; max-width: 100%; }
 .dom-place { position: absolute; transition: left 0.25s ease, top 0.25s ease; }
 /* Relleno 1px (divisor 2px) -> el lado largo mide EXACTO 2× el corto, para que
    la esquina en L cuadre con las dos filas. */
-.dom-chain .dom-tile { --hs: 26px; --edge: 4px; padding: 2px; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
+.dom-chain .dom-tile { --hs: 30px; padding: 3px; animation: tile-place 0.45s cubic-bezier(0.2, 0.85, 0.3, 1.25); }
 /* Animación: la ficha "cae" desde arriba con un leve giro, como puesta con la mano */
 @keyframes tile-place {
   0% { opacity: 0; transform: translateY(-34px) rotate(-9deg) scale(0.7); }
@@ -1773,7 +1769,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   padding: 8px 2px; /* aire arriba/abajo para que no se piquen las fichas */
   overflow-x: auto; /* salvaguarda en pantallas muy estrechas */
 }
-.domino-hand .dom-tile { --hs: 36px; flex-shrink: 0; } /* mano comprimida en PC */
+.domino-hand .dom-tile { --hs: 40px; flex-shrink: 0; } /* mano en PC */
 .domino-hand .dom-tile.clickable:hover { transform: translateY(-3px); } /* lift suave, sin recortar */
 
 /* Etiquetas ancladas en las esquinas superiores del área de fichas */
@@ -1818,7 +1814,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .poker-seats { gap: 8px; }
   .chat-msgs { max-height: 160px; }
   .sound-toggle { width: 40px; height: 40px; right: 12px; bottom: 12px; }
-  .dom-chain .dom-tile { --hs: 18px; --edge: 3px; }
+  .dom-chain .dom-tile { --hs: 22px; }
   .dom-tile { --hs: 38px; }
   .poker-table { padding: 28px 16px; }
 }
@@ -1972,8 +1968,8 @@ html, body { overflow-x: clip; max-width: 100%; }
   .dom-immersive .dom-felt { min-height: 0; }
   .dom-immersive .dom-table-area { gap: 2px; }
 
-  /* Inmersivo: fichas de la mesa pequeñas */
-  .dom-immersive .dom-chain .dom-tile { --hs: 16px; --edge: 3px; }
+  /* Inmersivo: fichas de la mesa */
+  .dom-immersive .dom-chain .dom-tile { --hs: 20px; }
 
   /* Inmersivo: la MANO mucho más compacta (ocupaba demasiado) */
   .dom-immersive .dom-hand-area { padding: 4px 8px; }
@@ -1981,7 +1977,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .dom-immersive .dom-hand-label,
   .dom-immersive .dom-turn-ind { font-size: 10px; }
   .dom-immersive .domino-hand { gap: 4px; }
-  .dom-immersive .domino-hand .dom-tile { --hs: 17px; }
+  .dom-immersive .domino-hand .dom-tile { --hs: 22px; }
 
   /* Inmersivo: jugadores compactos */
   .dom-immersive .dom-player { padding: 4px 8px 4px 4px; gap: 6px; }
@@ -2214,7 +2210,7 @@ html, body { overflow-x: clip; max-width: 100%; }
 /* Móvil: reduce la mano, textos y botones; centra el botón de pasar */
 @media (max-width: 768px) {
   .domino-hand { gap: 5px; }
-  .domino-hand .dom-tile { --hs: 24px; } /* mano bien compacta: nunca salta a 2 filas */
+  .domino-hand .dom-tile { --hs: 28px; } /* mano: nunca salta a 2 filas */
 
   /* Etiquetas en su propia fila (no encima de las fichas) */
   .dom-hand-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
