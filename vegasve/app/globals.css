@@ -558,6 +558,7 @@
   .bal-banner .sub { color: var(--text-2); font-size: 13px; margin-top: 2px; }
   .bal-banner .mid { font-family: var(--serif); font-size: 26px; font-weight: 600; margin-top: 6px; }
   .lobby-actions-cell { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+  .bal-banner.bal-3 { grid-template-columns: 1.3fr 1fr auto; } /* sin "Bono activo": 3 celdas */
 
   .chips-row { display: flex; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; }
   .fchip {
@@ -1103,6 +1104,19 @@ html, body { overflow-x: clip; max-width: 100%; }
   .bal-banner .cell:last-child { grid-column: 1 / -1; border-bottom: none; flex-direction: row !important; }
   .bal-banner .big { font-size: 32px; }
   .lobby-actions-cell .btn { flex: 1; }
+
+  /* Lobby sin "Bono activo": las 3 celdas en UNA sola fila también en móvil */
+  .bal-banner.bal-3 { grid-template-columns: 1.25fr 1fr auto; }
+  .bal-banner.bal-3 .cell { padding: 12px 10px; border-right: 1px solid var(--line-soft); border-bottom: none; }
+  .bal-banner.bal-3 .cell:first-child,
+  .bal-banner.bal-3 .cell:last-child { grid-column: auto; }
+  .bal-banner.bal-3 .cell:last-child { border-right: none; flex-direction: column !important; }
+  .bal-banner.bal-3 .big { font-size: 21px; }
+  .bal-banner.bal-3 .mid { font-size: 16px; }
+  .bal-banner.bal-3 .k { font-size: 8.5px; letter-spacing: 1px; }
+  .bal-banner.bal-3 .sub { font-size: 9.5px; }
+  .bal-banner.bal-3 .lobby-actions-cell { gap: 6px !important; }
+  .bal-banner.bal-3 .lobby-actions-cell .btn { padding: 7px 8px; font-size: 11px; }
   .chips-row {
     flex-wrap: nowrap;
     overflow-x: auto;

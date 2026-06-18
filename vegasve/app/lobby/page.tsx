@@ -29,16 +29,11 @@ function LobbyContent() {
           </div>
 
           {/* balance banner */}
-          <div className="bal-banner">
+          <div className="bal-banner bal-3">
             <div className="cell">
               <div className="k">Saldo disponible</div>
               <div className="big">{formatBs(user?.balance ?? 0)}</div>
               <div className="sub">≈ {formatUsd(user?.balance ?? 0)} USD · Tasa Bs. 40,00</div>
-            </div>
-            <div className="cell">
-              <div className="k">Bono activo</div>
-              <div className="mid gold">{formatBs(user?.bonus ?? 0)}</div>
-              <div className="sub">Liberable jugando</div>
             </div>
             <div className="cell">
               <div className="k">En juego</div>
