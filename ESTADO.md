@@ -37,8 +37,12 @@ plataforma_apuestas/
 | 6 | Póker (Texas Hold'em, side pots, showdown) | ✅ Completo |
 | 7 | Admin real (métricas, usuarios, mesas) | ✅ Completo |
 | 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Completo · **desplegado en Render + Vercel** |
+| 9 | Caballos (hípica) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
+| 10 | Parley (deportes) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
 
-> **MVP completo y EN VIVO.** Suite: **110 pruebas e2e en verde**. Parley y Caballos = **Fase 2**.
+> **MVP completo y EN VIVO.** Suite: **110 pruebas e2e en verde**. Los **3 juegos en vivo** (Bingo/Dominó/
+> Póker) están reales y al **nivel visual PRO**. **Caballos y Parley** tienen la **UI lista** (login + saldo
+> real) pero apostar de verdad espera **decisión del cliente** sobre la fuente de datos (ver sección 18/06).
 > Desplegado el 13/06/2026 (backend en Render free, frontend en Vercel). Guía usada:
 > [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
 
@@ -109,6 +113,41 @@ Iteración visual completa del Dominó (afinada con capturas del cliente). Detal
 - **Fix:** perfil roto por colisión de clase `.pcard` (perfil vs carta de póker) → carta de póker = `.pkcard`.
 - **Overlay "servidor despertando"** con pre-encendido + botones Reintentar/Recargar.
 
+## Sesión nocturna: 5 juegos al nivel PRO + móvil horizontal (18/06/2026)
+
+Rediseño visual de toda la plataforma (detalle técnico en [`BITACORA.md`](./BITACORA.md) §16). **Todo
+frontend salvo un cambio mínimo de backend** (límite de cartones de Bingo). Builds en verde, desplegado.
+
+- **Bingo:** hasta **6 cartones** en **filas de 3** (backend `MAX_CARTONES_PER_PLAYER` 4→6). Cartones más
+  compactos para que entren los 6 sin scroll.
+- **Móvil horizontal forzado en TODOS los juegos de mesa** (Bingo, Dominó, Póker): al entrar a una mesa en
+  celular, el juego ocupa la pantalla y se gira 90° por CSS (regla compartida `*-immersive`).
+- **Póker PRO:** mesa **ovalada** de fieltro con **asientos alrededor de la elipse** (yo abajo), cartas
+  comunitarias + pozo al centro, **dealer button**, fichas de apuesta por asiento, cartas del héroe más
+  grandes, timer de turno, barra de acciones con slider de subida, showdown, inmersivo + chat. Backend
+  Texas Hold'em intacto.
+- **Caballos (hípica estilo Cordialito):** pestañas **Carrera** (Ganador/Place/Show) y **Polla Hípica**
+  (puntos), caballos con jinete y cuotas, slip con ganancia potencial. **AuthGuard + saldo real.**
+- **Parley (deportes):** partidos con cuotas 1/X/2, **acumulador** con cuota total y ganancia potencial.
+  **AuthGuard + saldo real.**
+
+> ⚠️ **Caballos y Parley:** la UI está lista y conectada a login + saldo real, pero **apostar de verdad
+> está "en preparación"** porque la liquidación necesita backend nuevo + una **decisión del cliente sobre la
+> fuente de datos** (ver "Decisiones pendientes" abajo). No se desplegó código de dinero sin probar (riesgo
+> para el ledger).
+
+### Decisiones pendientes del cliente (Caballos / Parley)
+- **Parley — fuente de cuotas/resultados:** (a) **modelo admin-curado** (el admin crea partidos+cuotas y
+  liquida resultados en `/admin`) → **gratis y 100% controlado**, *recomendado* para presupuesto cero; o
+  (b) **API externa** (The Odds API, API-Football, Sports Game Odds tienen tier gratis, pero con límites de
+  requests, requieren registro/clave y su TOS suele restringir uso comercial de apuestas). Sugerencia:
+  empezar con (a).
+- **Caballos — datos de carreras:** (a) **virtual RNG** (carreras instantáneas decididas por el servidor,
+  estilo "virtual sports") → gratis, siempre disponible; o (b) **carreras reales** de La Rinconada/Valencia
+  (el admin publica programa y resultados a mano, o un feed de pago). Sugerencia: (a) virtual para empezar.
+- En ambos casos, al elegir el modelo se construye el backend (tablas de eventos/apuestas + liquidación por
+  el ledger) y se prueba con un smoke test antes de activar dinero real.
+
 ## Bingo "Royale" + fix de deploy (17-18/06/2026)
 
 Detalle técnico en [`BITACORA.md`](./BITACORA.md) §15.
@@ -118,13 +157,23 @@ Detalle técnico en [`BITACORA.md`](./BITACORA.md) §15.
   espacio libre ★, línea ganadora resaltada y aviso "¡Te falta 1!/¡LÍNEA!" (calculado en cliente). Se quitó
   la tabla 1-75 y el historial. **Modo inmersivo** + pantalla completa + chat, como el Dominó.
 - **⚠️ Causa de los cortes de servicio durante la sesión:** `render.yaml` redeployaba el backend en **cada**
-  push a `main` (aunque fuera solo frontend). Se añadió **`buildFilter`** para que solo redeploye con cambios
-  en `server/`. Pendiente de empujar (ese push dispara **un último** redeploy). Equivalente sin push: panel
-  de Render → Settings → Build Filters → Included Paths `server/**`.
+  push a `main` (aunque fuera solo frontend). Se añadió **`buildFilter`** (ya **activo y verificado**: un push
+  de solo-frontend ya NO reinicia el backend) para que solo redeploye con cambios en `server/`.
 - **"Load failed" al loguear en iPhone (CAUSA CONFIRMADA):** NO era caché ni el iPhone. Era el **backend
   caído/frío** justo durante los intentos (redeploy en curso por el `autoDeploy` + cold start de Render free).
   Una vez caliente, entra igual en normal e incógnito. La cura es el `buildFilter` de arriba. Playbook de
   diagnóstico (CORS, headers, bundle, test de incógnito) en BITÁCORA §15.
+
+## 🌙 Para revisar al despertar (sesión nocturna 18/06)
+
+1. **Probar los 5 juegos en PC y celular** (capturas) y decirme ajustes finos:
+   - **Bingo:** 6 cartones en filas de 3; en celular el juego se gira a horizontal.
+   - **Póker:** mesa ovalada con asientos alrededor; revisar que los asientos no se solapen con muchos
+     jugadores (no pude verlo en vivo) — si hay choques, lo afino con tu captura.
+   - **Caballos / Parley:** UI nueva; el botón de apostar dice "en preparación" a propósito.
+2. **Decidir el modelo de Caballos y Parley** (ver "Decisiones pendientes" arriba). En cuanto elijas, construyo
+   el backend de liquidación (gratis con el modelo admin-curado / virtual RNG) y lo activo con dinero real.
+3. Sigue pendiente (de antes): **Google login** (crear OAuth Client ID) y **rotar** secretos (Neon/GitHub).
 
 ## Lo que falta (acción tuya)
 
@@ -134,7 +183,8 @@ Detalle técnico en [`BITACORA.md`](./BITACORA.md) §15.
 - 🔒 **Rotar** la contraseña de Neon y el token de GitHub (se compartieron en el chat). Tras rotar
   Neon: actualizar `DATABASE_URL` en Render (Environment) y en `server/.env`.
 - **Crear admin:** registrarse en la web con `betmarplay@gmail.com` → rol admin automático.
-- **Fase 2:** Parley y Caballos (siguen como prototipo).
+- **Caballos y Parley:** UI PRO lista (login + saldo real); falta backend de liquidación tras tu decisión
+  de fuente de datos (ver sección 18/06).
 - **Producto regulado:** licencia, KYC/AML, juego responsable (fuera de código).
 
 ## Cómo arrancar (desarrollo)

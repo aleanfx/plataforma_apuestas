@@ -102,6 +102,18 @@ Para reemplazar una foto: mismo nombre `.jpg`. Ver `public/games/README.txt`.
 - **Breakpoints:** `980px` (admin/tablet), `768px`, `560px`, `430px` (iPhone).
 - **Páginas de juego** (bingo/parley/caballos): layout 2 columnas que colapsa a 1 en `≤900px`,
   con clases reutilizables `.game-layout / .game-panel / .game-side / .game-grid-5 / .game-grid-3 / .game-opt`.
+- **Modo inmersivo horizontal (móvil) — COMPARTIDO por Bingo/Dominó/Póker:** las reglas estructurales
+  (`position:fixed`, rotate 90° en portrait con **`dvw/dvh`** —no `vw/vh`—, full en landscape, `@supports
+  (height:100dvh)`) listan los 3 selectores `.game-stage.dom-immersive, .bingo-immersive, .pk-immersive` en
+  `globals.css`. Cada página activa `immersive = isMobile && tableId && game`, hace toggle de
+  `body.immersive-on` y de su clase, oculta nav/ticker y muestra `<button.stage-exit>`. **Para añadir
+  inmersivo a otro juego**, basta sumar su clase a esos selectores + la lógica en su página (no refactorizar).
+- **Póker — asientos alrededor de la elipse:** `seatStyle(offset,total)` en `app/poker/page.tsx` calcula
+  `left/top %` con trig (offset 0 = yo, abajo); `.pk-seat` va `position:absolute; translate(-50%,-50%)` sobre
+  `.pk-table-wrap`. Radios <50% para no desbordar el óvalo.
+- **Caballos/Parley** ya NO son prototipos sueltos: usan `AuthGuard` + saldo real (`useAuth`/`formatBs`). El
+  botón de apostar dice "en preparación" **a propósito** (falta backend de liquidación + decisión de fuente
+  de datos). No "arreglar" quitando ese aviso sin construir el backend.
 
 ## 7. SEO
 
@@ -187,6 +199,17 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso.
 
+- **Rediseño PRO de los 5 juegos + móvil horizontal (18/06/2026)** — **Bingo:** hasta **6 cartones en filas
+  de 3** (backend `MAX` 4→6). **Móvil horizontal forzado en Bingo/Dominó/Póker** (reglas `*-immersive`
+  compartidas en `globals.css`). **Póker PRO:** mesa ovalada con **asientos alrededor de la elipse**
+  (`seatStyle` en `app/poker/page.tsx`), dealer button, fichas, cartas del héroe grandes, slider de subida,
+  inmersivo. **Caballos** (hípica estilo Cordialito: Carrera win/place/show + Polla) y **Parley** (deportes,
+  acumulador): pasaron de prototipo a **UI PRO + `AuthGuard` + saldo real**; apostar de verdad = "en
+  preparación" (necesita backend + decisión del cliente sobre fuente de datos). Detalle en
+  [`BITACORA.md`](../BITACORA.md) §16 y [`ESTADO.md`](../ESTADO.md) (sección 18/06).
+- **Bingo "Royale" (17-18/06/2026)** — un solo `.game-stage`, **bombo 3D** (canvas, `BingoMachine`), cartones
+  5×5 con sello animado, aviso "¡Te falta 1!/¡LÍNEA!"; se quitó la tabla 1-75. **Fix deploy:** `buildFilter`
+  en `render.yaml` (los push de frontend ya NO reinician el backend). Detalle en BITÁCORA §15.
 - **Pulido del Dominó (15/06/2026)** — jugadores alrededor de la mesa; **tablero en serpiente que dobla
   en L** (`computeSnake`, fichas fijas que coinciden número con número); **fichas planas 2D** más grandes;
   inclinación de cámara; **modo inmersivo horizontal en celular** (giro CSS, sirve en iPhone); pantalla

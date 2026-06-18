@@ -543,3 +543,61 @@ start cuando sí toque redeploy de `server/`.
 - Una navegación directa a un endpoint **no** usa CORS; el `fetch` de la app **sí** → que uno funcione y el
   otro no apunta a CORS/origin/caché, no a "servidor caído".
 - Animaciones tipo bombo: `<canvas>` + `requestAnimationFrame` con física simple basta; no hace falta 3D real.
+
+## 16. Rediseño PRO de los 5 juegos + móvil horizontal global (18/06/2026)
+
+Sesión nocturna autónoma. **Casi todo frontend**; el único cambio de backend es subir el límite de cartones.
+
+**Bingo — 6 cartones en filas de 3:** `MAX_CARTONES_PER_PLAYER` 4→6 (`server/src/games/bingo/engine.ts`).
+Frontend: `.bingo-cards .bingo-cartones { grid-template-columns: repeat(3, minmax(0,200px)) }` (n1→1, n2→2),
+contador `/6`, límite de compra 6. Cartones compactos para que los 6 entren sin scroll en pantalla completa.
+
+**Móvil horizontal forzado en TODOS los juegos de mesa:** se **generalizó** el modo inmersivo del Dominó.
+Las reglas estructurales (`position:fixed`, rotate 90° en portrait con `dvw/dvh`, full en landscape, y los
+`@supports (height:100dvh)`) ahora listan los **tres** selectores: `.game-stage.dom-immersive`,
+`.bingo-immersive`, `.pk-immersive`. Cada juego añade su clase y el `immersive = isMobile && tableId && game`
++ `body.immersive-on`. Compactación específica por juego (`.bingo-immersive .xxx`, `.pk-immersive .xxx`).
+⚠️ El `@media (max-width:920px){ .bingo-arena{1fr} }` se sobreescribe en inmersivo con `.bingo-immersive
+.bingo-arena{ 2 columnas }` (más específico) para mantener bombo+cartones lado a lado en el giro.
+(Caballos/Parley NO se fuerzan a horizontal: son listas de apuestas, no mesas; van como páginas normales.)
+
+**Póker PRO** (`app/poker/page.tsx` + `.pk-*` en `globals.css`; backend Texas Hold'em intacto):
+- Mesa **ovalada** (`.pk-felt`, `border-radius:50%/44%`) dentro de `.game-stage`. Asientos **alrededor de la
+  elipse** con posición calculada en JS: `seatStyle(offset,total)` → `a=π/2+(offset/total)·2π`,
+  `x=50+46·cos a`, `y=50+45·sin a` (offset 0 = yo, abajo). `offset=((idx-mySeat)%n+n)%n`. Cada `.pk-seat` es
+  `position:absolute; transform:translate(-50%,-50%)` sobre `.pk-table-wrap`.
+- Cartas comunitarias + `.pk-pot` al centro, **dealer button** (`.pk-dealer`), **ficha de apuesta** por
+  asiento (`.pk-bet`), cartas del héroe más grandes (`.pkcard.big`), timer de turno, estados folded/all-in.
+- Barra de acciones `.pk-actionbar` con **slider** de subida (range, step = ciega grande). Showdown en
+  `.stage-winner`. Inmersivo horizontal + chat. (Se renombró el slider de número a range.)
+
+**Caballos y Parley — UI PRO + login + saldo real, SIN backend de dinero (a propósito):**
+- Antes eran **prototipos de solo-frontend** (saldo falso `Bs. 12.480`, sin `AuthGuard`). Ahora: `AuthGuard`
+  + saldo real (`useAuth` → `formatBs(user.balance)`), visual consistente (`.hp-*` hípica, `.sb-*` deportes,
+  `.seg-tabs`, `.soon-pill`).
+- **Caballos** estilo Cordialito: pestañas **Carrera** (Ganador/Place/Show con cuotas por caballo+jinete) y
+  **Polla Hípica** (puntos 5/3/1), slip con ganancia potencial.
+- **Parley**: partidos con cuotas 1/X/2, **acumulador** (multiplica cuotas) con ganancia potencial.
+- ⚠️ **Decisión de diseño (importante):** NO se desplegó backend de dinero real para estos dos juegos. Crear
+  y **desplegar sin probar** un motor de apuestas/liquidación que mueve el ledger, de noche y a ciegas, es un
+  riesgo alto e irreversible. El botón de apostar muestra "en preparación". Activar dinero real requiere
+  **decisión del cliente sobre la fuente de datos** (ver más abajo) y luego construir+probar el backend.
+
+**Investigación (para decidir):**
+- **Cordialito** (cordialito.la) = mayor casa de apuestas de Venezuela. Hípica: **Polla Hípica** (acumular
+  puntos en las últimas carreras válidas) + apuestas **directas win/place/show**, combinadas y de sistema;
+  5y6 La Rinconada/Valencia. Hipódromos: La Rinconada, Valencia, Rancho Alegre.
+- **Parley/odds gratis:** The Odds API, API-Football, Sports Game Odds, The Rundown tienen **tier gratis**
+  pero con límites de requests, requieren clave/registro y su TOS suele restringir uso comercial de apuestas.
+- **Recomendación para presupuesto cero:** modelo **admin-curado** (el admin crea eventos+cuotas y liquida
+  en `/admin`; gratis, sin dependencia externa) para Parley; **virtual RNG** (carreras instantáneas decididas
+  por el servidor, estilo virtual sports) para Caballos. Ambos reutilizan el ledger/escrow ya probado.
+
+**Lecciones nuevas:**
+- Generalizar features (modo inmersivo) listando varias clases en el selector evita tocar páginas que ya
+  funcionan (menos riesgo que refactorizar a una clase compartida).
+- Colocar asientos en elipse: trig con offset relativo al jugador, `translate(-50%,-50%)` sobre un contenedor
+  relativo; radios <50% para no desbordar.
+- No desplegar código de dinero real **sin probar** en una sesión autónoma; dejar la UI lista y **marcar la
+  decisión** del cliente. La fuente de datos de apuestas deportivas/hípicas es una decisión de producto
+  (gratis admin-curado vs API de pago), no algo que se resuelva en código.
