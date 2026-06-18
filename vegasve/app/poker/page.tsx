@@ -9,6 +9,8 @@ import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { TurnTimer } from "@/components/turn-timer";
 import { TableChat } from "@/components/table-chat";
+import { StageFullscreen } from "@/components/stage-fullscreen";
+import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
 import { formatBs } from "@/lib/money";
@@ -59,17 +61,25 @@ type Meta = { id: string; name: string };
 
 const SUIT: Record<string, string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
 
-function PlayingCard({ c, hidden }: { c?: string; hidden?: boolean }) {
-  if (hidden || !c) return <div className="pkcard back" />;
+function PlayingCard({ c, hidden, big }: { c?: string; hidden?: boolean; big?: boolean }) {
+  if (hidden || !c) return <div className={`pkcard back${big ? " big" : ""}`} />;
   const rank = c[0] === "T" ? "10" : c[0];
   const suit = c[1];
   const red = suit === "h" || suit === "d";
   return (
-    <div className={`pkcard${red ? " red" : ""}`}>
-      <span>{rank}</span>
-      <span>{SUIT[suit]}</span>
+    <div className={`pkcard${red ? " red" : ""}${big ? " big" : ""}`}>
+      <span className="pkcard-r">{rank}</span>
+      <span className="pkcard-s">{SUIT[suit]}</span>
     </div>
   );
+}
+
+// Coloca cada asiento alrededor de la elipse de la mesa; yo (offset 0) abajo.
+function seatStyle(offset: number, total: number): React.CSSProperties {
+  const a = Math.PI / 2 + (offset / total) * Math.PI * 2;
+  const x = 50 + 46 * Math.cos(a);
+  const y = 50 + 45 * Math.sin(a);
+  return { left: `${x}%`, top: `${y}%` };
 }
 
 function PokerContent() {
@@ -81,13 +91,23 @@ function PokerContent() {
   const [raiseTo, setRaiseTo] = React.useState(0);
   const socketRef = React.useRef<Socket | null>(null);
   const tableRef = React.useRef<string | null>(null);
+  const stageRef = React.useRef<HTMLDivElement>(null);
   const turnRef = React.useRef(false);
   const prevCommunity = React.useRef(0);
   const prevHandActive = React.useRef(false);
   const meIdRef = React.useRef<string | null>(null);
+  const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
     meIdRef.current = user?.id ?? null;
   }, [user?.id]);
+
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
 
   const refreshMesas = React.useCallback(() => {
     socketRef.current?.emit("table:list", { game: "poker" }, (res: { tables?: Mesa[] }) =>
@@ -110,7 +130,6 @@ function PokerContent() {
       prevHandActive.current = g.handActive;
       setMeta(p.table);
       setGame(g);
-      // Al iniciar mi turno, fija el valor por defecto de subida.
       if (g.myTurn && !turnRef.current && g.actions) setRaiseTo(g.actions.minRaiseTo);
       turnRef.current = g.myTurn;
       refreshUser();
@@ -138,6 +157,12 @@ function PokerContent() {
       if (tableRef.current) s.emit("table:leave", { tableId: tableRef.current });
     };
   }, [refreshMesas, refreshUser]);
+
+  const immersive = isMobile && !!tableId && !!game;
+  React.useEffect(() => {
+    document.body.classList.toggle("immersive-on", immersive);
+    return () => document.body.classList.remove("immersive-on");
+  }, [immersive]);
 
   function join(id: string) {
     socketRef.current?.emit("table:join", { tableId: id }, (res: { ok: boolean; reason?: string }) => {
@@ -190,7 +215,8 @@ function PokerContent() {
                 Texas Hold&apos;em en vivo. Compra fichas, juega tus manos y retírate cuando quieras.
               </p>
               <button className="btn btn-ghost btn-sm practice-cta" onClick={practice}>
-                🤖 Practicar vs CPU · gratis
+                <Cpu width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                Practicar vs CPU · gratis
               </button>
             </div>
             <div className="bal-banner" style={{ marginBottom: 28 }}>
@@ -222,119 +248,156 @@ function PokerContent() {
   const me = game.seats[game.mySeat];
   const needBuyIn = !!user && (game.mySeat < 0 || game.myChips === 0) && !game.seats[game.mySeat]?.inHand;
   const a = game.actions;
+  const n = game.seats.length || 1;
+  const base = game.mySeat >= 0 ? game.mySeat : 0;
+  const iWon = game.showdown.some((w) => w.id === user?.id && w.amount > 0);
 
   return (
     <>
-      <SiteNav variant="in" />
-      <Ticker />
+      {!immersive && <SiteNav variant="in" />}
+      {!immersive && <Ticker />}
       <section className="view">
         <div className="wrap">
-          <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h1>{meta?.name ?? "Póker"}</h1>
-              <p style={{ color: "var(--text-2)", marginTop: 6 }}>
-                {game.handActive ? `Mano en curso · ${game.street}` : "Esperando jugadores"} · Ciegas {formatBs(game.smallBlind)}/{formatBs(game.bigBlind)}
-              </p>
-            </div>
-            <button className="btn btn-ghost btn-sm" onClick={leave}>Salir y cobrar</button>
-          </div>
-
-          {/* Mesa central */}
-          <div className="poker-table">
-            <div className="poker-pot">Pozo · {formatBs(game.pot)}</div>
-            <div className="poker-community">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <PlayingCard key={game.community[i] ?? i} c={game.community[i]} hidden={!game.community[i]} />
-              ))}
-            </div>
-          </div>
-
-          {/* Showdown */}
-          {!game.handActive && game.showdown.length > 0 && (
-            <div className="bingo-winner">
-              {game.showdown
-                .filter((w) => w.amount > 0)
-                .map((w) => `${w.name} gana ${formatBs(w.amount)}${w.hand ? " (" + w.hand + ")" : ""}`)
-                .join(" · ") || "Mano terminada"}
+          {!immersive && (
+            <div className="lobby-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h1>{meta?.name ?? "Póker"}</h1>
+                <p style={{ color: "var(--text-2)", marginTop: 6 }}>
+                  {game.handActive ? `Mano en curso · ${game.street}` : "Esperando jugadores"}
+                </p>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={leave}>Salir y cobrar</button>
             </div>
           )}
 
-          {/* Jugadores */}
-          <div className="poker-seats">
-            {game.seats.map((s) => (
-              <div
-                key={s.id}
-                className={`poker-seat${s.isTurn ? " turn" : ""}${s.folded ? " folded" : ""}`}
-              >
-                <div className="poker-seat-top">
-                  <span className="poker-seat-name">
-                    {s.isButton ? "🔘 " : ""}{s.name}{s.id === user?.id ? " (tú)" : ""}
-                  </span>
-                  {s.allIn && <span className="poker-allin">ALL-IN</span>}
-                  {s.isTurn && <TurnTimer endsAt={game.turnEndsAt} />}
-                </div>
-                <div className="poker-seat-cards">
-                  {s.hole ? s.hole.map((c, i) => <PlayingCard key={i} c={c} />) :
-                    s.inHand ? [<PlayingCard key={0} hidden />, <PlayingCard key={1} hidden />] : null}
-                </div>
-                <div className="poker-seat-chips">{formatBs(s.chips)}</div>
-                {s.roundBet > 0 && <div className="poker-seat-bet">Apuesta {formatBs(s.roundBet)}</div>}
-              </div>
-            ))}
-          </div>
-
-          {/* Acciones */}
-          <div className="game-panel" style={{ marginTop: 20 }}>
-            {needBuyIn ? (
-              <div style={{ textAlign: "center" }}>
-                <p style={{ color: "var(--text-2)", marginBottom: 14 }}>
-                  Compra fichas para jugar (buy-in {formatBs(game.buyIn)}).
-                </p>
-                <button className="btn btn-gold" onClick={() => action("buyin")}>
-                  Comprar fichas · {formatBs(game.buyIn)}
-                </button>
-              </div>
-            ) : game.myTurn && a ? (
-              <div className="poker-actions">
-                {a.canFold && <button className="btn btn-ghost" onClick={() => action("fold")}>Retirarse</button>}
-                {a.canCheck ? (
-                  <button className="btn btn-gold" onClick={() => action("check")}>Pasar</button>
-                ) : a.canCall ? (
-                  <button className="btn btn-gold" onClick={() => action("call")}>Igualar {formatBs(a.callAmount)}</button>
-                ) : null}
-                {a.canRaise && (
-                  <div className="poker-raise">
-                    <input
-                      type="number"
-                      value={Math.round(raiseTo / 100)}
-                      min={Math.ceil(a.minRaiseTo / 100)}
-                      max={Math.ceil(a.maxRaiseTo / 100)}
-                      onChange={(e) => setRaiseTo(Math.round(Number(e.target.value) * 100))}
-                    />
-                    <button
-                      className="btn btn-green"
-                      onClick={() =>
-                        action("raise", { amount: Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)) })
-                      }
-                    >
-                      Subir a {formatBs(Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)))}
-                    </button>
-                    <button className="btn btn-gold" onClick={() => action("allin")}>All-in ({formatBs(a.maxRaiseTo)})</button>
-                  </div>
-                )}
-              </div>
+          <div className={`game-stage pk-stage${immersive ? " pk-immersive" : ""}`} ref={stageRef}>
+            {immersive ? (
+              <button className="stage-exit" onClick={leave} aria-label="Salir">Salir</button>
             ) : (
-              <div style={{ textAlign: "center", color: "var(--text-2)" }}>
-                {game.handActive
-                  ? "Esperando a los demás jugadores…"
-                  : me?.chips
-                    ? "La próxima mano comenzará en breve…"
-                    : "Compra fichas para entrar a jugar."}
+              <StageFullscreen targetRef={stageRef} />
+            )}
+
+            <div className="stage-bar">
+              <span><i>Pozo</i> {formatBs(game.pot)}</span>
+              <span><i>Ciegas</i> {formatBs(game.smallBlind)}/{formatBs(game.bigBlind)}</span>
+              <span><i>Jugadores</i> {n}</span>
+              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
+            </div>
+
+            {!game.handActive && game.showdown.length > 0 && (
+              <div className="stage-winner">
+                <Trophy width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
+                {iWon
+                  ? "¡Ganaste la mano!"
+                  : game.showdown
+                      .filter((w) => w.amount > 0)
+                      .map((w) => `${w.name} gana ${formatBs(w.amount)}${w.hand ? " (" + w.hand + ")" : ""}`)
+                      .join(" · ") || "Mano terminada"}
               </div>
             )}
-          </div>
 
-          <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+            {/* Mesa ovalada con asientos alrededor */}
+            <div className="pk-table-wrap">
+              <div className="pk-felt">
+                <div className="pk-center">
+                  <div className="pk-pot">Pozo · {formatBs(game.pot)}</div>
+                  <div className="pk-community">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <PlayingCard key={game.community[i] ?? `c${i}`} c={game.community[i]} hidden={!game.community[i]} />
+                    ))}
+                  </div>
+                  {game.street && game.street !== "idle" && game.handActive && (
+                    <div className="pk-street">{game.street}</div>
+                  )}
+                </div>
+              </div>
+
+              {game.seats.map((s, idx) => {
+                const offset = ((idx - base) % n + n) % n;
+                const isMe = s.id === user?.id;
+                return (
+                  <div
+                    key={s.id}
+                    className={`pk-seat${s.isTurn ? " turn" : ""}${s.folded ? " folded" : ""}${isMe ? " me" : ""}`}
+                    style={seatStyle(offset, n)}
+                  >
+                    {s.roundBet > 0 && <div className="pk-bet">{formatBs(s.roundBet)}</div>}
+                    <div className="pk-seat-cards">
+                      {s.hole
+                        ? s.hole.map((c, i) => <PlayingCard key={i} c={c} big={isMe} />)
+                        : s.inHand
+                          ? [<PlayingCard key={0} hidden big={isMe} />, <PlayingCard key={1} hidden big={isMe} />]
+                          : null}
+                    </div>
+                    <div className="pk-seat-plate">
+                      <div className="pk-seat-av">
+                        {(s.name[0] ?? "?").toUpperCase()}
+                        {s.isButton && <span className="pk-dealer">D</span>}
+                      </div>
+                      <div className="pk-seat-info">
+                        <span className="pk-seat-name">{s.name}{isMe ? " (tú)" : ""}</span>
+                        <span className="pk-seat-chips">{formatBs(s.chips)}</span>
+                      </div>
+                    </div>
+                    {s.allIn && <span className="pk-allin">ALL-IN</span>}
+                    {s.isTurn && <div className="pk-timer"><TurnTimer endsAt={game.turnEndsAt} /></div>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Barra de acciones */}
+            <div className="pk-actionbar">
+              {needBuyIn ? (
+                <div className="pk-buyin">
+                  <span>Compra fichas para jugar (buy-in {formatBs(game.buyIn)}).</span>
+                  <button className="btn btn-gold" onClick={() => action("buyin")}>
+                    Comprar fichas · {formatBs(game.buyIn)}
+                  </button>
+                </div>
+              ) : game.myTurn && a ? (
+                <div className="poker-actions">
+                  {a.canFold && <button className="btn btn-ghost" onClick={() => action("fold")}>Retirarse</button>}
+                  {a.canCheck ? (
+                    <button className="btn btn-gold" onClick={() => action("check")}>Pasar</button>
+                  ) : a.canCall ? (
+                    <button className="btn btn-gold" onClick={() => action("call")}>Igualar {formatBs(a.callAmount)}</button>
+                  ) : null}
+                  {a.canRaise && (
+                    <div className="poker-raise">
+                      <input
+                        type="range"
+                        value={raiseTo}
+                        min={a.minRaiseTo}
+                        max={a.maxRaiseTo}
+                        step={Math.max(1, game.bigBlind)}
+                        onChange={(e) => setRaiseTo(Number(e.target.value))}
+                      />
+                      <button
+                        className="btn btn-green"
+                        onClick={() =>
+                          action("raise", { amount: Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)) })
+                        }
+                      >
+                        Subir a {formatBs(Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)))}
+                      </button>
+                      <button className="btn btn-gold" onClick={() => action("allin")}>All-in</button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="pk-wait">
+                  {game.handActive
+                    ? "Esperando a los demás jugadores…"
+                    : me?.chips
+                      ? "La próxima mano comenzará en breve…"
+                      : "Compra fichas para entrar a jugar."}
+                </div>
+              )}
+            </div>
+
+            <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
+          </div>
         </div>
       </section>
     </>

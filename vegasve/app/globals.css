@@ -2478,4 +2478,115 @@ html, body { overflow-x: clip; max-width: 100%; }
   .bingo-immersive .bingo-col { font-size: 10px; border-radius: 4px; padding: 1px 0; }
   .bingo-immersive .bingo-cells { gap: 3px; }
   .bingo-immersive .bingo-cell { font-size: 10px; border-radius: 4px; }
+  .bingo-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; }
+}
+
+/* ============================================================
+   Póker PRO — mesa ovalada con asientos alrededor (override final)
+   ============================================================ */
+.pk-stage { min-height: 600px; }
+.pk-table-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  max-width: 800px;
+  min-height: 360px;
+  margin: 6px auto;
+}
+.pk-felt {
+  position: absolute;
+  top: 13%; left: 7%; right: 7%; bottom: 13%;
+  border-radius: 50% / 44%;
+  background:
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at 50% 42%, #2b8553 0%, #176f3f 45%, #0d4427 88%);
+  border: 10px solid #4a3018;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), 0 14px 34px -12px rgba(0, 0, 0, 0.7);
+  display: flex; align-items: center; justify-content: center;
+}
+.pk-center { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.pk-pot {
+  color: var(--gold); font-weight: 700; font-size: 14px;
+  background: rgba(0, 0, 0, 0.34); border: 1px solid rgba(245, 158, 11, 0.45);
+  padding: 4px 16px; border-radius: 99px;
+}
+.pk-community { display: flex; gap: 6px; justify-content: center; }
+.pk-community .pkcard { width: 42px; height: 58px; animation: card-deal 0.4s ease; }
+.pk-street { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.6); }
+
+/* Asientos alrededor (posición exacta la pone el JS por left/top %) */
+.pk-seat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  z-index: 3;
+}
+.pk-seat.folded { opacity: 0.45; }
+.pk-seat-cards { display: flex; gap: 3px; min-height: 42px; }
+.pk-seat-cards .pkcard { width: 30px; height: 42px; }
+.pk-seat-cards .pkcard.big { width: 42px; height: 59px; }
+.pk-seat-plate {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(12, 8, 26, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  padding: 3px 12px 3px 3px;
+  max-width: 100%;
+}
+.pk-seat.turn .pk-seat-plate { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4), 0 0 16px -4px var(--gold); }
+.pk-seat.me .pk-seat-plate { border-color: var(--green-bright); }
+.pk-seat-av {
+  position: relative;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-bright), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; color: #fff; flex-shrink: 0;
+}
+.pk-dealer {
+  position: absolute; bottom: -3px; right: -3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; color: #111; font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #caa24a;
+}
+.pk-seat-info { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.pk-seat-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 86px; }
+.pk-seat-chips { font-size: 12px; color: var(--gold); font-weight: 700; }
+.pk-bet {
+  font-size: 11px; font-weight: 700; color: #2a1400;
+  background: radial-gradient(circle at 32% 28%, #ffe9a8, var(--gold) 60%, var(--gold-deep));
+  padding: 1px 9px; border-radius: 99px; box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.6);
+}
+.pk-allin { font-size: 9px; font-weight: 800; color: #04210f; background: var(--green-bright); padding: 1px 7px; border-radius: 999px; }
+
+/* Cartas más grandes para el héroe */
+.pkcard.big { width: 50px; height: 70px; }
+.pkcard.big span:first-child { font-size: 20px; }
+.pkcard.big span:last-child { font-size: 18px; }
+
+/* Barra de acciones */
+.pk-actionbar { padding: 10px 8px 2px; min-height: 56px; display: flex; align-items: center; justify-content: center; }
+.pk-buyin { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-2); text-align: center; }
+.pk-wait { color: var(--text-2); text-align: center; }
+.pk-actionbar .poker-actions { width: 100%; }
+.pk-actionbar .poker-raise { flex: 1; max-width: 440px; }
+.pk-actionbar .poker-raise input[type="range"] { flex: 1; width: auto; min-width: 120px; padding: 0; background: none; border: none; }
+
+/* Inmersivo en celular (horizontal forzado): compacto */
+@media (max-width: 768px) {
+  .pk-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; padding: 3px 10px; font-size: 11px; }
+  .pk-immersive .pk-table-wrap { min-height: 0; margin: 2px auto; max-width: none; }
+  .pk-immersive .pk-felt { border-width: 6px; top: 10%; bottom: 14%; }
+  .pk-immersive .pk-seat { width: 92px; }
+  .pk-immersive .pk-seat-av { width: 26px; height: 26px; font-size: 12px; }
+  .pk-immersive .pk-seat-name { font-size: 10px; max-width: 60px; }
+  .pk-immersive .pk-seat-chips { font-size: 10px; }
+  .pk-immersive .pk-seat-cards { min-height: 30px; }
+  .pk-immersive .pk-seat-cards .pkcard { width: 21px; height: 30px; }
+  .pk-immersive .pk-seat-cards .pkcard.big { width: 30px; height: 42px; }
+  .pk-immersive .pkcard.big { width: 30px; height: 42px; }
+  .pk-immersive .pk-community .pkcard { width: 30px; height: 42px; }
+  .pk-immersive .pk-pot { font-size: 12px; padding: 3px 12px; }
+  .pk-immersive .pk-actionbar { min-height: 44px; padding: 4px; }
 }
