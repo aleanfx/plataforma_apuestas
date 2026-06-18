@@ -2334,15 +2334,17 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 .bingo-empty { color: var(--text-2); text-align: center; padding: 40px 0; }
 
+/* Cartones SIEMPRE en filas de 2 (apilados 2×2, simétricos) en PC y celular. */
 .bingo-cards .bingo-cartones {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 205px));
+  grid-template-columns: repeat(2, minmax(0, 210px));
   gap: 12px;
   align-content: start;
   justify-content: center;
 }
 .bingo-cards .bingo-cartones.n1 { grid-template-columns: minmax(0, 300px); }
-.bingo-cards .bingo-cartones.n2 { grid-template-columns: repeat(2, minmax(0, 235px)); }
+/* Con 3 cartones, el tercero (impar) queda centrado bajo los dos de arriba. */
+.bingo-cards .bingo-cartones.n3 .bingo-carton:nth-child(3) { grid-column: 1 / -1; justify-self: center; width: 100%; max-width: 210px; }
 
 /* Cartón */
 .bingo-stage .bingo-carton {
