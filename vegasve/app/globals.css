@@ -2590,3 +2590,64 @@ html, body { overflow-x: clip; max-width: 100%; }
   .pk-immersive .pk-pot { font-size: 12px; padding: 3px 12px; }
   .pk-immersive .pk-actionbar { min-height: 44px; padding: 4px; }
 }
+
+/* ============================================================
+   Caballos (hípica) y Parley (deportes) — sportsbook PRO
+   ============================================================ */
+.soon-pill {
+  display: inline-block; margin-left: 10px; vertical-align: middle;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 2px 10px; border-radius: 999px;
+}
+.seg-tabs { display: inline-flex; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+.seg-tab { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--text-2); background: none; border: none; cursor: pointer; transition: all .15s; }
+.seg-tab.on { background: linear-gradient(#f5c452, #e6960c); color: #2a1400; }
+
+/* Hípica */
+.hp-race-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.hp-race-sub { font-size: 12px; color: var(--text-3); }
+.hp-horses { display: flex; flex-direction: column; gap: 8px; }
+.hp-horse { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, 0.02); }
+.hp-horse.sel { border-color: var(--gold); }
+.hp-horse-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hp-num { width: 26px; height: 26px; border-radius: 7px; background: var(--purple); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; color: #fff; }
+.hp-name { font-size: 14px; font-weight: 600; }
+.hp-jockey { font-size: 11px; color: var(--text-3); }
+.hp-odds { display: flex; gap: 5px; flex-shrink: 0; }
+.hp-odd { display: flex; flex-direction: column; align-items: center; min-width: 52px; padding: 5px 4px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); cursor: pointer; transition: all .15s; }
+.hp-odd:hover { border-color: var(--gold); }
+.hp-odd.on { background: linear-gradient(#f5c452, #e6960c); border-color: transparent; }
+.hp-odd-k { font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); }
+.hp-odd.on .hp-odd-k { color: #5a3300; }
+.hp-odd-v { font-size: 14px; font-weight: 800; color: var(--gold); }
+.hp-odd.on .hp-odd-v { color: #2a1400; }
+.hp-pos-label { font-size: 12px; color: var(--text-2); font-weight: 600; margin-bottom: 8px; }
+.hp-slip-row, .sb-slip-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(0, 0, 0, 0.25); border-radius: 7px; font-size: 13px; margin-bottom: 8px; }
+.hp-payout { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-2); padding: 10px 12px; background: rgba(0, 0, 0, 0.25); border-radius: 8px; }
+.hp-payout strong { font-size: 18px; color: var(--text); }
+.hp-note { font-size: 11px; color: var(--text-3); text-align: center; margin-top: 10px; }
+
+/* Deportes / parley */
+.sb-match-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.sb-league { font-size: 12px; color: var(--text-3); font-weight: 600; }
+.sb-time { font-size: 11px; color: var(--text-3); }
+.sb-teams { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+.sb-vs { color: var(--text-3); font-size: 13px; margin: 0 4px; }
+.sb-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sb-opt { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 6px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); cursor: pointer; transition: all .15s; }
+.sb-opt:hover { border-color: var(--gold); }
+.sb-opt.on { background: linear-gradient(#f5c452, #e6960c); border-color: transparent; }
+.sb-opt-k { font-size: 11px; font-weight: 800; color: var(--text-3); }
+.sb-opt.on .sb-opt-k { color: #5a3300; }
+.sb-opt-l { font-size: 12px; font-weight: 600; text-align: center; }
+.sb-opt.on .sb-opt-l, .sb-opt.on .sb-opt-v { color: #2a1400; }
+.sb-opt-v { font-size: 15px; font-weight: 800; color: var(--gold); }
+.sb-count { font-size: 12px; font-weight: 700; color: #2a1400; background: var(--gold); border-radius: 999px; padding: 1px 9px; }
+.sb-opt .tick { position: absolute; top: 4px; right: 4px; width: 13px; height: 13px; color: #2a1400; }
+
+@media (max-width: 768px) {
+  .hp-horse { flex-direction: column; align-items: stretch; gap: 8px; }
+  .hp-odds { justify-content: space-between; }
+  .hp-odd { flex: 1; }
+}

@@ -1,88 +1,105 @@
 "use client";
 
 import * as React from "react";
-import { SiteNav } from "@/components/site-nav";
-import { Ticker } from "@/components/ticker";
-import { WalletDialog } from "@/components/wallet-dialog";
-import { Plus, Check } from "@/components/icons";
 import { toast } from "sonner";
 
-const RACES = [
+import { SiteNav } from "@/components/site-nav";
+import { Ticker } from "@/components/ticker";
+import { AuthGuard } from "@/components/auth-guard";
+import { Check } from "@/components/icons";
+import { useAuth } from "@/lib/auth-context";
+import { formatBs } from "@/lib/money";
+
+type Horse = { number: number; name: string; jockey: string; win: number; place: number; show: number };
+type Race = { id: number; name: string; hippodrome: string; time: string; horses: Horse[] };
+
+const RACES: Race[] = [
   {
     id: 1,
-    name: "Primera carrera · 12:30 PM",
+    name: "1ª Carrera",
+    hippodrome: "La Rinconada",
+    time: "12:30 PM",
     horses: [
-      { number: 1, name: "Rayo Negro", odds: 2.3 },
-      { number: 2, name: "Tormenta", odds: 3.1 },
-      { number: 3, name: "Velocidad", odds: 2.8 },
-      { number: 4, name: "Fuego", odds: 4.2 },
-      { number: 5, name: "Luz", odds: 3.5 },
-      { number: 6, name: "Viento", odds: 2.9 },
-    ]
+      { number: 1, name: "Rayo Negro", jockey: "J. Pérez", win: 2.3, place: 1.5, show: 1.2 },
+      { number: 2, name: "Tormenta", jockey: "L. Gómez", win: 3.1, place: 1.8, show: 1.3 },
+      { number: 3, name: "Velocidad", jockey: "M. Díaz", win: 2.8, place: 1.7, show: 1.3 },
+      { number: 4, name: "Fuego", jockey: "R. Mora", win: 4.2, place: 2.1, show: 1.5 },
+      { number: 5, name: "Luz", jockey: "A. Ruiz", win: 3.5, place: 1.9, show: 1.4 },
+      { number: 6, name: "Viento", jockey: "C. Sosa", win: 2.9, place: 1.7, show: 1.3 },
+    ],
   },
   {
     id: 2,
-    name: "Segunda carrera · 1:15 PM",
+    name: "2ª Carrera",
+    hippodrome: "La Rinconada",
+    time: "1:15 PM",
     horses: [
-      { number: 1, name: "Campeón", odds: 2.1 },
-      { number: 2, name: "Victoria", odds: 2.5 },
-      { number: 3, name: "Trueno", odds: 3.8 },
-      { number: 4, name: "Diamante", odds: 2.6 },
-      { number: 5, name: "Salto", odds: 4.0 },
-      { number: 6, name: "Destello", odds: 3.2 },
-    ]
+      { number: 1, name: "Campeón", jockey: "J. Pérez", win: 2.1, place: 1.4, show: 1.2 },
+      { number: 2, name: "Victoria", jockey: "L. Gómez", win: 2.5, place: 1.6, show: 1.3 },
+      { number: 3, name: "Trueno", jockey: "M. Díaz", win: 3.8, place: 2.0, show: 1.5 },
+      { number: 4, name: "Diamante", jockey: "R. Mora", win: 2.6, place: 1.6, show: 1.3 },
+      { number: 5, name: "Salto", jockey: "A. Ruiz", win: 4.0, place: 2.1, show: 1.5 },
+      { number: 6, name: "Destello", jockey: "C. Sosa", win: 3.2, place: 1.8, show: 1.4 },
+    ],
   },
   {
     id: 3,
-    name: "Tercera carrera · 2:00 PM",
+    name: "3ª Carrera",
+    hippodrome: "Valencia",
+    time: "2:00 PM",
     horses: [
-      { number: 1, name: "Pegaso", odds: 3.5 },
-      { number: 2, name: "Brío", odds: 2.8 },
-      { number: 3, name: "Galopante", odds: 2.4 },
-      { number: 4, name: "Esperanza", odds: 3.9 },
-      { number: 5, name: "Fortuna", odds: 2.7 },
-      { number: 6, name: "Gloria", odds: 4.5 },
-    ]
+      { number: 1, name: "Pegaso", jockey: "J. Pérez", win: 3.5, place: 1.9, show: 1.4 },
+      { number: 2, name: "Brío", jockey: "L. Gómez", win: 2.8, place: 1.7, show: 1.3 },
+      { number: 3, name: "Galopante", jockey: "M. Díaz", win: 2.4, place: 1.5, show: 1.2 },
+      { number: 4, name: "Esperanza", jockey: "R. Mora", win: 3.9, place: 2.0, show: 1.5 },
+      { number: 5, name: "Fortuna", jockey: "A. Ruiz", win: 2.7, place: 1.6, show: 1.3 },
+      { number: 6, name: "Gloria", jockey: "C. Sosa", win: 4.5, place: 2.2, show: 1.6 },
+    ],
   },
 ];
 
+type BetType = "win" | "place" | "show";
 type PositionKey = "1ro" | "2do" | "3ro";
+const BET_LABEL: Record<BetType, string> = { win: "Ganador", place: "Place", show: "Show" };
 
-export default function CaballosPage() {
+function CaballosContent() {
+  const { user } = useAuth();
+  const balance = user?.balance ?? 0;
+  const [mode, setMode] = React.useState<"carrera" | "polla">("carrera");
+
+  // --- Carrera (Ganador / Place / Show) ---
+  const [pick, setPick] = React.useState<{ raceId: number; horse: number; type: BetType } | null>(null);
+  const [stake, setStake] = React.useState("100");
+  const stakeNum = Math.max(0, Number(stake) || 0);
+  const pickedHorse = pick ? RACES.find((r) => r.id === pick.raceId)?.horses.find((h) => h.number === pick.horse) : null;
+  const odds = pickedHorse ? pickedHorse[pick!.type] : 0;
+  const potential = Math.round(stakeNum * odds * 100) / 100;
+
+  // --- Polla (puntos acumulados) ---
   const [selections, setSelections] = React.useState<Record<string, number | null>>({});
-  const [bet, setBet] = React.useState("100");
-
-  const selectHorse = (raceId: number, position: PositionKey, horseNumber: number) => {
+  const selectPolla = (raceId: number, position: PositionKey, horse: number) => {
     const key = `${raceId}-${position}`;
-    setSelections(prev => ({
-      ...prev,
-      [key]: prev[key] === horseNumber ? null : horseNumber
-    }));
+    setSelections((prev) => ({ ...prev, [key]: prev[key] === horse ? null : horse }));
   };
-
-  const getHorseName = (raceId: number, horseNumber: number) => {
-    const race = RACES.find(r => r.id === raceId);
-    return race?.horses.find(h => h.number === horseNumber)?.name;
-  };
-
-  const selectedPositions = Object.values(selections).filter(s => s !== null).length;
-  let totalPoints = 0;
-
-  Object.entries(selections).forEach(([key, horseNum]) => {
-    if (horseNum === null) return;
-    const [, position] = key.split("-");
-    if (position === "1ro") totalPoints += 5;
-    if (position === "2do") totalPoints += 3;
-    if (position === "3ro") totalPoints += 1;
+  const pollaCount = Object.values(selections).filter((s) => s != null).length;
+  let pollaPoints = 0;
+  Object.entries(selections).forEach(([key, v]) => {
+    if (v == null) return;
+    const pos = key.split("-")[1];
+    pollaPoints += pos === "1ro" ? 5 : pos === "2do" ? 3 : 1;
   });
 
-  const handleSeal = () => {
-    if (selectedPositions === 0) {
-      toast.error("Selecciona al menos un caballo");
-      return;
+  function place() {
+    if (mode === "carrera") {
+      if (!pick) return toast.error("Elige un caballo y tipo de apuesta");
+      if (stakeNum <= 0) return toast.error("Indica un monto válido");
+    } else if (pollaCount === 0) {
+      return toast.error("Selecciona al menos un caballo para tu polla");
     }
-    toast.success(`¡Polla sellada! Puntos totales: ${totalPoints} · Monto: Bs. ${bet}`);
-  };
+    toast("Apuestas hípicas en preparación", {
+      description: "Tu jugada quedó lista. La activación de apuestas reales llega muy pronto.",
+    });
+  }
 
   return (
     <>
@@ -91,140 +108,162 @@ export default function CaballosPage() {
       <section className="view">
         <div className="wrap">
           <div className="lobby-head">
-            <h1>Caballos · Pollas Hípicas</h1>
-            <p style={{ color: "var(--text-2)", marginTop: 8 }}>Apuesta en las carreras de hoy y acumula puntos</p>
+            <h1>Caballos · Hípica</h1>
+            <p style={{ color: "var(--text-2)", marginTop: 8 }}>
+              Carreras de La Rinconada y Valencia. Apuesta a Ganador, Place y Show, o arma tu Polla.
+              <span className="soon-pill">Próximamente apuestas reales</span>
+            </p>
           </div>
 
-          <div className="bal-banner" style={{ marginBottom: 32 }}>
+          <div className="bal-banner" style={{ marginBottom: 24 }}>
             <div className="cell">
-              <div className="k">Saldo disponible</div>
-              <div className="big">Bs. 12.480</div>
-              <div className="sub">≈ $312,00 USD</div>
+              <div className="k">Tu saldo</div>
+              <div className="big">{formatBs(balance)}</div>
             </div>
-            <div className="cell lobby-actions-cell">
-              <WalletDialog kind="deposit">
-                <button className="btn btn-gold btn-sm btn-block">
-                  <Plus strokeWidth={1.8} /> Depositar
-                </button>
-              </WalletDialog>
-            </div>
+          </div>
+
+          <div className="seg-tabs" style={{ marginBottom: 22 }}>
+            <button className={`seg-tab${mode === "carrera" ? " on" : ""}`} onClick={() => setMode("carrera")}>
+              Carrera (Ganador/Place/Show)
+            </button>
+            <button className={`seg-tab${mode === "polla" ? " on" : ""}`} onClick={() => setMode("polla")}>
+              Polla Hípica (puntos)
+            </button>
           </div>
 
           <div className="game-layout">
-            {/* Races */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <h2 style={{ fontSize: 20 }}>Carreras hoy</h2>
-              {RACES.map(race => (
-                <div key={race.id} className="game-panel">
-                  <h3 style={{ marginBottom: 20, fontSize: 16 }}>{race.name}</h3>
-
-                  {(["1ro", "2do", "3ro"] as const).map(position => (
-                    <div key={position} style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 13, color: "var(--text-2)", marginBottom: 10, fontWeight: 500 }}>
-                        {position === "1ro" ? "🥇 Primer lugar" : position === "2do" ? "🥈 Segundo lugar" : "🥉 Tercer lugar"}
-                      </div>
-                      <div className="game-grid-3">
-                        {race.horses.map(horse => {
-                          const isSelected = selections[`${race.id}-${position}`] === horse.number;
-                          return (
-                            <button
-                              key={horse.number}
-                              onClick={() => selectHorse(race.id, position, horse.number)}
-                              className={`game-opt${isSelected ? " sel" : ""}`}
-                              style={{ fontSize: 12 }}
-                            >
-                              <div>#{horse.number}</div>
-                              <div style={{ fontSize: 11, opacity: 0.9 }}>
-                                {horse.name}
-                              </div>
-                              {isSelected && (
-                                <Check strokeWidth={3} className="tick" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {RACES.map((race) => (
+                <div key={race.id} className="game-panel hp-race">
+                  <div className="hp-race-head">
+                    <div>
+                      <h3 style={{ fontSize: 17 }}>{race.name}</h3>
+                      <span className="hp-race-sub">{race.hippodrome} · {race.time}</span>
                     </div>
-                  ))}
+                  </div>
+
+                  {mode === "carrera" ? (
+                    <div className="hp-horses">
+                      {race.horses.map((h) => {
+                        const sel = pick?.raceId === race.id && pick.horse === h.number;
+                        return (
+                          <div key={h.number} className={`hp-horse${sel ? " sel" : ""}`}>
+                            <div className="hp-horse-id">
+                              <span className="hp-num">{h.number}</span>
+                              <div>
+                                <div className="hp-name">{h.name}</div>
+                                <div className="hp-jockey">{h.jockey}</div>
+                              </div>
+                            </div>
+                            <div className="hp-odds">
+                              {(["win", "place", "show"] as const).map((t) => {
+                                const on = sel && pick?.type === t;
+                                return (
+                                  <button
+                                    key={t}
+                                    className={`hp-odd${on ? " on" : ""}`}
+                                    onClick={() => setPick({ raceId: race.id, horse: h.number, type: t })}
+                                  >
+                                    <span className="hp-odd-k">{BET_LABEL[t]}</span>
+                                    <span className="hp-odd-v">{h[t].toFixed(2)}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    (["1ro", "2do", "3ro"] as const).map((position) => (
+                      <div key={position} style={{ marginBottom: 12 }}>
+                        <div className="hp-pos-label">
+                          {position === "1ro" ? "Primer lugar · +5pts" : position === "2do" ? "Segundo lugar · +3pts" : "Tercer lugar · +1pt"}
+                        </div>
+                        <div className="game-grid-3">
+                          {race.horses.map((h) => {
+                            const isSel = selections[`${race.id}-${position}`] === h.number;
+                            return (
+                              <button
+                                key={h.number}
+                                onClick={() => selectPolla(race.id, position, h.number)}
+                                className={`game-opt${isSel ? " sel" : ""}`}
+                                style={{ fontSize: 12 }}
+                              >
+                                <div>#{h.number}</div>
+                                <div style={{ fontSize: 11, opacity: 0.9 }}>{h.name}</div>
+                                {isSel && <Check strokeWidth={3} className="tick" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               ))}
             </div>
 
-            {/* Sidebar */}
+            {/* Slip */}
             <div className="game-side">
-              {/* Polla */}
               <div className="game-panel">
-                <h3 style={{ marginBottom: 16 }}>Tu polla</h3>
-                {selectedPositions === 0 ? (
-                  <div style={{ color: "var(--text-2)", fontSize: 14 }}>
-                    Selecciona caballos para tu polla
-                  </div>
+                <h3 style={{ marginBottom: 14 }}>Tu jugada</h3>
+                {mode === "carrera" ? (
+                  pick && pickedHorse ? (
+                    <div className="hp-slip">
+                      <div className="hp-slip-row">
+                        <span>{pickedHorse.name} · {BET_LABEL[pick.type]}</span>
+                        <span className="gold">@{odds.toFixed(2)}</span>
+                      </div>
+                      <div className="input-wrap" style={{ margin: "14px 0" }}>
+                        <input
+                          type="number"
+                          value={stake}
+                          onChange={(e) => setStake(e.target.value)}
+                          min="10"
+                          step="10"
+                          style={{ width: "100%", paddingLeft: 12 }}
+                        />
+                      </div>
+                      <div className="hp-payout">
+                        <span>Ganancia potencial</span>
+                        <strong>{formatBs(Math.round(potential * 100))}</strong>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ color: "var(--text-2)", fontSize: 14 }}>Elige un caballo y tipo de apuesta.</div>
+                  )
+                ) : pollaCount === 0 ? (
+                  <div style={{ color: "var(--text-2)", fontSize: 14 }}>Selecciona caballos para tu polla.</div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                    {RACES.map(race => (
-                      <React.Fragment key={race.id}>
-                        {(["1ro", "2do", "3ro"] as const).map(position => {
-                          const horseNum = selections[`${race.id}-${position}`];
-                          if (horseNum === null) return null;
-                          const horseName = getHorseName(race.id, horseNum);
-                          const points = position === "1ro" ? 5 : position === "2do" ? 3 : 1;
-                          return (
-                            <div key={`${race.id}-${position}`} style={{
-                              padding: 10,
-                              background: "var(--black)",
-                              borderRadius: 6,
-                              fontSize: 12,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center"
-                            }}>
-                              <span>
-                                {position === "1ro" ? "🥇" : position === "2do" ? "🥈" : "🥉"} {horseName}
-                              </span>
-                              <span className="gold">+{points}pts</span>
-                            </div>
-                          );
-                        })}
-                      </React.Fragment>
-                    ))}
+                  <div className="hp-payout" style={{ marginBottom: 4 }}>
+                    <span>Puntos totales ({pollaCount} sel.)</span>
+                    <strong style={{ color: "var(--gold)" }}>{pollaPoints}</strong>
                   </div>
                 )}
-              </div>
 
-              {/* Puntos y apuesta */}
-              <div className="game-panel">
-                <h3 style={{ marginBottom: 14 }}>Monto de apuesta</h3>
-                <div className="input-wrap" style={{ marginBottom: 20 }}>
-                  <input
-                    type="number"
-                    value={bet}
-                    onChange={(e) => setBet(e.target.value)}
-                    min="10"
-                    step="10"
-                    style={{ width: "100%", paddingLeft: 12 }}
-                  />
-                </div>
-
-                <div style={{ background: "var(--black)", borderRadius: 8, padding: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 6 }}>
-                    Puntos totales
-                  </div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: "var(--gold)" }}>
-                    {totalPoints}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 4 }}>
-                    Sistema: 1ro=5pts, 2do=3pts, 3ro=1pt
-                  </div>
-                </div>
-
-                <button className="btn btn-gold btn-block" onClick={handleSeal} disabled={selectedPositions === 0}>
-                  Sellar polla
+                <button
+                  className="btn btn-gold btn-block"
+                  style={{ marginTop: 16 }}
+                  onClick={place}
+                  disabled={mode === "carrera" ? !pick : pollaCount === 0}
+                >
+                  {mode === "carrera" ? "Apostar" : "Sellar polla"}
                 </button>
+                <p className="hp-note">Apuestas en preparación · activación muy pronto.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+export default function CaballosPage() {
+  return (
+    <AuthGuard>
+      <CaballosContent />
+    </AuthGuard>
   );
 }

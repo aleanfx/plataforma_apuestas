@@ -1,82 +1,61 @@
 "use client";
 
 import * as React from "react";
-import { SiteNav } from "@/components/site-nav";
-import { Ticker } from "@/components/ticker";
-import { WalletDialog } from "@/components/wallet-dialog";
-import { Plus, Check } from "@/components/icons";
 import { toast } from "sonner";
 
-const MATCHES = [
-  {
-    id: 1,
-    sport: "⚽ Fútbol",
-    local: "Manchester United",
-    visitante: "Liverpool",
-    odds: { local: 2.1, empate: 3.2, visitante: 2.4 }
-  },
-  {
-    id: 2,
-    sport: "⚽ Fútbol",
-    local: "Real Madrid",
-    visitante: "Barcelona",
-    odds: { local: 1.8, empate: 3.5, visitante: 2.8 }
-  },
-  {
-    id: 3,
-    sport: "🏀 Baloncesto",
-    local: "Lakers",
-    visitante: "Celtics",
-    odds: { local: 2.2, empate: 3.0, visitante: 2.3 }
-  },
-  {
-    id: 4,
-    sport: "⚾ Béisbol",
-    local: "Yankees",
-    visitante: "Red Sox",
-    odds: { local: 2.4, empate: 3.0, visitante: 2.1 }
-  },
-  {
-    id: 5,
-    sport: "⚽ Fútbol",
-    local: "PSG",
-    visitante: "AS Monaco",
-    odds: { local: 1.5, empate: 4.0, visitante: 3.2 }
-  },
+import { SiteNav } from "@/components/site-nav";
+import { Ticker } from "@/components/ticker";
+import { AuthGuard } from "@/components/auth-guard";
+import { Check } from "@/components/icons";
+import { useAuth } from "@/lib/auth-context";
+import { formatBs } from "@/lib/money";
+
+type Match = {
+  id: number;
+  sport: string;
+  league: string;
+  local: string;
+  visitante: string;
+  hora: string;
+  odds: { local: number; empate: number; visitante: number };
+};
+
+const MATCHES: Match[] = [
+  { id: 1, sport: "Fútbol", league: "Premier League", local: "Man. United", visitante: "Liverpool", hora: "Hoy 3:00 PM", odds: { local: 2.1, empate: 3.2, visitante: 2.4 } },
+  { id: 2, sport: "Fútbol", league: "LaLiga", local: "Real Madrid", visitante: "Barcelona", hora: "Hoy 4:00 PM", odds: { local: 1.8, empate: 3.5, visitante: 2.8 } },
+  { id: 3, sport: "Baloncesto", league: "NBA", local: "Lakers", visitante: "Celtics", hora: "Hoy 8:00 PM", odds: { local: 2.2, empate: 15.0, visitante: 1.7 } },
+  { id: 4, sport: "Béisbol", league: "MLB", local: "Yankees", visitante: "Red Sox", hora: "Hoy 7:05 PM", odds: { local: 2.4, empate: 12.0, visitante: 2.1 } },
+  { id: 5, sport: "Fútbol", league: "Ligue 1", local: "PSG", visitante: "AS Monaco", hora: "Mañana 2:00 PM", odds: { local: 1.5, empate: 4.0, visitante: 3.2 } },
 ];
 
-type SelectionKey = "local" | "empate" | "visitante";
+type SelKey = "local" | "empate" | "visitante";
 
-export default function ParleyPage() {
-  const [selections, setSelections] = React.useState<Record<number, SelectionKey | null>>({});
+function ParleyContent() {
+  const { user } = useAuth();
+  const balance = user?.balance ?? 0;
+  const [selections, setSelections] = React.useState<Record<number, SelKey | null>>({});
   const [bet, setBet] = React.useState("100");
 
-  const selectOption = (matchId: number, option: SelectionKey) => {
-    setSelections(prev => ({
-      ...prev,
-      [matchId]: prev[matchId] === option ? null : option
-    }));
-  };
+  const select = (matchId: number, option: SelKey) =>
+    setSelections((prev) => ({ ...prev, [matchId]: prev[matchId] === option ? null : option }));
 
-  const selectedMatches = Object.values(selections).filter(s => s !== null).length;
+  const selected = Object.entries(selections).filter(([, v]) => v != null) as [string, SelKey][];
+  const totalOdds = selected.reduce((acc, [id, opt]) => {
+    const m = MATCHES.find((x) => x.id === Number(id));
+    return m ? acc * m.odds[opt] : acc;
+  }, 1);
+  const stakeNum = Math.max(0, Number(bet) || 0);
+  const potential = Math.round(stakeNum * (selected.length ? totalOdds : 0) * 100) / 100;
 
-  let totalOdds = 1;
-  MATCHES.forEach(match => {
-    const sel = selections[match.id];
-    if (sel) {
-      totalOdds *= match.odds[sel];
-    }
-  });
+  const labelFor = (m: Match, opt: SelKey) => (opt === "local" ? m.local : opt === "visitante" ? m.visitante : "Empate");
 
-  const potentialWinnings = Math.round((parseInt(bet) || 0) * totalOdds * 100) / 100;
-
-  const handleBet = () => {
-    if (selectedMatches === 0) {
-      toast.error("Selecciona al menos un pronóstico");
-      return;
-    }
-    toast.success(`¡Apuesta realizada! Monto: Bs. ${bet}`);
-  };
+  function place() {
+    if (selected.length === 0) return toast.error("Selecciona al menos un pronóstico");
+    if (stakeNum <= 0) return toast.error("Indica un monto válido");
+    toast("Apuestas deportivas en preparación", {
+      description: "Tu parley quedó armado. La activación de apuestas reales llega muy pronto.",
+    });
+  }
 
   return (
     <>
@@ -85,54 +64,39 @@ export default function ParleyPage() {
       <section className="view">
         <div className="wrap">
           <div className="lobby-head">
-            <h1>Parley · Pronósticos Deportivos</h1>
-            <p style={{ color: "var(--text-2)", marginTop: 8 }}>Acumula pronósticos y multiplica tus ganancias</p>
+            <h1>Parley · Deportes</h1>
+            <p style={{ color: "var(--text-2)", marginTop: 8 }}>
+              Combina pronósticos y multiplica tu cuota.
+              <span className="soon-pill">Próximamente apuestas reales</span>
+            </p>
           </div>
 
-          <div className="bal-banner" style={{ marginBottom: 32 }}>
+          <div className="bal-banner" style={{ marginBottom: 24 }}>
             <div className="cell">
-              <div className="k">Saldo disponible</div>
-              <div className="big">Bs. 12.480</div>
-              <div className="sub">≈ $312,00 USD</div>
-            </div>
-            <div className="cell lobby-actions-cell">
-              <WalletDialog kind="deposit">
-                <button className="btn btn-gold btn-sm btn-block">
-                  <Plus strokeWidth={1.8} /> Depositar
-                </button>
-              </WalletDialog>
+              <div className="k">Tu saldo</div>
+              <div className="big">{formatBs(balance)}</div>
             </div>
           </div>
 
           <div className="game-layout">
-            {/* Matches */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <h2 style={{ fontSize: 20 }}>Partidos disponibles</h2>
-              {MATCHES.map(match => (
-                <div key={match.id} className="game-panel" style={{ padding: 20 }}>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 12 }}>
-                    {match.sport}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <h2 style={{ fontSize: 20 }}>Partidos de hoy</h2>
+              {MATCHES.map((m) => (
+                <div key={m.id} className="game-panel sb-match">
+                  <div className="sb-match-head">
+                    <span className="sb-league">{m.sport} · {m.league}</span>
+                    <span className="sb-time">{m.hora}</span>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
-                    {match.local} vs {match.visitante}
-                  </div>
-                  <div className="game-grid-3">
-                    {(["local", "empate", "visitante"] as const).map(option => {
-                      const isSelected = selections[match.id] === option;
-                      const label = option === "local" ? match.local : option === "empate" ? "Empate" : match.visitante;
+                  <div className="sb-teams">{m.local} <span className="sb-vs">vs</span> {m.visitante}</div>
+                  <div className="sb-opts">
+                    {(["local", "empate", "visitante"] as const).map((opt) => {
+                      const on = selections[m.id] === opt;
                       return (
-                        <button
-                          key={option}
-                          onClick={() => selectOption(match.id, option)}
-                          className={`game-opt${isSelected ? " sel" : ""}`}
-                        >
-                          <div>{label}</div>
-                          <div style={{ fontSize: 11, opacity: 0.8 }}>
-                            @{match.odds[option]}
-                          </div>
-                          {isSelected && (
-                            <Check strokeWidth={3} className="tick" />
-                          )}
+                        <button key={opt} className={`sb-opt${on ? " on" : ""}`} onClick={() => select(m.id, opt)}>
+                          <span className="sb-opt-k">{opt === "local" ? "1" : opt === "empate" ? "X" : "2"}</span>
+                          <span className="sb-opt-l">{labelFor(m, opt)}</span>
+                          <span className="sb-opt-v">{m.odds[opt].toFixed(2)}</span>
+                          {on && <Check strokeWidth={3} className="tick" />}
                         </button>
                       );
                     })}
@@ -141,44 +105,27 @@ export default function ParleyPage() {
               ))}
             </div>
 
-            {/* Sidebar */}
+            {/* Bet slip */}
             <div className="game-side">
-              {/* Acumulador */}
               <div className="game-panel">
-                <h3 style={{ marginBottom: 16 }}>Tus selecciones</h3>
-                {selectedMatches === 0 ? (
-                  <div style={{ color: "var(--text-2)", fontSize: 14 }}>
-                    Selecciona pronósticos para ver el acumulador
-                  </div>
+                <h3 style={{ marginBottom: 14 }}>Tu parley {selected.length > 0 && <span className="sb-count">{selected.length}</span>}</h3>
+                {selected.length === 0 ? (
+                  <div style={{ color: "var(--text-2)", fontSize: 14 }}>Selecciona pronósticos para armar tu parley.</div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-                    {MATCHES.map(match => {
-                      if (!selections[match.id]) return null;
-                      const label = selections[match.id] === "local" ? match.local :
-                                   selections[match.id] === "empate" ? "Empate" :
-                                   match.visitante;
+                  <div className="sb-slip">
+                    {selected.map(([id, opt]) => {
+                      const m = MATCHES.find((x) => x.id === Number(id))!;
                       return (
-                        <div key={match.id} style={{
-                          padding: 10,
-                          background: "var(--black)",
-                          borderRadius: 6,
-                          fontSize: 13,
-                          display: "flex",
-                          justifyContent: "space-between"
-                        }}>
-                          <span>{label}</span>
-                          <span className="gold">@{match.odds[selections[match.id]!]}</span>
+                        <div key={id} className="sb-slip-row">
+                          <span>{labelFor(m, opt)}</span>
+                          <span className="gold">@{m.odds[opt].toFixed(2)}</span>
                         </div>
                       );
                     })}
                   </div>
                 )}
-              </div>
 
-              {/* Monto y ganancias */}
-              <div className="game-panel">
-                <h3 style={{ marginBottom: 14 }}>Monto de apuesta</h3>
-                <div className="input-wrap" style={{ marginBottom: 20 }}>
+                <div className="input-wrap" style={{ margin: "14px 0" }}>
                   <input
                     type="number"
                     value={bet}
@@ -189,26 +136,32 @@ export default function ParleyPage() {
                   />
                 </div>
 
-                <div style={{ background: "var(--black)", borderRadius: 8, padding: 16, marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginBottom: 6 }}>
-                    Cuota total: {totalOdds.toFixed(2)}x
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 600, color: "var(--gold)" }}>
-                    Bs. {potentialWinnings.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 4 }}>
-                    Ganancia potencial
-                  </div>
+                <div className="hp-payout">
+                  <span>Cuota total</span>
+                  <strong>{(selected.length ? totalOdds : 0).toFixed(2)}x</strong>
+                </div>
+                <div className="hp-payout" style={{ marginTop: 6 }}>
+                  <span>Ganancia potencial</span>
+                  <strong style={{ color: "var(--gold)" }}>{formatBs(Math.round(potential * 100))}</strong>
                 </div>
 
-                <button className="btn btn-gold btn-block" onClick={handleBet} disabled={selectedMatches === 0}>
-                  Realizar apuesta
+                <button className="btn btn-gold btn-block" style={{ marginTop: 16 }} onClick={place} disabled={selected.length === 0}>
+                  Realizar parley
                 </button>
+                <p className="hp-note">Apuestas en preparación · activación muy pronto.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+export default function ParleyPage() {
+  return (
+    <AuthGuard>
+      <ParleyContent />
+    </AuthGuard>
   );
 }
