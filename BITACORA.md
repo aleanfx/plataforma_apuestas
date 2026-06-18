@@ -480,3 +480,66 @@ min) y duerme tras 15 min → el overlay puede aparecer al probar justo después
 - Para layouts pixel-exactos de fichas: **medir** con `offsetWidth/Height`, no estimar.
 - El motor de dominó ya entrega la cadena con `board[i].b===board[i+1].a` → orientar por dirección basta.
 - Colisiones de nombres de clase CSS entre módulos (`.pcard`) → usar prefijos por feature.
+
+## 15. Bingo "Royale" + ⚠️ caída del backend en cada push y "Load failed" en iPhone (17-18/06/2026)
+
+**Rediseño visual del Bingo** (`app/bingo/page.tsx` + `globals.css`), al nivel del Dominó, **sin tocar el
+backend ni la economía** (sigue siendo multijugador con pozo; el primero en hacer línea gana; 18/18 e2e):
+- Todo en un **`.game-stage`** (fieltro + marco), barra de stats, **modo inmersivo** en celular y
+  **pantalla completa** del juego (reusa `StageFullscreen` + chat flotante del Dominó).
+- **Cartones 5×5 PRO:** cabecera B-I-N-G-O de colores, casilla marcada con **sello/dab** animado, espacio
+  libre ★, resaltado de la **línea ganadora** y aviso **"¡Te falta 1!" / "¡LÍNEA!"** (se calcula en el
+  cliente con `bestLine()` a partir de `grid`+`marked`; no hizo falta tocar el backend).
+- **Bombo 3D** (`BingoMachine`, `<canvas>` sin librerías): ~34 bolas de colores con física 2D (gravedad +
+  turbulencia = "aire comprimido", rebote en la esfera) y **soplo extra** al salir cada bola (`boostRef`).
+  Se **eliminó** la tabla 1-75 y el historial de cantados (el cartón se marca solo; la gente solo quiere ver
+  el número que sale). Cartones **más pequeños** para que **los 4 entren sin scroll** en pantalla completa.
+- Nombres de los otros jugadores **movidos al panel del cantor** (antes quedaban sueltos abajo).
+
+**⚠️⚠️ EL ERROR DE ESTA SESIÓN — leer siempre antes de empujar frontend:**
+`render.yaml` tenía `autoDeploy: true` **sin filtro de rutas** → **CADA push a `main` (aunque fuera solo de
+`vegasve/`) redesplegaba el backend en Render** (~2-4 min caído + pierde estado en memoria). Al hacer varios
+pushes seguidos del Bingo, el backend estuvo reiniciándose una y otra vez y **parecía que "el Bingo rompió
+el login"**, cuando en realidad era el servidor reiniciándose. **Fix:** se añadió `buildFilter` al
+`render.yaml` (`paths: [server/**, render.yaml]`, `ignoredPaths: [vegasve/**, **/*.md]`). Tras aplicarlo,
+los pushes de frontend ya **no** tumban el backend. (Alternativa equivalente sin push: panel de Render →
+Settings → **Build Filters** → Included Paths `server/**`.) ⚠️ El push que activa el `buildFilter` SÍ provoca
+**un último** redeploy; hacerlo en un momento tranquilo.
+
+**"Load failed" al loguear en iPhone (con PC funcionando) — playbook de diagnóstico:**
+1. **PC "funciona" porque usa el backend LOCAL** (`.env.local` → `localhost:4000`); no pasa por Render. No
+   es comparación válida con producción. Para comparar de verdad, abrir producción en ambos.
+2. Comprobar el servidor REAL (no asumir que está dormido):
+   `curl -s https://betmarplay-server.onrender.com/health` → debe dar `{"ok":true,...}` rápido.
+3. Comprobar **CORS y cabeceras** que el navegador exige y `curl` ignora:
+   `curl -D - -H "Origin: https://plataforma-apuestas.vercel.app" .../health` → debe traer
+   `access-control-allow-origin` con ese origin. Preflight: `curl -X OPTIONS -H "Origin: ..."
+   -H "Access-Control-Request-Method: POST" .../auth/login` → `204` con allow-methods/headers.
+   Ojo con **CORP/COEP** de helmet: tenemos `crossOriginResourcePolicy:false` (correcto; si fuera
+   `same-origin` bloquearía el `fetch` cross-origin aunque el CORS esté bien). `COOP` no afecta a `fetch`.
+4. Verificar la **URL embebida** en el bundle de producción (que NO sea `http://localhost:4000` por falta de
+   `NEXT_PUBLIC_API_URL`/`_SOCKET_URL` en Vercel): bajar los chunks de `/_next/static/chunks/*.js` y
+   `grep` por `onrender`/`localhost`. (En esta sesión salió `https://betmarplay-server.onrender.com` ✅.)
+5. Si **todo lo anterior está OK** pero el iPhone abre `/health` directo y la **app** falla, suele ser una de
+   dos: (a) **el backend estaba caído/frío** justo en ese momento (redeploy en curso o cold start), o (b)
+   caché/ajuste local del Safari. **Test partidor:** abrir en **pestaña privada**. ⚠️ Ojo con el falso
+   positivo: si en privado entra **y luego en normal también entra SIN borrar caché**, NO era caché → era (a)
+   transitorio (el server terminó de despertar entre un intento y otro). Si solo entra en privado y en normal
+   sigue fallando hasta **borrar Datos de sitios web** (Ajustes → Safari → Avanzado → Datos de sitios web →
+   *vercel*), entonces sí era caché. Si no entra ni en privado → desactivar **iCloud Private Relay**, **Modo
+   de aislamiento (Lockdown)** y **bloqueadores de contenido**; probar **Wi-Fi ↔ datos**.
+
+**CAUSA CONFIRMADA en esta sesión (18/06):** era **(a)** — el backend estaba terminando de redeployar/despertar
+durante los intentos. El incógnito "funcionó" por coincidencia de tiempo (el server acabó de encender) y luego
+el modo normal **también funcionó sin borrar caché**. No era caché ni un ajuste del iPhone. La cura definitiva
+es el `buildFilter` (que los pushes de frontend dejen de reiniciar el backend) + esperar a que termine el cold
+start cuando sí toque redeploy de `server/`.
+
+**Lecciones nuevas:**
+- **`autoDeploy` sin `buildFilter` = el backend se redeploya con CUALQUIER push** → siempre poner build
+  filter cuando front y back viven en el mismo repo (monorepo).
+- "Load failed" en iOS Safari = `TypeError` genérico de `fetch` (CORS, red, contenido mixto o caché). El
+  `curl` no reproduce CORS/CORP/caché → **siempre** verificar con `Origin` y con pestaña privada.
+- Una navegación directa a un endpoint **no** usa CORS; el `fetch` de la app **sí** → que uno funcione y el
+  otro no apunta a CORS/origin/caché, no a "servidor caído".
+- Animaciones tipo bombo: `<canvas>` + `requestAnimationFrame` con física simple basta; no hace falta 3D real.

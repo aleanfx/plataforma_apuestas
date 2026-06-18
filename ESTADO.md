@@ -1,6 +1,6 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **15 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **18 de junio de 2026**.
 > 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
@@ -108,6 +108,23 @@ Iteración visual completa del Dominó (afinada con capturas del cliente). Detal
 - **Límite de 1 mesa activa por usuario** (backend) para evitar choques entre dispositivos.
 - **Fix:** perfil roto por colisión de clase `.pcard` (perfil vs carta de póker) → carta de póker = `.pkcard`.
 - **Overlay "servidor despertando"** con pre-encendido + botones Reintentar/Recargar.
+
+## Bingo "Royale" + fix de deploy (17-18/06/2026)
+
+Detalle técnico en [`BITACORA.md`](./BITACORA.md) §15.
+
+- **Bingo al nivel del Dominó** (solo frontend; backend y economía intactos, sigue 18/18): un solo recuadro
+  `.game-stage`, **bombo 3D** con bolas flotando (canvas, `BingoMachine`), **cartones 5×5** con sello animado,
+  espacio libre ★, línea ganadora resaltada y aviso "¡Te falta 1!/¡LÍNEA!" (calculado en cliente). Se quitó
+  la tabla 1-75 y el historial. **Modo inmersivo** + pantalla completa + chat, como el Dominó.
+- **⚠️ Causa de los cortes de servicio durante la sesión:** `render.yaml` redeployaba el backend en **cada**
+  push a `main` (aunque fuera solo frontend). Se añadió **`buildFilter`** para que solo redeploye con cambios
+  en `server/`. Pendiente de empujar (ese push dispara **un último** redeploy). Equivalente sin push: panel
+  de Render → Settings → Build Filters → Included Paths `server/**`.
+- **"Load failed" al loguear en iPhone (CAUSA CONFIRMADA):** NO era caché ni el iPhone. Era el **backend
+  caído/frío** justo durante los intentos (redeploy en curso por el `autoDeploy` + cold start de Render free).
+  Una vez caliente, entra igual en normal e incógnito. La cura es el `buildFilter` de arriba. Playbook de
+  diagnóstico (CORS, headers, bundle, test de incógnito) en BITÁCORA §15.
 
 ## Lo que falta (acción tuya)
 
