@@ -441,9 +441,9 @@ function BingoContent() {
                     <button
                       className="btn btn-gold btn-block"
                       onClick={buy}
-                      disabled={myCount >= 4}
+                      disabled={myCount >= 6}
                     >
-                      {myCount >= 4 ? "Máximo 4 cartones" : `Comprar cartón · ${formatBs(game.stake)}`}
+                      {myCount >= 6 ? "Máximo 6 cartones" : `Comprar cartón · ${formatBs(game.stake)}`}
                     </button>
                     <button
                       className="btn btn-ghost btn-block"
@@ -471,8 +471,8 @@ function BingoContent() {
               {/* Cartones del jugador */}
               <div className="bingo-cards">
                 <div className="bingo-cards-head">
-                  <h2>Tus cartones {myCount > 0 && <span className="bingo-cards-count">{myCount}/4</span>}</h2>
-                  {game.phase === "buying" && myCount < 4 && (
+                  <h2>Tus cartones {myCount > 0 && <span className="bingo-cards-count">{myCount}/6</span>}</h2>
+                  {game.phase === "buying" && myCount < 6 && (
                     <button className="btn btn-gold btn-sm" onClick={buy}>+ Cartón</button>
                   )}
                 </div>

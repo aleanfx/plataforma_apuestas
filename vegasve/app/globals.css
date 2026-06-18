@@ -1952,9 +1952,11 @@ html, body { overflow-x: clip; max-width: 100%; }
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* ===== Modo inmersivo del Dominó en celular (horizontal forzado) ===== */
+/* ===== Modo inmersivo en celular (horizontal forzado) — TODOS los juegos ===== */
 @media (max-width: 768px) {
-  .game-stage.dom-immersive {
+  .game-stage.dom-immersive,
+  .game-stage.bingo-immersive,
+  .game-stage.pk-immersive {
     position: fixed;
     z-index: 9990;
     max-width: none;
@@ -1993,7 +1995,9 @@ html, body { overflow-x: clip; max-width: 100%; }
    Usamos dvw/dvh (viewport visible real) para que NO se corte por las barras
    del navegador en iPhone; con fallback a vw/vh en navegadores viejos. */
 @media (max-width: 768px) and (orientation: portrait) {
-  .game-stage.dom-immersive {
+  .game-stage.dom-immersive,
+  .game-stage.bingo-immersive,
+  .game-stage.pk-immersive {
     top: 0;
     left: 100vw;
     width: 100vh;
@@ -2004,16 +2008,22 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) and (orientation: portrait) {
-    .game-stage.dom-immersive { left: 100dvw; width: 100dvh; height: 100dvw; }
+    .game-stage.dom-immersive,
+    .game-stage.bingo-immersive,
+    .game-stage.pk-immersive { left: 100dvw; width: 100dvh; height: 100dvw; }
   }
 }
 /* Tel. ya en horizontal: solo ocupa toda la pantalla visible */
 @media (max-width: 768px) and (orientation: landscape) {
-  .game-stage.dom-immersive { inset: 0; width: 100vw; height: 100vh; }
+  .game-stage.dom-immersive,
+  .game-stage.bingo-immersive,
+  .game-stage.pk-immersive { inset: 0; width: 100vw; height: 100vh; }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) and (orientation: landscape) {
-    .game-stage.dom-immersive { width: 100dvw; height: 100dvh; }
+    .game-stage.dom-immersive,
+    .game-stage.bingo-immersive,
+    .game-stage.pk-immersive { width: 100dvw; height: 100dvh; }
   }
 }
 .stage-exit {
@@ -2334,17 +2344,16 @@ html, body { overflow-x: clip; max-width: 100%; }
 }
 .bingo-empty { color: var(--text-2); text-align: center; padding: 40px 0; }
 
-/* Cartones SIEMPRE en filas de 2 (apilados 2×2, simétricos) en PC y celular. */
+/* Cartones SIEMPRE en filas de 3 (hasta 6 = 3×2) en PC y celular. */
 .bingo-cards .bingo-cartones {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 210px));
+  grid-template-columns: repeat(3, minmax(0, 200px));
   gap: 12px;
   align-content: start;
   justify-content: center;
 }
 .bingo-cards .bingo-cartones.n1 { grid-template-columns: minmax(0, 300px); }
-/* Con 3 cartones, el tercero (impar) queda centrado bajo los dos de arriba. */
-.bingo-cards .bingo-cartones.n3 .bingo-carton:nth-child(3) { grid-column: 1 / -1; justify-self: center; width: 100%; max-width: 210px; }
+.bingo-cards .bingo-cartones.n2 { grid-template-columns: repeat(2, minmax(0, 230px)); }
 
 /* Cartón */
 .bingo-stage .bingo-carton {
@@ -2443,24 +2452,30 @@ html, body { overflow-x: clip; max-width: 100%; }
   .bingo-arena { grid-template-columns: 1fr; }
 }
 
-/* Inmersivo en celular: el juego ocupa toda la pantalla (vertical, con scroll) */
+/* Inmersivo en celular (horizontal forzado): bombo a la izquierda + 6 cartones
+   compactos a la derecha, todo dentro de la pantalla girada (con scroll de
+   reserva). La posición/giro lo maneja la regla compartida de arriba. */
 @media (max-width: 768px) {
-  .game-stage.bingo-immersive {
-    position: fixed;
-    inset: 0;
-    z-index: 9990;
-    max-width: none;
-    min-height: 0;
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    padding: 8px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .bingo-immersive .bingo-arena { grid-template-columns: 1fr; gap: 10px; }
-  .bingo-immersive .bingo-caller { padding: 12px 10px; gap: 10px; }
-  .bingo-immersive .bingo-last { width: 88px; height: 88px; font-size: 24px; }
-  .bingo-immersive .bingo-cards-head h2 { font-size: 17px; }
-  .bingo-immersive .bingo-cell { font-size: 14px; }
+  .game-stage.bingo-immersive { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .bingo-immersive .stage-bar { padding: 3px 10px; font-size: 11px; }
+  .bingo-immersive .bingo-arena { grid-template-columns: 170px minmax(0, 1fr); gap: 8px; }
+  .bingo-immersive .bingo-caller { padding: 8px; gap: 7px; }
+  .bingo-immersive .bingo-machine { width: 132px; height: 132px; }
+  .bingo-immersive .bingo-machine-canvas { width: 132px !important; height: 132px !important; }
+  .bingo-immersive .bingo-last { width: 58px; height: 58px; font-size: 17px; }
+  .bingo-immersive .bingo-caller-state { font-size: 10px; }
+  .bingo-immersive .bingo-players { display: none; } /* se gana alto; el conteo va en la barra */
+  .bingo-immersive .bingo-cards { gap: 8px; }
+  .bingo-immersive .bingo-cards-head h2 { font-size: 14px; }
+  .bingo-immersive .bingo-cards .bingo-cartones,
+  .bingo-immersive .bingo-cards .bingo-cartones.n2 { grid-template-columns: repeat(3, minmax(0, 150px)); gap: 7px; }
+  .bingo-immersive .bingo-cards .bingo-cartones.n1 { grid-template-columns: minmax(0, 180px); }
+  .bingo-immersive .bingo-carton { padding: 6px; border-radius: 9px; }
+  .bingo-immersive .bingo-carton-top { margin-bottom: 4px; min-height: 13px; }
+  .bingo-immersive .bingo-carton-tag { font-size: 8px; }
+  .bingo-immersive .bingo-carton-badge { font-size: 8px; padding: 1px 6px; }
+  .bingo-immersive .bingo-head { gap: 3px; margin-bottom: 3px; }
+  .bingo-immersive .bingo-col { font-size: 10px; border-radius: 4px; padding: 1px 0; }
+  .bingo-immersive .bingo-cells { gap: 3px; }
+  .bingo-immersive .bingo-cell { font-size: 10px; border-radius: 4px; }
 }

@@ -7,7 +7,7 @@ import { realEscrow, type Escrow } from "../../realtime/escrow.js";
 import { genCarton, hasLine, markGrid, ballLetter, MAX_BALL, type Carton } from "./cards.js";
 
 type Phase = "buying" | "playing" | "finished";
-const MAX_CARTONES_PER_PLAYER = 4;
+const MAX_CARTONES_PER_PLAYER = 6;
 
 export type BingoOptions = {
   callIntervalMs?: number; // ritmo del canto automático
