@@ -8,7 +8,6 @@ import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { TurnTimer } from "@/components/turn-timer";
-import { TableChat } from "@/components/table-chat";
 import { DominoPiece } from "@/components/domino-piece";
 import { StageFullscreen } from "@/components/stage-fullscreen";
 import { Cpu, Trophy } from "@/components/icons";
@@ -551,8 +550,6 @@ function DominoContent() {
               </>
             )}
             </div>
-
-            <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
           </div>
         </div>
       </section>

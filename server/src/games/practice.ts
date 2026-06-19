@@ -44,7 +44,7 @@ export function createPracticeTable(hub: Hub, game: GameKind): Table {
 
   if (game === "poker") {
     const engine = new PokerEngine({
-      seats: 4,
+      seats: 5,
       buyIn: 10000,
       smallBlind: 50,
       bigBlind: 100,
@@ -53,7 +53,7 @@ export function createPracticeTable(hub: Hub, game: GameKind): Table {
       turnTimeoutMs: 20000,
     });
     const table = hub.createTable({ id, name: "Póker · Práctica vs CPU", stake: 10000, engine });
-    wire(hub, table, engine, makeBots(3), decidePoker);
+    wire(hub, table, engine, makeBots(4), decidePoker);
     return table;
   }
 

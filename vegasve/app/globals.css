@@ -2761,16 +2761,24 @@ html, body { overflow-x: clip; max-width: 100%; }
   font-size: 17px;
 }
 .pk-seat.me .pk-seat-av { border-color: #36e07a; }
-/* Turno: anillo verde brillante (como el contador de la referencia) */
+/* Turno: ANILLO DE TIEMPO que se llena alrededor de la foto (sin número) */
 .pk-seat.turn .pk-seat-av {
   border-color: #36e07a;
-  box-shadow: 0 0 0 2px #0d0820, 0 0 16px 3px rgba(54, 224, 122, 0.85);
-  animation: pk-turn-pulse 1.1s ease-in-out infinite;
+  box-shadow: 0 0 0 2px #0d0820, 0 0 14px 2px rgba(54, 224, 122, 0.55);
 }
-@keyframes pk-turn-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px #0d0820, 0 0 10px 1px rgba(54, 224, 122, 0.7); }
-  50% { box-shadow: 0 0 0 2px #0d0820, 0 0 20px 5px rgba(54, 224, 122, 0.95); }
+@property --pkp {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
+.pk-turn-ring {
+  position: absolute; inset: -4px; border-radius: 50%; pointer-events: none; z-index: 3;
+  background: conic-gradient(#36e07a var(--pkp), rgba(0, 0, 0, 0.4) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  animation-name: pk-ring-fill; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes pk-ring-fill { from { --pkp: 0deg; } to { --pkp: 360deg; } }
 .pk-dealer { background: #fff; color: #111; border-color: #e8c563; }
 
 /* Placa de nombre: barra oscura con borde dorado; fichas en pastilla dorada */

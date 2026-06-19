@@ -7,8 +7,6 @@ import { toast } from "sonner";
 import { SiteNav } from "@/components/site-nav";
 import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
-import { TurnTimer } from "@/components/turn-timer";
-import { TableChat } from "@/components/table-chat";
 import { StageFullscreen } from "@/components/stage-fullscreen";
 import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
@@ -72,6 +70,17 @@ function PlayingCard({ c, hidden, big }: { c?: string; hidden?: boolean; big?: b
       <span className="pkcard-s">{SUIT[suit]}</span>
     </div>
   );
+}
+
+// Anillo de tiempo que se llena alrededor de la foto del jugador en turno
+// (reemplaza el número en pantalla). Se anima durante el tiempo restante.
+function TurnRing({ endsAt }: { endsAt?: number | null }) {
+  const [dur, setDur] = React.useState(0);
+  React.useEffect(() => {
+    setDur(endsAt ? Math.max(0, endsAt - Date.now()) : 0);
+  }, [endsAt]);
+  if (!endsAt || dur <= 0) return null;
+  return <span key={endsAt} className="pk-turn-ring" style={{ animationDuration: `${dur}ms` }} aria-hidden />;
 }
 
 // Coloca cada asiento alrededor de la elipse de la mesa; yo (offset 0) abajo.
@@ -263,7 +272,9 @@ function PokerContent() {
               <div>
                 <h1>{meta?.name ?? "Póker"}</h1>
                 <p style={{ color: "var(--text-2)", marginTop: 6 }}>
-                  {game.handActive ? `Mano en curso · ${game.street}` : "Esperando jugadores"}
+                  {game.handActive
+                    ? `Mano en curso · ${game.street}`
+                    : `Ciegas ${formatBs(game.smallBlind)}/${formatBs(game.bigBlind)}`}
                 </p>
               </div>
               <button className="btn btn-ghost btn-sm" onClick={leave}>Salir y cobrar</button>
@@ -299,7 +310,6 @@ function PokerContent() {
             {/* Mesa ovalada con asientos alrededor */}
             <div className="pk-table-wrap">
               <div className="pk-felt">
-                <div className="pk-brand" aria-hidden>B</div>
                 <div className="pk-center">
                   <div className="pk-pot"><span className="pk-chip-ico" aria-hidden />{formatBs(game.pot)}</div>
                   <div className="pk-community">
@@ -334,6 +344,7 @@ function PokerContent() {
                       <div className="pk-seat-av">
                         {(s.name[0] ?? "?").toUpperCase()}
                         {s.isButton && <span className="pk-dealer">D</span>}
+                        {s.isTurn && <TurnRing endsAt={game.turnEndsAt} />}
                       </div>
                       <div className="pk-seat-info">
                         <span className="pk-seat-name">{s.name}{isMe ? " (tú)" : ""}</span>
@@ -341,7 +352,6 @@ function PokerContent() {
                       </div>
                     </div>
                     {s.allIn && <span className="pk-allin">ALL-IN</span>}
-                    {s.isTurn && <div className="pk-timer"><TurnTimer endsAt={game.turnEndsAt} /></div>}
                   </div>
                 );
               })}
@@ -389,15 +399,13 @@ function PokerContent() {
               ) : (
                 <div className="pk-wait">
                   {game.handActive
-                    ? "Esperando a los demás jugadores…"
+                    ? ""
                     : me?.chips
                       ? "La próxima mano comenzará en breve…"
                       : "Compra fichas para entrar a jugar."}
                 </div>
               )}
             </div>
-
-            <TableChat socket={socketRef.current} tableId={tableId} meId={user?.id} />
           </div>
         </div>
       </section>
