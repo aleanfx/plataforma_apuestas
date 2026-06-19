@@ -2587,22 +2587,52 @@ html, body { overflow-x: clip; max-width: 100%; }
 .pk-actionbar .poker-raise { flex: 1; max-width: 440px; }
 .pk-actionbar .poker-raise input[type="range"] { flex: 1; width: auto; min-width: 120px; padding: 0; background: none; border: none; }
 
-/* Inmersivo en celular (horizontal forzado): compacto */
+/* Inmersivo en celular (horizontal forzado): compacto y sin solapes */
 @media (max-width: 768px) {
-  .pk-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 16px; padding: 3px 10px; font-size: 11px; }
-  .pk-immersive .pk-table-wrap { min-height: 0; margin: 2px auto; max-width: none; }
-  .pk-immersive .pk-felt { border-width: 6px; top: 10%; bottom: 14%; }
-  .pk-immersive .pk-seat { width: 92px; }
-  .pk-immersive .pk-seat-av { width: 26px; height: 26px; font-size: 12px; }
-  .pk-immersive .pk-seat-name { font-size: 10px; max-width: 60px; }
-  .pk-immersive .pk-seat-chips { font-size: 10px; }
-  .pk-immersive .pk-seat-cards { min-height: 30px; }
-  .pk-immersive .pk-seat-cards .pkcard { width: 21px; height: 30px; }
-  .pk-immersive .pk-seat-cards .pkcard.big { width: 30px; height: 42px; }
-  .pk-immersive .pkcard.big { width: 30px; height: 42px; }
-  .pk-immersive .pk-community .pkcard { width: 30px; height: 42px; }
-  .pk-immersive .pk-pot { font-size: 12px; padding: 3px 12px; }
-  .pk-immersive .pk-actionbar { min-height: 44px; padding: 4px; }
+  .pk-immersive .stage-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; padding: 2px 10px; font-size: 10px; }
+
+  /* Recuadro de ganador: pequeño, centrado y en UNA línea (trofeo incluido) */
+  .pk-immersive .stage-winner {
+    align-self: center; max-width: 94%;
+    font-size: 11px; padding: 4px 12px; border-radius: 9px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Mesa: menos alargada (fieltro más chico, centrado, con riel fino) */
+  .pk-immersive .pk-table-wrap { flex: 1; min-height: 0; width: 100%; max-width: 600px; margin: 0 auto; }
+  .pk-immersive .pk-felt {
+    top: 20%; bottom: 20%; left: 13%; right: 13%; border-width: 5px;
+    box-shadow: 0 0 0 2px #f0cd6e, 0 0 0 5px #7a531a, 0 0 0 8px #e8c563,
+      inset 0 0 40px rgba(0, 0, 0, 0.5), 0 10px 24px -8px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Asientos pequeños para que la placa NO caiga sobre el fieltro */
+  .pk-immersive .pk-seat { width: 72px; gap: 2px; }
+  .pk-immersive .pk-seat-av { width: 24px; height: 24px; font-size: 11px; border-width: 2px; }
+  .pk-immersive .pk-dealer { width: 12px; height: 12px; font-size: 7px; }
+  .pk-immersive .pk-seat-plate { padding: 2px 7px 2px 2px; gap: 5px; }
+  .pk-immersive .pk-seat-name { font-size: 9px; max-width: 50px; }
+  .pk-immersive .pk-seat-chips { font-size: 9px; padding: 0 5px; }
+  .pk-immersive .pk-seat-cards { min-height: 26px; gap: 2px; }
+  .pk-immersive .pk-seat-cards .pkcard { width: 18px; height: 26px; }
+  .pk-immersive .pk-seat-cards .pkcard.big,
+  .pk-immersive .pkcard.big { width: 26px; height: 37px; }
+  .pk-immersive .pk-bet { font-size: 9px; padding: 1px 7px 1px 2px; gap: 4px; }
+  .pk-immersive .pk-bet::before { width: 13px; height: 13px; font-size: 7px; }
+
+  .pk-immersive .pk-community { gap: 4px; }
+  .pk-immersive .pk-community .pkcard { width: 26px; height: 37px; }
+  .pk-immersive .pk-pot { font-size: 11px; padding: 2px 10px; }
+  .pk-immersive .pk-chip-ico { width: 14px; height: 14px; }
+  .pk-immersive .pk-brand { width: 38px; height: 38px; font-size: 17px; bottom: 14%; border-width: 2px; }
+
+  /* Barra de acciones: botones pequeños, sin texto de ayuda redundante */
+  .pk-immersive .pk-actionbar { min-height: 0; padding: 4px 6px; }
+  .pk-immersive .pk-actionbar .btn { padding: 7px 14px; font-size: 12px; }
+  .pk-immersive .poker-actions { gap: 6px; }
+  .pk-immersive .pk-buyin { flex-direction: row; gap: 8px; }
+  .pk-immersive .pk-buyin > span { display: none; } /* "Compra fichas para jugar…" sobra */
+  .pk-immersive .pk-wait { font-size: 11px; }
 }
 
 /* ============================================================
