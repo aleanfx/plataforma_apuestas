@@ -299,8 +299,9 @@ function PokerContent() {
             {/* Mesa ovalada con asientos alrededor */}
             <div className="pk-table-wrap">
               <div className="pk-felt">
+                <div className="pk-brand" aria-hidden>B</div>
                 <div className="pk-center">
-                  <div className="pk-pot">Pozo · {formatBs(game.pot)}</div>
+                  <div className="pk-pot"><span className="pk-chip-ico" aria-hidden />{formatBs(game.pot)}</div>
                   <div className="pk-community">
                     {[0, 1, 2, 3, 4].map((i) => (
                       <PlayingCard key={game.community[i] ?? `c${i}`} c={game.community[i]} hidden={!game.community[i]} />
