@@ -19,7 +19,7 @@ export function initPoker(hub: Hub) {
   createPokerMesa(hub, {
     id: "poker-100",
     name: "Póker · Buy-in Bs. 100",
-    seats: 6,
+    seats: 5,
     buyIn: 10000,
     smallBlind: 50,
     bigBlind: 100,
@@ -27,7 +27,7 @@ export function initPoker(hub: Hub) {
   createPokerMesa(hub, {
     id: "poker-500",
     name: "Póker · Buy-in Bs. 500",
-    seats: 6,
+    seats: 5,
     buyIn: 50000,
     smallBlind: 250,
     bigBlind: 500,
