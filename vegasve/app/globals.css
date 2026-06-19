@@ -2484,6 +2484,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .bingo-immersive .bingo-machine-canvas { width: 132px !important; height: 132px !important; }
   .bingo-immersive .bingo-last { width: 58px; height: 58px; font-size: 17px; }
   .bingo-immersive .bingo-caller-state { font-size: 10px; }
+  .bingo-immersive .bingo-actions .btn { font-size: 12px; padding: 8px 10px; white-space: nowrap; }
   .bingo-immersive .bingo-players { display: none; } /* se gana alto; el conteo va en la barra */
   .bingo-immersive .bingo-cards { gap: 8px; }
   .bingo-immersive .bingo-cards-head h2 { font-size: 14px; }

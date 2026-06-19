@@ -442,7 +442,7 @@ function BingoContent() {
                       onClick={buy}
                       disabled={myCount >= 6}
                     >
-                      {myCount >= 6 ? "Máximo 6 cartones" : `Comprar cartón · ${formatBs(game.stake)}`}
+                      {myCount >= 6 ? "Máximo 6" : `Cartón · ${formatBs(game.stake)}`}
                     </button>
                     <button
                       className="btn btn-ghost btn-block"
