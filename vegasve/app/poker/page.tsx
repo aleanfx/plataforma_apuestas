@@ -84,10 +84,14 @@ function TurnRing({ endsAt }: { endsAt?: number | null }) {
 }
 
 // Coloca cada asiento alrededor de la elipse de la mesa; yo (offset 0) abajo.
-function seatStyle(offset: number, total: number): React.CSSProperties {
+// En móvil (tight) se ajusta el radio para que el asiento de abajo no se salga
+// y deje sitio a la barra de acciones (All-in incluido).
+function seatStyle(offset: number, total: number, tight: boolean): React.CSSProperties {
   const a = Math.PI / 2 + (offset / total) * Math.PI * 2;
-  const x = 50 + 46 * Math.cos(a);
-  const y = 50 + 45 * Math.sin(a);
+  const rx = tight ? 44 : 46;
+  const ry = tight ? 36 : 45;
+  const x = 50 + rx * Math.cos(a);
+  const y = 50 + ry * Math.sin(a);
   return { left: `${x}%`, top: `${y}%` };
 }
 
@@ -330,7 +334,7 @@ function PokerContent() {
                   <div
                     key={s.id}
                     className={`pk-seat${s.isTurn ? " turn" : ""}${s.folded ? " folded" : ""}${isMe ? " me" : ""}`}
-                    style={seatStyle(offset, n)}
+                    style={seatStyle(offset, n, immersive)}
                   >
                     {s.roundBet > 0 && <div className="pk-bet">{formatBs(s.roundBet)}</div>}
                     <div className="pk-seat-cards">

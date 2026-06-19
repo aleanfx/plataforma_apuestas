@@ -2122,6 +2122,10 @@ html, body { overflow-x: clip; max-width: 100%; }
 .stage-bar span { display: inline-flex; gap: 6px; align-items: baseline; }
 .stage-bar i { color: rgba(255, 255, 255, 0.6); font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 .stage-winner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   text-align: center;
   font-weight: 700;
   font-size: 17px;
@@ -2131,6 +2135,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   border-radius: 12px;
   padding: 10px 16px;
 }
+.stage-winner svg { flex-shrink: 0; }
 .dom-hand-area { position: relative; background: rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 30px 12px 12px; }
 .dom-hand-area h3 { color: #fff; font-size: 15px; }
 
@@ -2598,10 +2603,13 @@ html, body { overflow-x: clip; max-width: 100%; }
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* Red de seguridad: si algo no cabe en el giro, se desliza (no se corta) */
+  .game-stage.pk-immersive { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
   /* Mesa: menos alargada (fieltro más chico, centrado, con riel fino) */
   .pk-immersive .pk-table-wrap { flex: 1; min-height: 0; width: 100%; max-width: 600px; margin: 0 auto; }
   .pk-immersive .pk-felt {
-    top: 20%; bottom: 20%; left: 13%; right: 13%; border-width: 5px;
+    top: 22%; bottom: 22%; left: 13%; right: 13%; border-width: 5px;
     box-shadow: 0 0 0 2px #f0cd6e, 0 0 0 5px #7a531a, 0 0 0 8px #e8c563,
       inset 0 0 40px rgba(0, 0, 0, 0.5), 0 10px 24px -8px rgba(0, 0, 0, 0.7);
   }
@@ -2616,7 +2624,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   .pk-immersive .pk-seat-cards { min-height: 26px; gap: 2px; }
   .pk-immersive .pk-seat-cards .pkcard { width: 18px; height: 26px; }
   .pk-immersive .pk-seat-cards .pkcard.big,
-  .pk-immersive .pkcard.big { width: 26px; height: 37px; }
+  .pk-immersive .pkcard.big { width: 23px; height: 33px; }
   .pk-immersive .pk-bet { font-size: 9px; padding: 1px 7px 1px 2px; gap: 4px; }
   .pk-immersive .pk-bet::before { width: 13px; height: 13px; font-size: 7px; }
 
@@ -2632,7 +2640,10 @@ html, body { overflow-x: clip; max-width: 100%; }
   .pk-immersive .poker-actions { gap: 6px; }
   .pk-immersive .pk-buyin { flex-direction: row; gap: 8px; }
   .pk-immersive .pk-buyin > span { display: none; } /* "Compra fichas para jugar…" sobra */
-  .pk-immersive .pk-wait { font-size: 11px; }
+  .pk-immersive .pk-wait { display: none; } /* "La próxima mano…" estorba en el giro */
+  /* Recuadro de ganador: compacto y SIEMPRE icono+texto en una línea */
+  .pk-immersive .stage-winner { gap: 5px; }
+  .pk-immersive .stage-winner svg { width: 0.95em; height: 0.95em; }
 }
 
 /* ============================================================
@@ -2793,11 +2804,12 @@ html, body { overflow-x: clip; max-width: 100%; }
   color: #2a1003; font-weight: 800;
   background: linear-gradient(#ffe08a, #e0a93a);
   padding: 0 7px; border-radius: 5px; line-height: 1.5;
+  white-space: nowrap;
 }
 
 /* Ficha de apuesta sobre el fieltro (chip azul "C" + monto, como la referencia) */
 .pk-bet {
-  display: inline-flex; align-items: center; gap: 5px;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
   background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff; font-weight: 700; padding: 2px 9px 2px 3px; border-radius: 999px;
 }
