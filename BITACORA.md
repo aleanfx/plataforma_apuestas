@@ -601,3 +601,52 @@ Las reglas estructurales (`position:fixed`, rotate 90° en portrait con `dvw/dvh
 - No desplegar código de dinero real **sin probar** en una sesión autónoma; dejar la UI lista y **marcar la
   decisión** del cliente. La fuente de datos de apuestas deportivas/hípicas es una decisión de producto
   (gratis admin-curado vs API de pago), no algo que se resuelva en código.
+
+## 17. Póker estilo casino + pulido móvil + sonidos/animaciones (18-19/06/2026)
+
+Iteración fina del póker con capturas del cliente (todo frontend salvo `seats` de práctica).
+
+**Skin estilo casino** (`.pk-*` en `globals.css`): fondo **morado de teatro** con focos (`pk-stage` +
+`::before`), mesa con **riel dorado** (anillos de `box-shadow`, no madera), avatares circulares con marco,
+placas de nombre oscuras con borde dorado y **fichas en pastilla dorada**, **fichas "C" azules** de apuesta
+(`pk-bet::before`), pozo con icono de ficha. (Se replicó el ESTILO de una referencia del cliente, sin copiar
+sus assets, por copyright.)
+
+**Máximo 5 jugadores:** mesas públicas `seats: 6→5` (`games/poker/index.ts`) y práctica `4→5` (1 + 4 bots,
+`games/practice.ts`). Con 5, `seatStyle` deja 2 arriba.
+
+**Anillo de tiempo (reemplaza el número):** componente `TurnRing` en `app/poker/page.tsx` + CSS `.pk-turn-ring`
+con `conic-gradient(... var(--pkp))` y **`@property --pkp { syntax:"<angle>" }`** para animar el llenado
+suave; `animation-duration` inline = ms restantes; `key={endsAt}` para reiniciar en cada turno. Se quitó el
+`<TurnTimer>` numérico del póker.
+
+**Sin chat:** se quitó `<TableChat>` (y su import) de bingo/dominó/póker. **Sin "B" central** (era decorativa).
+Se eliminaron los textos "Esperando jugadores…" / "Esperando a los demás…".
+
+**Sonidos de cartas (`lib/sfx.ts`):** `deal()` (ráfaga `cardSwish` de ruido agudo), `chip()` (clink de
+fichas), `fold()`, `check()`. En la página: `deal` al iniciar mano, `chip` cuando **crece el pozo** (cubre a
+todos; evita doble vs el clic), `fold`/`check` en el clic. **Animaciones:** cartas entran con giro
+(`card-deal`), `pk-bet` hace `pop-in` (con `key={roundBet}`), `stage-winner` con `pop-in`.
+
+**Bugs de posición en móvil inmersivo (giro 90°) — corregidos:**
+- `stage-winner` pasó a **flex row** (icono + texto en una sola línea; antes el trofeo caía en línea aparte).
+- Asiento de abajo pisaba la barra de acciones / no se veía el **All-in**: se ajustó `seatStyle(offset,total,
+  tight)` con radios menores en móvil (rx44/ry36) + más margen vertical del fieltro + `overflow-y:auto` de
+  reserva. Se ocultó `.pk-wait` ("La próxima mano…") en inmersivo.
+- **Etiqueta de saldo cortaba números** (100, 1.000…): `.pk-seat { width: max-content; max-width }` (antes
+  fijo 120px) + `white-space: nowrap` en `.pk-seat-chips` y `.pk-bet`. La placa crece con el número.
+- **Bingo:** botón "Comprar cartón · Bs. 20" se salía → "**Cartón · Bs. 20**" / "Máximo 6" + botón compacto.
+- **Lobby:** se quitó la celda "Bono activo" (`.bal-3`): 3 celdas en una fila también en móvil.
+
+**Investigación de APIs (para la decisión Caballos/Parley):**
+- **Parley:** **API-Football** free ~100 req/día y **permite uso comercial** (mejor opción gratis, hay que
+  cachear); **The Odds API** prohíbe comercial en free; **TheSportsDB** exige Patreon $9/mes comercial;
+  **football-data.org** free pero sin cuotas. → Recomendado **admin-curado** (gratis, control total).
+- **Caballos:** **no hay API gratis útil**; las de hípica son de pago y **NO cubren Venezuela** (La Rinconada).
+  → Recomendado **carreras virtuales (RNG)** o admin a mano.
+
+**Lecciones nuevas:**
+- `@property` permite animar `conic-gradient` (anillo de progreso) suave; soportado en iOS 16.4+ (iPhone OK).
+- En layouts apretados, **dejar que el contenedor crezca** (`width: max-content`) evita cortar números mejor
+  que forzar anchos fijos.
+- Hípica real de Venezuela no tiene datos gratis: el camino gratis es **virtual RNG** o **admin manual**.

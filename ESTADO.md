@@ -1,6 +1,6 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **18 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **19 de junio de 2026**.
 > 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
@@ -113,7 +113,7 @@ Iteración visual completa del Dominó (afinada con capturas del cliente). Detal
 - **Fix:** perfil roto por colisión de clase `.pcard` (perfil vs carta de póker) → carta de póker = `.pkcard`.
 - **Overlay "servidor despertando"** con pre-encendido + botones Reintentar/Recargar.
 
-## Sesión nocturna: 5 juegos al nivel PRO + móvil horizontal (18/06/2026)
+## Sesión: 5 juegos al nivel PRO + móvil horizontal + póker casino (18-19/06/2026)
 
 Rediseño visual de toda la plataforma (detalle técnico en [`BITACORA.md`](./BITACORA.md) §16). **Todo
 frontend salvo un cambio mínimo de backend** (límite de cartones de Bingo). Builds en verde, desplegado.
@@ -122,10 +122,12 @@ frontend salvo un cambio mínimo de backend** (límite de cartones de Bingo). Bu
   compactos para que entren los 6 sin scroll.
 - **Móvil horizontal forzado en TODOS los juegos de mesa** (Bingo, Dominó, Póker): al entrar a una mesa en
   celular, el juego ocupa la pantalla y se gira 90° por CSS (regla compartida `*-immersive`).
-- **Póker PRO:** mesa **ovalada** de fieltro con **asientos alrededor de la elipse** (yo abajo), cartas
-  comunitarias + pozo al centro, **dealer button**, fichas de apuesta por asiento, cartas del héroe más
-  grandes, timer de turno, barra de acciones con slider de subida, showdown, inmersivo + chat. Backend
-  Texas Hold'em intacto.
+- **Póker PRO (estilo casino):** mesa **ovalada** con **riel dorado** sobre fondo morado de teatro;
+  **asientos alrededor de la elipse** (yo abajo), avatares circulares con marco, **anillo de tiempo que se
+  llena alrededor de la foto** del jugador en turno (sin número), cartas comunitarias + pozo al centro,
+  **dealer button**, fichas "C" de apuesta, slider de subida. **Máximo 5 jugadores** (público y práctica).
+  **Sonidos** (reparto, clink de fichas, tirar/pasar, ganar) y **animaciones** (cartas con giro, pop de
+  fichas/ganador). Se quitó el chat de los 3 juegos. Backend Texas Hold'em intacto.
 - **Caballos (hípica estilo Cordialito):** pestañas **Carrera** (Ganador/Place/Show) y **Polla Hípica**
   (puntos), caballos con jinete y cuotas, slip con ganancia potencial. **AuthGuard + saldo real.**
 - **Parley (deportes):** partidos con cuotas 1/X/2, **acumulador** con cuota total y ganancia potencial.
@@ -136,17 +138,27 @@ frontend salvo un cambio mínimo de backend** (límite de cartones de Bingo). Bu
 > fuente de datos** (ver "Decisiones pendientes" abajo). No se desplegó código de dinero sin probar (riesgo
 > para el ledger).
 
-### Decisiones pendientes del cliente (Caballos / Parley)
-- **Parley — fuente de cuotas/resultados:** (a) **modelo admin-curado** (el admin crea partidos+cuotas y
-  liquida resultados en `/admin`) → **gratis y 100% controlado**, *recomendado* para presupuesto cero; o
-  (b) **API externa** (The Odds API, API-Football, Sports Game Odds tienen tier gratis, pero con límites de
-  requests, requieren registro/clave y su TOS suele restringir uso comercial de apuestas). Sugerencia:
-  empezar con (a).
-- **Caballos — datos de carreras:** (a) **virtual RNG** (carreras instantáneas decididas por el servidor,
-  estilo "virtual sports") → gratis, siempre disponible; o (b) **carreras reales** de La Rinconada/Valencia
-  (el admin publica programa y resultados a mano, o un feed de pago). Sugerencia: (a) virtual para empezar.
-- En ambos casos, al elegir el modelo se construye el backend (tablas de eventos/apuestas + liquidación por
-  el ledger) y se prueba con un smoke test antes de activar dinero real.
+### Decisiones pendientes del cliente (Caballos / Parley) — con investigación de APIs (19/06/2026)
+
+**Parley (deportes) — sí hay APIs gratis, pero con límites:**
+- **API-Football** (api-football.com): free ~**100 requests/día**, y **permite uso comercial** en todos los
+  planes. Es la mejor opción gratis para fixtures + cuotas pre-partido. 100/día obliga a **cachear**.
+- **The Odds API**: 500 req/mes gratis PERO **prohíbe uso comercial en el free** (solo de pago). Descartada.
+- **TheSportsDB**: gratis para datos, pero **exige Patreon $9/mes para uso comercial**.
+- **football-data.org**: free (fixtures, ~10 req/min) pero **sin cuotas**.
+- ✅ **Recomendado:** **modelo admin-curado** (el admin crea partidos+cuotas y liquida en `/admin`) = gratis,
+  sin límites, control total. Se puede **sembrar** con API-Football si se quiere automatizar después.
+
+**Caballos (hípica) — NO hay API gratis útil:**
+- Todas las APIs de hípica (The Racing API, Goalserve, Podium, BetsAPI, OddsMatrix) son **de pago** (solo
+  prueba gratis de 2 semanas) y **NO cubren Venezuela** (La Rinconada/Valencia) — solo UK/USA/Francia/etc.
+- El INH de Venezuela **no tiene API pública gratis**.
+- ✅ **Recomendado:** **carreras virtuales (RNG)** decididas por el servidor (estilo "virtual sports") =
+  gratis, siempre disponibles, sin depender de nadie. Alternativa: el admin sube el programa/resultados de
+  La Rinconada **a mano**.
+
+> En cualquiera de los dos, al elegir el modelo se construye el backend (tablas de eventos/apuestas +
+> liquidación por el ledger ya probado) y se valida con un smoke test **antes** de activar dinero real.
 
 ## Bingo "Royale" + fix de deploy (17-18/06/2026)
 

@@ -199,6 +199,15 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso.
 
+- **Póker estilo casino + pulido móvil + sonidos (18-19/06/2026)** — skin morado con **riel dorado**,
+  **anillo de tiempo** que se llena en la foto del jugador (`TurnRing` + `@property --pkp`), **máx. 5
+  jugadores**, **sonidos** de cartas/fichas (`lib/sfx.ts`: deal/chip/fold/check) y **animaciones**
+  (cartas con giro, pop de fichas). Se quitó el **chat** de los 3 juegos, la "B" central y los textos
+  "Esperando jugadores". Fixes móvil (giro 90°): ganador en una línea, asiento de abajo no pisa el All-in,
+  **etiqueta de saldo que no corta números** (`width:max-content`), botón de Bingo "Cartón · Bs. X". Lobby
+  sin "Bono activo" (`.bal-3`). Detalle en [`BITACORA.md`](../BITACORA.md) §17. **APIs (investigación):**
+  Parley → admin-curado (gratis) o API-Football (free 100/día, comercial OK); Caballos → **no hay API gratis
+  de Venezuela**, va virtual RNG o admin manual.
 - **Rediseño PRO de los 5 juegos + móvil horizontal (18/06/2026)** — **Bingo:** hasta **6 cartones en filas
   de 3** (backend `MAX` 4→6). **Móvil horizontal forzado en Bingo/Dominó/Póker** (reglas `*-immersive`
   compartidas en `globals.css`). **Póker PRO:** mesa ovalada con **asientos alrededor de la elipse**
