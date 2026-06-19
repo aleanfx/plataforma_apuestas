@@ -108,6 +108,7 @@ function PokerContent() {
   const turnRef = React.useRef(false);
   const prevCommunity = React.useRef(0);
   const prevHandActive = React.useRef(false);
+  const prevPot = React.useRef(0);
   const meIdRef = React.useRef<string | null>(null);
   const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
@@ -136,6 +137,10 @@ function PokerContent() {
       if (g.myTurn && !turnRef.current) sfx.turn();
       if ((g.community?.length ?? 0) > prevCommunity.current) sfx.card();
       prevCommunity.current = g.community?.length ?? 0;
+      // Sonido de reparto al empezar una mano; clink de fichas al crecer el pozo.
+      if (!prevHandActive.current && g.handActive) sfx.deal();
+      else if (g.handActive && g.pot > prevPot.current) sfx.chip();
+      prevPot.current = g.pot;
       if (prevHandActive.current && !g.handActive) {
         const mine = g.showdown?.find((sd) => sd.id === meIdRef.current);
         if (mine && mine.amount > 0) sfx.win();
@@ -204,6 +209,10 @@ function PokerContent() {
     refreshMesas();
   }
   function action(type: string, extra: Record<string, unknown> = {}) {
+    // El clink de fichas de apuestas suena al crecer el pozo (cubre a todos los
+    // jugadores). Aquí solo el feedback inmediato de tirar/pasar (no tocan pozo).
+    if (type === "fold") sfx.fold();
+    else if (type === "check") sfx.check();
     socketRef.current?.emit(
       "table:action",
       { tableId, action: { type, ...extra } },
@@ -336,7 +345,7 @@ function PokerContent() {
                     className={`pk-seat${s.isTurn ? " turn" : ""}${s.folded ? " folded" : ""}${isMe ? " me" : ""}`}
                     style={seatStyle(offset, n, immersive)}
                   >
-                    {s.roundBet > 0 && <div className="pk-bet">{formatBs(s.roundBet)}</div>}
+                    {s.roundBet > 0 && <div className="pk-bet" key={s.roundBet}>{formatBs(s.roundBet)}</div>}
                     <div className="pk-seat-cards">
                       {s.hole
                         ? s.hole.map((c, i) => <PlayingCard key={i} c={c} big={isMe} />)

@@ -60,6 +60,28 @@ function woodClack(gain = 0.32) {
   beep(160, 55, "triangle", gain * 0.5);
 }
 
+// "Swish" de carta repartida: ráfaga corta de ruido agudo que decae.
+function cardSwish(gain = 0.09, delayMs = 0) {
+  const c = ac();
+  if (!c || muted) return;
+  const t0 = c.currentTime + delayMs / 1000;
+  const dur = 0.09;
+  const buffer = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+  }
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  const hp = c.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 2400;
+  const g = c.createGain();
+  g.gain.value = gain;
+  src.connect(hp).connect(g).connect(c.destination);
+  src.start(t0);
+}
+
 export const sfx = {
   isMuted() {
     return muted;
@@ -93,4 +115,23 @@ export const sfx = {
   win() {
     [523, 659, 784, 1047].forEach((f, i) => beep(f, 300, "sine", 0.11, i * 105));
   }, // acorde ascendente
+  chip() {
+    // clink de fichas de póker: dos golpecitos metálicos cortos
+    beep(2200, 45, "square", 0.05);
+    beep(1650, 60, "square", 0.05, 35);
+  },
+  deal() {
+    // reparto: varias cartas en ráfaga
+    cardSwish(0.1, 0);
+    cardSwish(0.09, 80);
+    cardSwish(0.08, 160);
+  },
+  fold() {
+    cardSwish(0.08, 0);
+  }, // tirar las cartas
+  check() {
+    // toque en la mesa (dos golpes graves suaves)
+    beep(150, 60, "triangle", 0.13);
+    beep(120, 70, "triangle", 0.1, 95);
+  },
 };

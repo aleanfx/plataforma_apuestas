@@ -2134,6 +2134,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   border: 1px solid var(--green-bright);
   border-radius: 12px;
   padding: 10px 16px;
+  animation: pop-in 0.3s ease;
 }
 .stage-winner svg { flex-shrink: 0; }
 .dom-hand-area { position: relative; background: rgba(0, 0, 0, 0.25); border-radius: 16px; padding: 30px 12px 12px; }
@@ -2537,7 +2538,8 @@ html, body { overflow-x: clip; max-width: 100%; }
 .pk-seat {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 120px;
+  width: max-content;
+  max-width: 150px;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   z-index: 3;
 }
@@ -2615,7 +2617,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   }
 
   /* Asientos pequeños para que la placa NO caiga sobre el fieltro */
-  .pk-immersive .pk-seat { width: 72px; gap: 2px; }
+  .pk-immersive .pk-seat { width: max-content; max-width: 106px; gap: 2px; }
   .pk-immersive .pk-seat-av { width: 24px; height: 24px; font-size: 11px; border-width: 2px; }
   .pk-immersive .pk-dealer { width: 12px; height: 12px; font-size: 7px; }
   .pk-immersive .pk-seat-plate { padding: 2px 7px 2px 2px; gap: 5px; }
@@ -2821,3 +2823,7 @@ html, body { overflow-x: clip; max-width: 100%; }
   background: radial-gradient(circle at 35% 30%, #7bb8ff, #2b6fd6 70%);
   border: 1px dashed rgba(255, 255, 255, 0.65);
 }
+
+/* Movimiento: cartas que entran con giro, ficha de apuesta que aparece de golpe */
+.pk-seat-cards .pkcard { animation: card-deal 0.4s ease backwards; }
+.pk-bet { animation: pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
