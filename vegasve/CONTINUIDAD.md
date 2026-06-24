@@ -2,7 +2,7 @@
 
 > **Léeme primero.** Este documento es el "estado de la verdad" para retomar el proyecto en
 > una sesión nueva sin contexto previo. Resume QUÉ es, CÓMO está construido, DÓNDE está cada
-> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **15 de junio de 2026**.
+> cosa, CÓMO se despliega y QUÉ falta. Última actualización: **24 de junio de 2026**.
 >
 > **🔧 NOVEDAD (jun 2026): ya hay BACKEND.** El proyecto dejó de ser solo-frontend. Hay un
 > backend real en [`../server/`](../server/) (Node/TS + Express + Socket.IO + Prisma + Neon).
@@ -199,6 +199,7 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso.
 
+- **Multi-moneda (USD/Bs/COP) + captura de comprobante obligatoria en depósitos manuales (24/06/2026)** — Se añadió soporte completo para múltiples monedas (Dólares, Bolívares y Pesos Colombianos) con un selector global en el navbar. Las tasas de cambio se sincronizan automáticamente en el backend desde `dolarapi.com` (oficial BCV) y `open.er-api.com` (COP) cada 6 horas. Se reescribió `lib/money.ts` e implementó `lib/currency-context.tsx` para usar `useCurrency()`. Los depósitos manuales ahora exigen adjuntar captura de pantalla de comprobante (guardada en base64) y el panel admin permite ver la miniatura ampliable.
 - **Póker estilo casino + pulido móvil + sonidos (18-19/06/2026)** — skin morado con **riel dorado**,
   **anillo de tiempo** que se llena en la foto del jugador (`TurnRing` + `@property --pkp`), **máx. 5
   jugadores**, **sonidos** de cartas/fichas (`lib/sfx.ts`: deal/chip/fold/check) y **animaciones**

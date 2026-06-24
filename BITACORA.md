@@ -650,3 +650,25 @@ todos; evita doble vs el clic), `fold`/`check` en el clic. **Animaciones:** cart
 - En layouts apretados, **dejar que el contenedor crezca** (`width: max-content`) evita cortar números mejor
   que forzar anchos fijos.
 - Hípica real de Venezuela no tiene datos gratis: el camino gratis es **virtual RNG** o **admin manual**.
+
+## 18. Multi-moneda (USD/Bs/COP) + comprobante obligatorio en depósitos (24/06/2026)
+
+Se implementó el soporte completo de multi-moneda en toda la plataforma y la obligatoriedad de adjuntar capturas de comprobantes para depósitos manuales.
+
+**Backend — Tasas de cambio y depósitos:**
+- **Servicio de Tasas (`server/src/rates/service.ts`):** Consulta tasas de cambio en vivo cada 6 horas: oficial VES (`dolarapi.com`) y COP (`open.er-api.com`). Admite fallbacks e override manual del administrador.
+- **Rutas (`server/src/rates/routes.ts`):** `GET /rates` público y `POST /admin/rates` para modificación manual de las tasas desde el panel de administración.
+- **Base de datos:** Se añadió el campo `proofUrl TEXT` a `DepositRequest` para guardar el base64 de la captura. Se ejecutó la migración `server/prisma/add-deposit-proof.ts`.
+- **Wallet (`server/src/wallet/service.ts`):** Se actualizó `createDeposit` para guardar `proofUrl` y se modificó `getPendingRequests` para retornar `proofUrl` y `reference`.
+
+**Frontend — Contexto de moneda y UI dinámica:**
+- **Librería de dinero (`vegasve/lib/money.ts`):** Modificada para soportar formato e conversión dinámica (`VES`, `USD`, `COP`) a partir de tasas del backend.
+- **Contexto (`vegasve/lib/currency-context.tsx`):** `CurrencyProvider` maneja el estado de la moneda, consultas de tasas y sincronización en `localStorage`.
+- **Selector de moneda:** Dropdown en el navbar superior que cambia la moneda de visualización global (USD / Bs / COP) dinámicamente.
+- **Billetera (`vegasve/components/wallet-dialog.tsx`):** Determina la moneda según el método de pago elegido (Pago Móvil -> Bs, Daviplata/Nequi -> COP, Binance/Criptomonedas -> USD). Muestra los montos equivalentes en las otras monedas abajo y requiere obligatoriamente cargar una captura de pantalla del comprobante para métodos manuales.
+- **Admin Panel (`vegasve/components/admin-queue.tsx`):** Muestra el comprobante adjunto del usuario en miniatura con opción de ampliación hover/clic para facilitar la verificación del administrador.
+- **Migración global:** Reemplazo de la función estática `formatBs` por el hook `useCurrency()` en la landing, lobby, perfil, bingo, dominó, póker, caballos y parley (15 archivos modificados).
+
+**Lecciones nuevas:**
+- El formato de base64 subido en cliente es óptimo para la escala actual del MVP, pero a futuro convendrá migrar a S3/Cloudinary.
+- El uso de un React Context centralizado simplifica enormemente la migración de aplicaciones monetarias monomonedas a multimoneda sin reescribir la lógica de estado de cada componente.

@@ -1,6 +1,6 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **19 de junio de 2026**.
+> Estado de avance del proyecto. Última actualización: **24 de junio de 2026**.
 > 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
@@ -39,12 +39,15 @@ plataforma_apuestas/
 | 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Completo · **desplegado en Render + Vercel** |
 | 9 | Caballos (hípica) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
 | 10 | Parley (deportes) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
+| 11 | Sistema Multi-moneda (USD/Bs/COP) + captura de comprobante | ✅ Completo |
 
 > **MVP completo y EN VIVO.** Suite: **110 pruebas e2e en verde**. Los **3 juegos en vivo** (Bingo/Dominó/
 > Póker) están reales y al **nivel visual PRO**. **Caballos y Parley** tienen la **UI lista** (login + saldo
 > real) pero apostar de verdad espera **decisión del cliente** sobre la fuente de datos (ver sección 18/06).
 > Desplegado el 13/06/2026 (backend en Render free, frontend en Vercel). Guía usada:
 > [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
+> **Multi-moneda y depósitos manuales:** Selector global (USD/Bs/COP), tasas de cambio en vivo en backend,
+> comprobante obligatorio (captura de pantalla) en depósitos manuales (aprobación admin con visualización).
 
 ## Lo que YA funciona (probado end-to-end contra Neon real — 110 pruebas)
 
