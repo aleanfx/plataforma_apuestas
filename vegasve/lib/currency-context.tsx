@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import {
   type CurrencyCode,
   type Rates,
@@ -26,26 +27,46 @@ type CurrencyContextValue = {
 const CurrencyContext = React.createContext<CurrencyContextValue | null>(null);
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [currency, setCurrencyState] = React.useState<CurrencyCode>("USD");
   const [rates, setRates] = React.useState<Rates>(DEFAULT_RATES);
 
-  // Cargar preferencia guardada.
+  // Escuchar la moneda preferida del usuario logueado.
   React.useEffect(() => {
-    const saved = localStorage.getItem("betmar_currency") as CurrencyCode | null;
-    if (saved && ["VES", "USD", "COP"].includes(saved)) setCurrencyState(saved);
-  }, []);
+    if (user && user.currency) {
+      setCurrencyState(user.currency as CurrencyCode);
+    }
+  }, [user]);
+
+  // Cargar preferencia guardada (fallback para usuarios no logueados).
+  React.useEffect(() => {
+    if (!user) {
+      const saved = localStorage.getItem("betmar_currency") as CurrencyCode | null;
+      if (saved && ["VES", "USD", "COP"].includes(saved)) setCurrencyState(saved);
+    }
+  }, [user]);
 
   // Obtener tasas del backend.
   React.useEffect(() => {
     let active = true;
     async function load() {
       try {
-        const data = await api<{ usdToBs: number; usdToCop: number; updatedAt: string }>(
-          "/rates",
-          { auth: false },
-        );
+        const data = await api<{
+          usdToBs: number;
+          usdToCop: number;
+          minDepUsd: number;
+          minDepBs: number;
+          adminEmail: string;
+          updatedAt: string;
+        }>("/rates", { auth: false });
         if (active && data.usdToBs > 0 && data.usdToCop > 0) {
-          setRates({ usdToBs: data.usdToBs, usdToCop: data.usdToCop });
+          setRates({
+            usdToBs: data.usdToBs,
+            usdToCop: data.usdToCop,
+            minDepUsd: data.minDepUsd,
+            minDepBs: data.minDepBs,
+            adminEmail: data.adminEmail,
+          });
         }
       } catch {
         /* usa los defaults */

@@ -56,6 +56,7 @@ model User {
   passwordHash String
   name         String
   avatarUrl    String?    // foto de perfil (data URL o URL externa)
+  currency     String?    // VES | USD | COP (null significa que no lo ha elegido)
   role         Role       @default(user)
   status       UserStatus @default(active)
   createdAt    DateTime   @default(now())
@@ -183,3 +184,9 @@ model RefreshToken {
 
   @@index([userId])
 }
+
+model SystemSetting {
+  key   String @id
+  value String
+}
+

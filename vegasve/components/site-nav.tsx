@@ -8,7 +8,6 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { WalletDialog } from "@/components/wallet-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { useCurrency } from "@/lib/currency-context";
-import { CurrencySelector } from "@/components/currency-selector";
 import { initialOf } from "@/lib/money";
 
 // prueba estas rutas en orden; usa la primera que cargue
@@ -85,7 +84,6 @@ function NavIn() {
         </div>
         <div className="nav-spacer" />
         <div className="nav-actions">
-          <CurrencySelector />
           <div className="balance-chip">
             <div className="bal">
               <span className="k">Saldo</span>

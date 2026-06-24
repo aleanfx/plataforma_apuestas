@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { CardAccount } from "@/components/icons";
+import { CardAccount, Copy } from "@/components/icons";
 import { useAuth } from "@/lib/auth-context";
 import { useCurrency } from "@/lib/currency-context";
 import { api } from "@/lib/api";
@@ -46,7 +46,6 @@ const METHODS: Method[] = [
     icStyle: { background: "rgba(6,182,212,0.15)", color: "#06b6d4" },
     details: [
       { k: "Red", v: "Cualquier criptomoneda" },
-      { k: "Mínimo", v: "$5 USD" },
     ],
     needsProof: false, // se confirma automáticamente con NowPayments (pendiente de API key)
   },
@@ -135,6 +134,49 @@ async function compressProof(file: File): Promise<string> {
   });
 }
 
+const getMethodIcon = (id: string) => {
+  switch (id) {
+    case "nowpayments":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v12M15 9H9M15 15H9" />
+        </svg>
+      );
+    case "binance":
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 18, height: 18 }}>
+          <path d="M12.004 7.643l-4.359 4.359 4.359 4.359 4.359-4.359-4.359-4.359zm-6.275 6.273l-1.916-1.916 1.916-1.916 1.916 1.916-1.916 1.916zm12.55 0l-1.916-1.916 1.916-1.916 1.916 1.916-1.916 1.916zM12.004 2.4l1.916 1.916-1.916 1.916-1.916-1.916 1.916-1.916zm0 15.368l1.916 1.916-1.916 1.916-1.916-1.916 1.916-1.916z"/>
+        </svg>
+      );
+    case "pagomovil":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+          <path d="M12 18h.01" />
+          <path d="M9 6h6" />
+          <path d="M12 10l3 3m0 0l-3 3m3-3H7" />
+        </svg>
+      );
+    case "daviplata":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14M3 7h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
+        </svg>
+      );
+    case "nequi":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+          <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+          <line x1="6" y1="15" x2="10" y2="15" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
 export function WalletDialog({
   children,
   kind,
@@ -176,6 +218,17 @@ export function WalletDialog({
   const cents = localToCents(value, inputCurrency, rates);
   // Texto de equivalencia en las otras monedas
   const equivText = cents > 0 ? formatEquivalents(cents, inputCurrency, rates) : "";
+
+  const getDepSub = (methodId: string) => {
+    if (methodId === "pagomovil") {
+      return `Mín. Bs. ${rates.minDepBs.toLocaleString("es-VE")}`;
+    }
+    const usdMin = rates.minDepUsd;
+    let prefix = "";
+    if (methodId === "nowpayments") prefix = "NowPayments · ";
+    if (methodId === "binance") prefix = "Binance Pay · ";
+    return `${prefix}Mín. $${usdMin}`;
+  };
 
   const availableCents = user?.balance ?? 0;
 
@@ -229,9 +282,26 @@ export function WalletDialog({
       toast.error("Ingresa un monto válido.");
       return;
     }
-    if (cents < 1000) {
-      toast.error("El monto mínimo equivale a Bs. 10.");
-      return;
+    if (isDep) {
+      if (method === "pagomovil") {
+        if (value < rates.minDepBs) {
+          toast.error(
+            `El monto mínimo de depósito por Pago Móvil es Bs. ${rates.minDepBs.toLocaleString("es-VE")}. Si deseas depositar menos, por favor escribe a soporte al correo ${rates.adminEmail || "betmarplay@gmail.com"}.`,
+            { duration: 8000 }
+          );
+          return;
+        }
+      } else {
+        const usdMin = rates.minDepUsd;
+        const amountInUsd = cents / 100 / rates.usdToBs;
+        if (amountInUsd < usdMin) {
+          toast.error(
+            `El monto mínimo de depósito para este método es $${usdMin} USD (o su equivalente). Si deseas depositar menos, por favor escribe a soporte al correo ${rates.adminEmail || "betmarplay@gmail.com"}.`,
+            { duration: 8000 }
+          );
+          return;
+        }
+      }
     }
     if (!isDep && cents > availableCents) {
       toast.error("El monto supera tu saldo disponible para retiro.");
@@ -307,11 +377,11 @@ export function WalletDialog({
                 onClick={() => setMethod(m.id)}
               >
                 <div className="m-ic" style={m.icStyle}>
-                  {m.ic}
+                  {getMethodIcon(m.id)}
                 </div>
                 <div>
                   <div className="m-name">{m.name}</div>
-                  <div className="m-sub">{isDep ? m.depSub : m.wdSub}</div>
+                  <div className="m-sub">{isDep ? getDepSub(m.id) : m.wdSub}</div>
                 </div>
               </button>
             ))}
@@ -322,12 +392,43 @@ export function WalletDialog({
               <div className="pay-details-head">
                 Envía tu pago a <span className="gold">{active.name}</span>
               </div>
-              {active.details.map((d) => (
-                <div className="pay-row" key={d.k}>
-                  <span className="pay-k">{d.k}</span>
-                  <span className="pay-v">{d.v}</span>
-                </div>
-              ))}
+              {active.details.map((d) => {
+                const canCopy = !["Banco", "Red", "Acepta", "Mínimo"].includes(d.k);
+                return (
+                  <div className="pay-row" key={d.k}>
+                    <span className="pay-k">{d.k}</span>
+                    <span className="pay-v" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {d.v}
+                      {canCopy && (
+                        <button
+                          type="button"
+                          className="copy-btn-small"
+                          title={`Copiar ${d.k}`}
+                          onClick={() => {
+                            navigator.clipboard.writeText(d.v);
+                            toast.success(`${d.k} copiado al portapapeles`);
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            padding: "4px",
+                            cursor: "pointer",
+                            color: "var(--text-3)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            borderRadius: "4px",
+                            transition: "all 0.2s",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
+                        >
+                          <Copy style={{ width: "13px", height: "13px" }} />
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="field">

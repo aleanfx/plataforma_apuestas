@@ -5,6 +5,7 @@ import { AdminQueue } from "@/components/admin-queue";
 import { AdminMetrics } from "@/components/admin-metrics";
 import { AdminUsers } from "@/components/admin-users";
 import { AdminTables } from "@/components/admin-tables";
+import { AdminSettings } from "@/components/admin-settings";
 import {
   ShieldCheck,
   Search,
@@ -88,8 +89,11 @@ export default function AdminPage() {
             <AdminQueue />
           </div>
 
-          {/* Mesas en vivo */}
-          <AdminTables />
+          {/* Configuración del sistema + Mesas en vivo */}
+          <div className="admin-grid" style={{ marginTop: 22 }}>
+            <AdminSettings />
+            <AdminTables />
+          </div>
         </main>
       </div>
     </AuthGuard>

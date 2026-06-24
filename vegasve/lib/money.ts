@@ -2,10 +2,22 @@
 // Internamente la plataforma opera en céntimos de Bs; aquí se convierte para mostrar.
 
 export type CurrencyCode = "VES" | "USD" | "COP";
-export type Rates = { usdToBs: number; usdToCop: number };
+export type Rates = {
+  usdToBs: number;
+  usdToCop: number;
+  minDepUsd: number;
+  minDepBs: number;
+  adminEmail?: string;
+};
 
 // Tasas por defecto (fallback mientras carga del backend)
-export const DEFAULT_RATES: Rates = { usdToBs: 620, usdToCop: 3400 };
+export const DEFAULT_RATES: Rates = {
+  usdToBs: 620,
+  usdToCop: 3400,
+  minDepUsd: 1.0,
+  minDepBs: 500.0,
+  adminEmail: "betmarplay@gmail.com",
+};
 
 /** Céntimos internos → Bs (divide por 100). */
 function centsToVes(cents: number): number {

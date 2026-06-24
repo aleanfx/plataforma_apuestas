@@ -199,7 +199,7 @@ nombres claros ("Criptomonedas").
 
 Orden cronológico inverso.
 
-- **Multi-moneda (USD/Bs/COP) + captura de comprobante obligatoria en depósitos manuales (24/06/2026)** — Se añadió soporte completo para múltiples monedas (Dólares, Bolívares y Pesos Colombianos) con un selector global en el navbar. Las tasas de cambio se sincronizan automáticamente en el backend desde `dolarapi.com` (oficial BCV) y `open.er-api.com` (COP) cada 6 horas. Se reescribió `lib/money.ts` e implementó `lib/currency-context.tsx` para usar `useCurrency()`. Los depósitos manuales ahora exigen adjuntar captura de pantalla de comprobante (guardada en base64) y el panel admin permite ver la miniatura ampliable.
+- **Multi-moneda (USD/Bs/COP) + configuración de mínimos + copiado y bloqueo de moneda (24/06/2026)** — Se expandió el soporte de multi-moneda para hacerlo dinámico y persistente. Se añadió la tabla `SystemSetting` en Neon DB para guardar tasas y límites mínimos editables desde el panel de administrador. El componente `AuthGuard` ahora bloquea el acceso en el primer inicio/registro hasta que el usuario elija su moneda nativa, la cual solo puede ser modificada en su perfil (se eliminó el selector global de la barra de navegación). En la billetera, se agregaron botones de copiado rápido, iconos vectoriales premium (Binance, Cripto, etc.), y validación estricta de depósitos mínimos con redirección visual a soporte al correo del administrador en caso de error.
 - **Póker estilo casino + pulido móvil + sonidos (18-19/06/2026)** — skin morado con **riel dorado**,
   **anillo de tiempo** que se llena en la foto del jugador (`TurnRing` + `@property --pkp`), **máx. 5
   jugadores**, **sonidos** de cartas/fichas (`lib/sfx.ts`: deal/chip/fold/check) y **animaciones**

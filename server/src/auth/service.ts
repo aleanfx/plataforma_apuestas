@@ -17,6 +17,7 @@ export type PublicUser = {
   balance: number; // céntimos
   bonus: number; // céntimos
   locked: number; // céntimos
+  currency: string | null; // VES | USD | COP
 };
 
 export function toPublicUser(user: User, account: Account): PublicUser {
@@ -29,6 +30,7 @@ export function toPublicUser(user: User, account: Account): PublicUser {
     balance: Number(account.balance),
     bonus: Number(account.bonus),
     locked: Number(account.locked),
+    currency: user.currency ?? null,
   };
 }
 
@@ -184,3 +186,18 @@ export async function updateAvatar(userId: string, avatarUrl: string): Promise<P
   if (!user.account) throw unauthorized("Sesión inválida");
   return toPublicUser(user, user.account);
 }
+
+/** Actualiza la moneda preferida del usuario. */
+export async function updateCurrency(userId: string, currency: string): Promise<PublicUser> {
+  if (!["VES", "USD", "COP"].includes(currency)) {
+    throw badRequest("Moneda no soportada");
+  }
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { currency },
+    include: { account: true },
+  });
+  if (!user.account) throw unauthorized("Sesión inválida");
+  return toPublicUser(user, user.account);
+}
+

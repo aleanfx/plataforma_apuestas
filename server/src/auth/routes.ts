@@ -96,3 +96,17 @@ authRouter.patch(
     res.json({ user });
   }),
 );
+
+const currencySchema = z.object({
+  currency: z.enum(["VES", "USD", "COP"]),
+});
+
+authRouter.patch(
+  "/currency",
+  requireAuth,
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const { currency } = parseBody(currencySchema, req.body);
+    const user = await auth.updateCurrency(req.user!.sub, currency);
+    res.json({ user });
+  }),
+);

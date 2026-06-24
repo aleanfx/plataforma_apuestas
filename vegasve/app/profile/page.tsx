@@ -97,9 +97,18 @@ async function fileToAvatar(file: File): Promise<string> {
 }
 
 function ProfileContent() {
-  const { user, logout, updateAvatar } = useAuth();
+  const { user, logout, updateAvatar, updateCurrency } = useAuth();
   const { fmt, fmtEquiv } = useCurrency();
   const router = useRouter();
+
+  async function handleUpdateCurrency(code: string) {
+    try {
+      await updateCurrency(code);
+      toast.success("Moneda de la cuenta actualizada");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar la moneda");
+    }
+  }
   const [txs, setTxs] = React.useState<Tx[] | null>(null);
   const [filter, setFilter] = React.useState<"all" | "pagos" | "juegos">("all");
   const fileRef = React.useRef<HTMLInputElement>(null);
@@ -205,6 +214,61 @@ function ProfileContent() {
                   <Logout /> Cerrar sesión
                 </button>
               </nav>
+            </div>
+
+            <div className="pcard" style={{ marginTop: "16px", padding: "18px 24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", borderBottom: "1px solid var(--line-soft)", paddingBottom: "10px" }}>
+                <Cog style={{ color: "var(--gold)", width: "16px", height: "16px" }} />
+                <h4 className="serif" style={{ fontSize: "16px", fontWeight: "600" }}>Moneda de la cuenta</h4>
+              </div>
+              <p style={{ fontSize: "12px", color: "var(--text-3)", marginBottom: "14px", lineHeight: "1.4" }}>
+                Define la moneda nativa en la que deseas ver e ingresar tus fondos.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {[
+                  { code: "USD", label: "🇺🇸 Dólares (USD)" },
+                  { code: "VES", label: "🇻🇪 Bolívares (VES)" },
+                  { code: "COP", label: "🇨🇴 Pesos Colombianos (COP)" }
+                ].map((opt) => {
+                  const active = user?.currency === opt.code;
+                  return (
+                    <button
+                      key={opt.code}
+                      onClick={() => handleUpdateCurrency(opt.code)}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 12px",
+                        fontSize: "13px",
+                        background: active ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.03)",
+                        border: active ? "1px solid var(--gold)" : "1px solid var(--line-soft)",
+                        borderRadius: "8px",
+                        color: active ? "var(--gold)" : "var(--text-2)",
+                        fontWeight: active ? "600" : "400",
+                        cursor: "pointer",
+                        transition: "all 0.2s"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.borderColor = "var(--line)";
+                          e.currentTarget.style.color = "var(--text)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.borderColor = "var(--line-soft)";
+                          e.currentTarget.style.color = "var(--text-2)";
+                        }
+                      }}
+                    >
+                      <span>{opt.label}</span>
+                      {active && <span style={{ fontSize: "11px" }}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </aside>
 

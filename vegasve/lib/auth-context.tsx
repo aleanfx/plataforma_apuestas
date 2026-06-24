@@ -12,6 +12,7 @@ export type AuthUser = {
   balance: number; // céntimos
   bonus: number; // céntimos
   locked: number; // céntimos
+  currency: string | null; // VES | USD | COP
 };
 
 type AuthResponse = { user: AuthUser; access: string; refresh: string };
@@ -23,6 +24,7 @@ type AuthContextValue = {
   register: (name: string, email: string, password: string) => Promise<AuthUser>;
   loginWithGoogle: (credential: string) => Promise<AuthUser>;
   updateAvatar: (avatarUrl: string) => Promise<void>;
+  updateCurrency: (currency: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -119,9 +121,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateCurrency = React.useCallback(async (currency: string) => {
+    const { user } = await api<{ user: AuthUser }>("/auth/currency", {
+      method: "PATCH",
+      body: { currency },
+    });
+    setUser(user);
+  }, []);
+
   const value = React.useMemo(
-    () => ({ user, loading, login, register, loginWithGoogle, updateAvatar, logout, refreshUser }),
-    [user, loading, login, register, loginWithGoogle, updateAvatar, logout, refreshUser],
+    () => ({
+      user,
+      loading,
+      login,
+      register,
+      loginWithGoogle,
+      updateAvatar,
+      updateCurrency,
+      logout,
+      refreshUser,
+    }),
+    [user, loading, login, register, loginWithGoogle, updateAvatar, updateCurrency, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

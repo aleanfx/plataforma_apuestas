@@ -651,24 +651,29 @@ todos; evita doble vs el clic), `fold`/`check` en el clic. **Animaciones:** cart
   que forzar anchos fijos.
 - Hípica real de Venezuela no tiene datos gratis: el camino gratis es **virtual RNG** o **admin manual**.
 
-## 18. Multi-moneda (USD/Bs/COP) + comprobante obligatorio en depósitos (24/06/2026)
+## 18. Multi-moneda (USD/Bs/COP) + configuración de mínimos + copiado y bloqueo de moneda (24/06/2026)
 
-Se implementó el soporte completo de multi-moneda en toda la plataforma y la obligatoriedad de adjuntar capturas de comprobantes para depósitos manuales.
+Se expandió el soporte de multi-moneda para hacerlo más seguro, dinámico y configurable por el administrador.
 
-**Backend — Tasas de cambio y depósitos:**
-- **Servicio de Tasas (`server/src/rates/service.ts`):** Consulta tasas de cambio en vivo cada 6 horas: oficial VES (`dolarapi.com`) y COP (`open.er-api.com`). Admite fallbacks e override manual del administrador.
-- **Rutas (`server/src/rates/routes.ts`):** `GET /rates` público y `POST /admin/rates` para modificación manual de las tasas desde el panel de administración.
-- **Base de datos:** Se añadió el campo `proofUrl TEXT` a `DepositRequest` para guardar el base64 de la captura. Se ejecutó la migración `server/prisma/add-deposit-proof.ts`.
-- **Wallet (`server/src/wallet/service.ts`):** Se actualizó `createDeposit` para guardar `proofUrl` y se modificó `getPendingRequests` para retornar `proofUrl` y `reference`.
+**Persistencia de Configuración y Mínimos (Backend):**
+- **Tabla de Ajustes (`SystemSetting`):** Creada la tabla en Neon PostgreSQL para guardar parámetros del sistema de forma persistente a través de reinicios de Render (ejecutada la migración `create-settings-table.ts`).
+- **Servicio (`server/src/rates/service.ts`):** Modificado para leer tasas y límites mínimos de depósito desde la DB al iniciar, sincronizar actualizaciones y retornar valores dinámicos (`minDepUsd`, `minDepBs`, `adminEmail`) en `GET /rates`.
+- **Rutas (`server/src/rates/routes.ts` y `server/src/auth/routes.ts`):** Añadido `/rates/admin` (para guardar configuraciones) y `/auth/currency` (para asociar la moneda de la cuenta al perfil del usuario).
 
-**Frontend — Contexto de moneda y UI dinámica:**
-- **Librería de dinero (`vegasve/lib/money.ts`):** Modificada para soportar formato e conversión dinámica (`VES`, `USD`, `COP`) a partir de tasas del backend.
-- **Contexto (`vegasve/lib/currency-context.tsx`):** `CurrencyProvider` maneja el estado de la moneda, consultas de tasas y sincronización en `localStorage`.
-- **Selector de moneda:** Dropdown en el navbar superior que cambia la moneda de visualización global (USD / Bs / COP) dinámicamente.
-- **Billetera (`vegasve/components/wallet-dialog.tsx`):** Determina la moneda según el método de pago elegido (Pago Móvil -> Bs, Daviplata/Nequi -> COP, Binance/Criptomonedas -> USD). Muestra los montos equivalentes en las otras monedas abajo y requiere obligatoriamente cargar una captura de pantalla del comprobante para métodos manuales.
-- **Admin Panel (`vegasve/components/admin-queue.tsx`):** Muestra el comprobante adjunto del usuario en miniatura con opción de ampliación hover/clic para facilitar la verificación del administrador.
-- **Migración global:** Reemplazo de la función estática `formatBs` por el hook `useCurrency()` en la landing, lobby, perfil, bingo, dominó, póker, caballos y parley (15 archivos modificados).
+**Moneda Nativa Obligatoria y Flujo de Perfil (Frontend):**
+- **Bloqueo Inicial (`vegasve/components/auth-guard.tsx`):** Al iniciar sesión o registrarse por primera vez, si el usuario no tiene moneda asociada (`user.currency` es null), `AuthGuard` bloquea la pantalla con una interfaz inmersiva y obligatoria para elegir su moneda nativa (USD, Bs o COP).
+- **Removido Selector del Navbar (`site-nav.tsx`):** Se eliminó el dropdown selector de la barra de navegación en el inicio/lobby para evitar inconsistencias de juego.
+- **Configuración en Perfil (`app/profile/page.tsx`):** Añadida una tarjeta dedicada en la barra lateral del perfil para consultar y cambiar la moneda de la cuenta en cualquier momento de forma controlada.
+
+**Mejoras en Billetera y Depósitos (`wallet-dialog.tsx`):**
+- **Copiado de Datos de Pago:** Se integró un botón inline con icono SVG (`Copy`) junto a los valores (Teléfono, C.I., ID, etc.) en los detalles del depósito. Quedan excluidos del botón de copiado campos puramente descriptivos (ej. "Banco", "Red", "Acepta").
+- **Subtítulos con Mínimos Dinámicos:** Muestra dinámicamente el límite mínimo configurado en la DB por el administrador debajo de cada método de pago.
+- **Validación con Correo de Soporte:** Al confirmar un depósito, si el monto ingresado es menor al límite dinámico (Bs o USD equivalente), se bloquea la transacción y se muestra un toast pidiendo contactar al administrador a su correo electrónico de soporte.
+- **Iconos Vectoriales Premium:** Se sustituyeron los marcadores de texto ("B", "Pm", "D", "N") por iconos vectoriales SVG premium estilizados de alta resolución de Binance, Bitcoin, Smartphone y Tarjeta de crédito.
+
+**Panel de Control Administrador (`components/admin-settings.tsx`):**
+- **Gestión Centralizada:** Creado el componente "Configuración del Sistema" en el dashboard de administrador para editar de forma interactiva las tasas de cambio de divisas y los depósitos mínimos (Bs/USD), persistiendo los cambios en Neon DB.
 
 **Lecciones nuevas:**
-- El formato de base64 subido en cliente es óptimo para la escala actual del MVP, pero a futuro convendrá migrar a S3/Cloudinary.
-- El uso de un React Context centralizado simplifica enormemente la migración de aplicaciones monetarias monomonedas a multimoneda sin reescribir la lógica de estado de cada componente.
+- Centralizar las validaciones de negocio sensibles (como límites financieros) en base a configuraciones de base de datos disminuye el riesgo de depósitos fraudulentos o inviables por comisiones de pasarela.
+- El bloqueo forzado en `AuthGuard` garantiza que todos los usuarios tengan una moneda de presentación nativa en su perfil antes de interactuar con el ledger o las mesas de juego, preservando la integridad contable.

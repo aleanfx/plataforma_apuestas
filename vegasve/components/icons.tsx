@@ -323,3 +323,9 @@ export const Trophy = (p: P) => (
     <path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" />
   </Outline>
 );
+export const Copy = (p: P) => (
+  <Outline {...p}>
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </Outline>
+);

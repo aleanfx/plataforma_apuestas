@@ -21,11 +21,13 @@ ratesRouter.post(
   requireAdmin,
   asyncHandler(async (req, res) => {
     const schema = z.object({
-      usdToBs: z.number().positive().optional(),
-      usdToCop: z.number().positive().optional(),
+      usdToBs: z.number().nonnegative().optional(),
+      usdToCop: z.number().nonnegative().optional(),
+      minDepUsd: z.number().nonnegative().optional(),
+      minDepBs: z.number().nonnegative().optional(),
     });
     const data = parseBody(schema, req.body);
-    setManualRates(data);
+    await setManualRates(data);
     res.json({ ok: true, ...getRates() });
   }),
 );
