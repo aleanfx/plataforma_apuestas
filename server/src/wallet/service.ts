@@ -18,7 +18,7 @@ async function accountIdOf(userId: string): Promise<string> {
 /** Crea una solicitud de depósito (queda PENDIENTE; no acredita hasta que un admin aprueba). */
 export async function createDeposit(
   userId: string,
-  input: { method: PaymentMethod; amount: number; reference?: string },
+  input: { method: PaymentMethod; amount: number; reference?: string; proofUrl?: string },
 ) {
   if (input.amount < MIN_CENTS) throw badRequest("El monto mínimo es Bs. 10");
   return prisma.depositRequest.create({
@@ -27,6 +27,7 @@ export async function createDeposit(
       method: input.method,
       amount: BigInt(input.amount),
       reference: input.reference,
+      proofUrl: input.proofUrl,
     },
   });
 }
@@ -172,18 +173,29 @@ export async function getPendingRequests() {
     }),
   ]);
 
-  const map = (r: { id: string; method: string; amount: bigint; createdAt: Date; user: { name: string; email: string } }, kind: "deposit" | "withdraw") => ({
-    id: r.id,
-    kind,
-    method: r.method,
-    amount: Number(r.amount),
-    userName: r.user.name,
-    userEmail: r.user.email,
-    createdAt: r.createdAt.toISOString(),
-  });
+  const depItems = deposits.map((d) => ({
+    id: d.id,
+    kind: "deposit" as const,
+    method: d.method,
+    amount: Number(d.amount),
+    userName: d.user.name,
+    userEmail: d.user.email,
+    reference: (d as Record<string, unknown>).reference as string | null ?? null,
+    proofUrl: (d as Record<string, unknown>).proofUrl as string | null ?? null,
+    createdAt: d.createdAt.toISOString(),
+  }));
 
-  return [
-    ...deposits.map((d) => map(d, "deposit")),
-    ...withdrawals.map((w) => map(w, "withdraw")),
-  ].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const wdItems = withdrawals.map((w) => ({
+    id: w.id,
+    kind: "withdraw" as const,
+    method: w.method,
+    amount: Number(w.amount),
+    userName: w.user.name,
+    userEmail: w.user.email,
+    reference: null as string | null,
+    proofUrl: null as string | null,
+    createdAt: w.createdAt.toISOString(),
+  }));
+
+  return [...depItems, ...wdItems].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }

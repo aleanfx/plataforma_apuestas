@@ -3,7 +3,8 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { formatBs, initialOf } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
+import { initialOf } from "@/lib/money";
 import { Shield, Check } from "@/components/icons";
 
 type AdminUser = {
@@ -16,6 +17,7 @@ type AdminUser = {
 };
 
 export function AdminUsers() {
+  const { fmt } = useCurrency();
   const [users, setUsers] = React.useState<AdminUser[] | null>(null);
   const [busy, setBusy] = React.useState<string | null>(null);
 
@@ -72,7 +74,7 @@ export function AdminUsers() {
                     {u.status === "active" ? "Activo" : "Suspendido"}
                   </span>
                 </td>
-                <td className="gold serif" style={{ fontSize: 15 }}>{formatBs(u.balance)}</td>
+                <td className="gold serif" style={{ fontSize: 15 }}>{fmt(u.balance)}</td>
                 <td>
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     {u.role === "admin" ? (

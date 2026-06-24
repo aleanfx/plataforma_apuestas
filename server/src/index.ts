@@ -19,6 +19,8 @@ import { CounterEngine } from "./realtime/test-engine.js";
 import { initBingo, createBingoSala } from "./games/bingo/index.js";
 import { initDomino, createDominoMesa } from "./games/domino/index.js";
 import { initPoker, createPokerMesa } from "./games/poker/index.js";
+import { ratesRouter } from "./rates/routes.js";
+import { initRates } from "./rates/service.js";
 
 const app = express();
 
@@ -49,10 +51,11 @@ app.get("/", (_req, res) => {
   res.json({ name: "BetmarPlay API", status: "online" });
 });
 
-// Límite general de la API (después del health check).
+// Límite general de la API (después del health check y rates).
 app.use(generalLimiter);
 
 // --- Rutas REST ---
+app.use("/rates", ratesRouter); // público, sin rate limit
 app.use("/auth", authRouter);
 app.use("/wallet", walletRouter);
 app.use("/admin", adminRouter);
@@ -134,6 +137,7 @@ async function start() {
   try {
     await prisma.$connect();
     console.log("✅ Conectado a PostgreSQL");
+    await initRates();
   } catch (err) {
     console.error("❌ No se pudo conectar a la base de datos:", err);
     process.exit(1);

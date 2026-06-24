@@ -107,6 +107,7 @@ model DepositRequest {
   method     String // nowpayments | binance | pagomovil | daviplata | nequi
   amount     BigInt // céntimos solicitados
   reference  String? // referencia/comprobante que el usuario reporta
+  proofUrl   String? // captura del comprobante de pago (data URL)
   status     RequestStatus @default(pending)
   reviewedBy String?
   reviewedAt DateTime?

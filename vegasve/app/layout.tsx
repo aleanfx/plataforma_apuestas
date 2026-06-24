@@ -3,6 +3,7 @@ import { Outfit, Jost, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { CurrencyProvider } from "@/lib/currency-context";
 import { ServerWakeOverlay } from "@/components/server-wake-overlay";
 import { SoundToggle } from "@/components/sound-toggle";
 
@@ -67,7 +68,7 @@ export default function RootLayout({
       className={`${display.variable} ${sans.variable} ${script.variable}`}
     >
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider><CurrencyProvider>{children}</CurrencyProvider></AuthProvider>
         <ServerWakeOverlay />
         <SoundToggle />
         <Toaster />

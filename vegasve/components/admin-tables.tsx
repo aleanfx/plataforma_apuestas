@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { api } from "@/lib/api";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 
 type AdminTable = {
   id: string;
@@ -18,6 +18,7 @@ const GAME_LABEL: Record<string, string> = { bingo: "Bingo", domino: "Dominó", 
 const STATUS_LABEL: Record<string, string> = { waiting: "Esperando", playing: "En juego", finished: "Terminada" };
 
 export function AdminTables() {
+  const { fmt } = useCurrency();
   const [tables, setTables] = React.useState<AdminTable[] | null>(null);
 
   React.useEffect(() => {
@@ -51,7 +52,7 @@ export function AdminTables() {
               <tr key={t.id}>
                 <td className="serif" style={{ fontSize: 15 }}>{GAME_LABEL[t.game] ?? t.game}</td>
                 <td>{t.name}</td>
-                <td>{formatBs(t.stake)}</td>
+                <td>{fmt(t.stake)}</td>
                 <td>{t.players}/{t.maxPlayers}</td>
                 <td style={{ textAlign: "right" }}>
                   <span className={`pill dot ${t.status === "playing" ? "ok" : "pending"}`}>

@@ -4,7 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 import { Check, Close, ArrowDownLine, ArrowUpAlt } from "@/components/icons";
 
 type Req = {
@@ -14,6 +14,8 @@ type Req = {
   amount: number; // céntimos
   userName: string;
   userEmail: string;
+  reference: string | null;
+  proofUrl: string | null;
   createdAt: string;
 };
 
@@ -34,9 +36,32 @@ function ago(iso: string): string {
   return `hace ${Math.floor(h / 24)} d`;
 }
 
+/** Modal simple para ver el comprobante a tamaño completo. */
+function ProofModal({ url, onClose }: { url: string; onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(0,0,0,0.85)", display: "flex",
+        alignItems: "center", justifyContent: "center", cursor: "pointer",
+      }}
+      onClick={onClose}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt="Comprobante"
+        style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 10 }}
+      />
+    </div>
+  );
+}
+
 export function AdminQueue() {
+  const { fmt } = useCurrency();
   const [reqs, setReqs] = React.useState<Req[] | null>(null);
   const [busy, setBusy] = React.useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
   const load = React.useCallback(() => {
     api<{ requests: Req[] }>("/admin/requests")
@@ -95,9 +120,25 @@ export function AdminQueue() {
                 </div>
                 <div className="q-sub">
                   {r.userName} · {ago(r.createdAt)}
+                  {r.reference && <> · Ref: {r.reference}</>}
                 </div>
+                {/* Thumbnail del comprobante */}
+                {r.proofUrl && (
+                  <div style={{ marginTop: 6 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={r.proofUrl}
+                      alt="Comprobante"
+                      style={{
+                        maxWidth: 80, maxHeight: 56, borderRadius: 6,
+                        cursor: "pointer", border: "1px solid rgba(255,255,255,0.12)",
+                      }}
+                      onClick={() => setPreviewUrl(r.proofUrl)}
+                    />
+                  </div>
+                )}
               </div>
-              <div className="q-amt">{formatBs(r.amount)}</div>
+              <div className="q-amt">{fmt(r.amount)}</div>
               <div className="act-row">
                 <button
                   className="icon-btn approve"
@@ -120,6 +161,9 @@ export function AdminQueue() {
           );
         })
       )}
+
+      {/* Modal de comprobante a tamaño completo */}
+      {previewUrl && <ProofModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
     </div>
   );
 }

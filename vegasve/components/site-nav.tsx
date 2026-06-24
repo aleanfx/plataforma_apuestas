@@ -7,7 +7,9 @@ import { ShieldCheck, Plus } from "@/components/icons";
 import { AuthDialog } from "@/components/auth-dialog";
 import { WalletDialog } from "@/components/wallet-dialog";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs, formatUsdShort, initialOf } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
+import { CurrencySelector } from "@/components/currency-selector";
+import { initialOf } from "@/lib/money";
 
 // prueba estas rutas en orden; usa la primera que cargue
 const LOGO_CANDIDATES = ["/logo.png", "/logo.webp", "/logo.jpeg", "/logo.jpg"];
@@ -71,6 +73,7 @@ export function SiteNav({ variant }: { variant: "out" | "in" }) {
 
 function NavIn() {
   const { user } = useAuth();
+  const { fmt } = useCurrency();
   const total = user ? user.balance + user.bonus : 0;
 
   return (
@@ -82,12 +85,12 @@ function NavIn() {
         </div>
         <div className="nav-spacer" />
         <div className="nav-actions">
+          <CurrencySelector />
           <div className="balance-chip">
             <div className="bal">
               <span className="k">Saldo</span>
-              <span className="v">{user ? formatBs(total) : "—"}</span>
+              <span className="v">{user ? fmt(total) : "—"}</span>
             </div>
-            <span className="usd">{user ? formatUsdShort(total) : ""}</span>
             <WalletDialog kind="deposit">
               <button className="chip-add" title="Depositar">
                 <Plus strokeWidth={2} />

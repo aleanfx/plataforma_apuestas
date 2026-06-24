@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { api } from "@/lib/api";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 import { Coins, Users, Activity, CreditCard } from "@/components/icons";
 
 type Metrics = {
@@ -17,6 +17,7 @@ type Metrics = {
 };
 
 export function AdminMetrics() {
+  const { fmt } = useCurrency();
   const [m, setM] = React.useState<Metrics | null>(null);
 
   React.useEffect(() => {
@@ -27,7 +28,7 @@ export function AdminMetrics() {
   }, []);
 
   const stats = [
-    { Icon: Coins, k: "Saldo en circulación", v: m ? formatBs(m.balanceTotal) : "…", sub: m ? `Depósitos: ${formatBs(m.depositsTotal)}` : "" },
+    { Icon: Coins, k: "Saldo en circulación", v: m ? fmt(m.balanceTotal) : "…", sub: m ? `Depósitos: ${fmt(m.depositsTotal)}` : "" },
     { Icon: Users, k: "Usuarios", v: m ? String(m.users) : "…", sub: m ? `${m.online} en línea` : "" },
     { Icon: Activity, k: "Mesas activas", v: m ? String(m.tables) : "…", sub: "Bingo · Dominó · Póker" },
     { Icon: CreditCard, k: "Pendientes", v: m ? String(m.pendingDeposits + m.pendingWithdrawals) : "…", sub: m ? `${m.pendingDeposits} dep · ${m.pendingWithdrawals} ret` : "" },

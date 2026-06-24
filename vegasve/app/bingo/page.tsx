@@ -11,7 +11,7 @@ import { StageFullscreen } from "@/components/stage-fullscreen";
 import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 import { sfx } from "@/lib/sfx";
 
 type Sala = {
@@ -200,6 +200,7 @@ function BingoMachine({ lastCalled, playing }: { lastCalled: number | null; play
 
 function BingoContent() {
   const { user, refreshUser } = useAuth();
+  const { fmt } = useCurrency();
   const [salas, setSalas] = React.useState<Sala[]>([]);
   const [tableId, setTableId] = React.useState<string | null>(null);
   const [game, setGame] = React.useState<BingoState | null>(null);
@@ -350,7 +351,7 @@ function BingoContent() {
             <div className="bal-banner" style={{ marginBottom: 28 }}>
               <div className="cell">
                 <div className="k">Tu saldo</div>
-                <div className="big">{formatBs(user?.balance ?? 0)}</div>
+                <div className="big">{fmt(user?.balance ?? 0)}</div>
               </div>
             </div>
 
@@ -359,7 +360,7 @@ function BingoContent() {
                 <button key={s.id} className="game-panel bingo-sala" onClick={() => join(s.id)}>
                   <div className="bingo-sala-name serif">{s.name}</div>
                   <div className="bingo-sala-meta">
-                    <span>Cartón {formatBs(s.stake)}</span>
+                    <span>Cartón {fmt(s.stake)}</span>
                     <span className="live"><span className="live-dot" /> {s.players} jugando</span>
                   </div>
                   <span className="btn btn-gold btn-sm" style={{ marginTop: 12 }}>Entrar</span>
@@ -406,17 +407,17 @@ function BingoContent() {
             )}
 
             <div className="stage-bar">
-              <span><i>Pozo</i> {formatBs(game.pot)}</span>
-              <span><i>Cartón</i> {formatBs(game.stake)}</span>
+              <span><i>Pozo</i> {fmt(game.pot)}</span>
+              <span><i>Cartón</i> {fmt(game.stake)}</span>
               <span><i>Jugadores</i> {game.players.length}</span>
-              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
+              <span><i>Saldo</i> {fmt(user?.balance ?? 0)}</span>
             </div>
 
             {game.phase === "finished" && game.winners.length > 0 && (
               <div className="stage-winner">
                 <Trophy width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
                 {iWon ? "¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(", ")} ·{" "}
-                {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
+                {fmt(game.winners.reduce((s, w) => s + w.amount, 0))}
               </div>
             )}
 
@@ -442,7 +443,7 @@ function BingoContent() {
                       onClick={buy}
                       disabled={myCount >= 6}
                     >
-                      {myCount >= 6 ? "Máximo 6" : `Cartón · ${formatBs(game.stake)}`}
+                      {myCount >= 6 ? "Máximo 6" : `Cartón · ${fmt(game.stake)}`}
                     </button>
                     <button
                       className="btn btn-ghost btn-block"

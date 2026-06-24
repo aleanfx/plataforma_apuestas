@@ -14,6 +14,7 @@ const depositSchema = z.object({
   method: methodSchema,
   amount: amountSchema,
   reference: z.string().max(120).optional(),
+  proofUrl: z.string().max(500000).optional(), // data URL de la captura del comprobante
 });
 
 const withdrawSchema = z.object({

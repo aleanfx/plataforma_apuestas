@@ -9,8 +9,9 @@ import { SiteNav } from "@/components/site-nav";
 import { WalletDialog } from "@/components/wallet-dialog";
 import { AuthGuard } from "@/components/auth-guard";
 import { useAuth } from "@/lib/auth-context";
+import { useCurrency } from "@/lib/currency-context";
 import { api } from "@/lib/api";
-import { formatBs, formatUsd, initialOf } from "@/lib/money";
+import { initialOf } from "@/lib/money";
 import {
   Grid,
   User,
@@ -47,7 +48,7 @@ const TYPE_LABEL: Record<string, string> = {
   adjust: "Ajuste",
 };
 
-function mapTx(e: LedgerDTO): Tx {
+function mapTx(e: LedgerDTO, fmt: (c: number) => string): Tx {
   const pos = e.delta >= 0;
   const abs = Math.abs(e.delta);
   const isGame = e.type === "bet_stake" || e.type === "bet_payout";
@@ -64,8 +65,8 @@ function mapTx(e: LedgerDTO): Tx {
     title: e.note || TYPE_LABEL[e.type] || "Movimiento",
     sub: date,
     sign: pos ? "pos" : "neg",
-    amt: (pos ? "+ " : "− ") + formatBs(abs),
-    usd: (pos ? "+" : "−") + formatUsd(abs),
+    amt: (pos ? "+ " : "− ") + fmt(abs),
+    usd: "",
   };
 }
 
@@ -97,6 +98,7 @@ async function fileToAvatar(file: File): Promise<string> {
 
 function ProfileContent() {
   const { user, logout, updateAvatar } = useAuth();
+  const { fmt, fmtEquiv } = useCurrency();
   const router = useRouter();
   const [txs, setTxs] = React.useState<Tx[] | null>(null);
   const [filter, setFilter] = React.useState<"all" | "pagos" | "juegos">("all");
@@ -126,12 +128,13 @@ function ProfileContent() {
   React.useEffect(() => {
     let active = true;
     api<{ transactions: LedgerDTO[] }>("/wallet/transactions")
-      .then((r) => active && setTxs(r.transactions.map(mapTx)))
+      .then((r) => active && setTxs(r.transactions.map((e) => mapTx(e, fmt))))
       .catch(() => active && setTxs([]));
     return () => {
       active = false;
     };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fmt]);
 
   async function handleLogout() {
     await logout();
@@ -210,10 +213,10 @@ function ProfileContent() {
             {/* balance feature */}
             <div className="balance-feature">
               <div className="k">Saldo total disponible</div>
-              <div className="amount">{formatBs(total)}</div>
+              <div className="amount">{fmt(total)}</div>
               <div className="usd-line">
-                ≈ {formatUsd(total)} USD
-                {(user?.bonus ?? 0) > 0 ? ` · incluye ${formatBs(user!.bonus)} de bono` : ""}
+                ≈ {fmtEquiv(total)}
+                {(user?.bonus ?? 0) > 0 ? ` · incluye ${fmt(user!.bonus)} de bono` : ""}
               </div>
               <div className="bf-actions">
                 <WalletDialog kind="deposit">

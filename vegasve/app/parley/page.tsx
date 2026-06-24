@@ -8,7 +8,7 @@ import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { Check } from "@/components/icons";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 
 type Match = {
   id: number;
@@ -32,6 +32,7 @@ type SelKey = "local" | "empate" | "visitante";
 
 function ParleyContent() {
   const { user } = useAuth();
+  const { fmt } = useCurrency();
   const balance = user?.balance ?? 0;
   const [selections, setSelections] = React.useState<Record<number, SelKey | null>>({});
   const [bet, setBet] = React.useState("100");
@@ -74,7 +75,7 @@ function ParleyContent() {
           <div className="bal-banner" style={{ marginBottom: 24 }}>
             <div className="cell">
               <div className="k">Tu saldo</div>
-              <div className="big">{formatBs(balance)}</div>
+              <div className="big">{fmt(balance)}</div>
             </div>
           </div>
 
@@ -142,7 +143,7 @@ function ParleyContent() {
                 </div>
                 <div className="hp-payout" style={{ marginTop: 6 }}>
                   <span>Ganancia potencial</span>
-                  <strong style={{ color: "var(--gold)" }}>{formatBs(Math.round(potential * 100))}</strong>
+                  <strong style={{ color: "var(--gold)" }}>{fmt(Math.round(potential * 100))}</strong>
                 </div>
 
                 <button className="btn btn-gold btn-block" style={{ marginTop: 16 }} onClick={place} disabled={selected.length === 0}>

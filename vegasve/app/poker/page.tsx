@@ -11,7 +11,7 @@ import { StageFullscreen } from "@/components/stage-fullscreen";
 import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 import { sfx } from "@/lib/sfx";
 
 type Mesa = { id: string; name: string; stake: number; players: number; maxPlayers: number; status: string };
@@ -97,6 +97,7 @@ function seatStyle(offset: number, total: number, tight: boolean): React.CSSProp
 
 function PokerContent() {
   const { user, refreshUser } = useAuth();
+  const { fmt } = useCurrency();
   const [mesas, setMesas] = React.useState<Mesa[]>([]);
   const [tableId, setTableId] = React.useState<string | null>(null);
   const [game, setGame] = React.useState<PokerState | null>(null);
@@ -244,7 +245,7 @@ function PokerContent() {
             <div className="bal-banner" style={{ marginBottom: 28 }}>
               <div className="cell">
                 <div className="k">Tu saldo</div>
-                <div className="big">{formatBs(user?.balance ?? 0)}</div>
+                <div className="big">{fmt(user?.balance ?? 0)}</div>
               </div>
             </div>
             <div className="domino-mesas">
@@ -252,7 +253,7 @@ function PokerContent() {
                 <button key={m.id} className="game-panel domino-mesa" onClick={() => join(m.id)}>
                   <div className="serif" style={{ fontSize: 22, marginBottom: 8 }}>{m.name}</div>
                   <div className="domino-mesa-meta">
-                    <span>Buy-in {formatBs(m.stake)}</span>
+                    <span>Buy-in {fmt(m.stake)}</span>
                     <span className="live"><span className="live-dot" /> {m.players}/{m.maxPlayers} sentados</span>
                   </div>
                   <span className="btn btn-gold btn-sm" style={{ marginTop: 12 }}>Sentarse</span>
@@ -287,7 +288,7 @@ function PokerContent() {
                 <p style={{ color: "var(--text-2)", marginTop: 6 }}>
                   {game.handActive
                     ? `Mano en curso · ${game.street}`
-                    : `Ciegas ${formatBs(game.smallBlind)}/${formatBs(game.bigBlind)}`}
+                    : `Ciegas ${fmt(game.smallBlind)}/${fmt(game.bigBlind)}`}
                 </p>
               </div>
               <button className="btn btn-ghost btn-sm" onClick={leave}>Salir y cobrar</button>
@@ -302,10 +303,10 @@ function PokerContent() {
             )}
 
             <div className="stage-bar">
-              <span><i>Pozo</i> {formatBs(game.pot)}</span>
-              <span><i>Ciegas</i> {formatBs(game.smallBlind)}/{formatBs(game.bigBlind)}</span>
+              <span><i>Pozo</i> {fmt(game.pot)}</span>
+              <span><i>Ciegas</i> {fmt(game.smallBlind)}/{fmt(game.bigBlind)}</span>
               <span><i>Jugadores</i> {n}</span>
-              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
+              <span><i>Saldo</i> {fmt(user?.balance ?? 0)}</span>
             </div>
 
             {!game.handActive && game.showdown.length > 0 && (
@@ -315,7 +316,7 @@ function PokerContent() {
                   ? "¡Ganaste la mano!"
                   : game.showdown
                       .filter((w) => w.amount > 0)
-                      .map((w) => `${w.name} gana ${formatBs(w.amount)}${w.hand ? " (" + w.hand + ")" : ""}`)
+                      .map((w) => `${w.name} gana ${fmt(w.amount)}${w.hand ? " (" + w.hand + ")" : ""}`)
                       .join(" · ") || "Mano terminada"}
               </div>
             )}
@@ -324,7 +325,7 @@ function PokerContent() {
             <div className="pk-table-wrap">
               <div className="pk-felt">
                 <div className="pk-center">
-                  <div className="pk-pot"><span className="pk-chip-ico" aria-hidden />{formatBs(game.pot)}</div>
+                  <div className="pk-pot"><span className="pk-chip-ico" aria-hidden />{fmt(game.pot)}</div>
                   <div className="pk-community">
                     {[0, 1, 2, 3, 4].map((i) => (
                       <PlayingCard key={game.community[i] ?? `c${i}`} c={game.community[i]} hidden={!game.community[i]} />
@@ -345,7 +346,7 @@ function PokerContent() {
                     className={`pk-seat${s.isTurn ? " turn" : ""}${s.folded ? " folded" : ""}${isMe ? " me" : ""}`}
                     style={seatStyle(offset, n, immersive)}
                   >
-                    {s.roundBet > 0 && <div className="pk-bet" key={s.roundBet}>{formatBs(s.roundBet)}</div>}
+                    {s.roundBet > 0 && <div className="pk-bet" key={s.roundBet}>{fmt(s.roundBet)}</div>}
                     <div className="pk-seat-cards">
                       {s.hole
                         ? s.hole.map((c, i) => <PlayingCard key={i} c={c} big={isMe} />)
@@ -361,7 +362,7 @@ function PokerContent() {
                       </div>
                       <div className="pk-seat-info">
                         <span className="pk-seat-name">{s.name}{isMe ? " (tú)" : ""}</span>
-                        <span className="pk-seat-chips">{formatBs(s.chips)}</span>
+                        <span className="pk-seat-chips">{fmt(s.chips)}</span>
                       </div>
                     </div>
                     {s.allIn && <span className="pk-allin">ALL-IN</span>}
@@ -374,9 +375,9 @@ function PokerContent() {
             <div className="pk-actionbar">
               {needBuyIn ? (
                 <div className="pk-buyin">
-                  <span>Compra fichas para jugar (buy-in {formatBs(game.buyIn)}).</span>
+                  <span>Compra fichas para jugar (buy-in {fmt(game.buyIn)}).</span>
                   <button className="btn btn-gold" onClick={() => action("buyin")}>
-                    Comprar fichas · {formatBs(game.buyIn)}
+                    Comprar fichas · {fmt(game.buyIn)}
                   </button>
                 </div>
               ) : game.myTurn && a ? (
@@ -385,7 +386,7 @@ function PokerContent() {
                   {a.canCheck ? (
                     <button className="btn btn-gold" onClick={() => action("check")}>Pasar</button>
                   ) : a.canCall ? (
-                    <button className="btn btn-gold" onClick={() => action("call")}>Igualar {formatBs(a.callAmount)}</button>
+                    <button className="btn btn-gold" onClick={() => action("call")}>Igualar {fmt(a.callAmount)}</button>
                   ) : null}
                   {a.canRaise && (
                     <div className="poker-raise">
@@ -403,7 +404,7 @@ function PokerContent() {
                           action("raise", { amount: Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)) })
                         }
                       >
-                        Subir a {formatBs(Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)))}
+                        Subir a {fmt(Math.max(a.minRaiseTo, Math.min(a.maxRaiseTo, raiseTo)))}
                       </button>
                       <button className="btn btn-gold" onClick={() => action("allin")}>All-in</button>
                     </div>

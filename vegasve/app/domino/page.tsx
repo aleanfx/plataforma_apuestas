@@ -13,7 +13,7 @@ import { StageFullscreen } from "@/components/stage-fullscreen";
 import { Cpu, Trophy } from "@/components/icons";
 import { connectSocket } from "@/lib/socket";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 import { sfx } from "@/lib/sfx";
 
 type Mesa = { id: string; name: string; stake: number; players: number; maxPlayers: number; status: string };
@@ -167,6 +167,7 @@ function computeSnake(
 
 function DominoContent() {
   const { user, refreshUser } = useAuth();
+  const { fmt } = useCurrency();
   const [mesas, setMesas] = React.useState<Mesa[]>([]);
   const [tableId, setTableId] = React.useState<string | null>(null);
   const [game, setGame] = React.useState<DomState | null>(null);
@@ -369,7 +370,7 @@ function DominoContent() {
             <div className="bal-banner" style={{ marginBottom: 28 }}>
               <div className="cell">
                 <div className="k">Tu saldo</div>
-                <div className="big">{formatBs(user?.balance ?? 0)}</div>
+                <div className="big">{fmt(user?.balance ?? 0)}</div>
               </div>
             </div>
             <div className="domino-mesas">
@@ -377,7 +378,7 @@ function DominoContent() {
                 <button key={m.id} className="game-panel domino-mesa" onClick={() => join(m.id)}>
                   <div className="serif" style={{ fontSize: 22, marginBottom: 8 }}>{m.name}</div>
                   <div className="domino-mesa-meta">
-                    <span>Apuesta {formatBs(m.stake)}</span>
+                    <span>Apuesta {fmt(m.stake)}</span>
                     <span className="live"><span className="live-dot" /> {m.players}/{m.maxPlayers} en mesa</span>
                   </div>
                   <span className="btn btn-gold btn-sm" style={{ marginTop: 12 }}>Sentarse</span>
@@ -420,17 +421,17 @@ function DominoContent() {
               <StageFullscreen targetRef={stageRef} />
             )}
             <div className="stage-bar">
-              <span><i>Pozo</i> {formatBs(game.pot)}</span>
-              <span><i>Apuesta</i> {formatBs(game.stake)}</span>
+              <span><i>Pozo</i> {fmt(game.pot)}</span>
+              <span><i>Apuesta</i> {fmt(game.stake)}</span>
               <span><i>Jugadores</i> {game.seats.length}/{game.seatsNeeded}</span>
-              <span><i>Saldo</i> {formatBs(user?.balance ?? 0)}</span>
+              <span><i>Saldo</i> {fmt(user?.balance ?? 0)}</span>
             </div>
 
             {game.phase === "finished" && game.winners.length > 0 && (
               <div className="stage-winner">
                 <Trophy width="1.05em" height="1.05em" style={{ verticalAlign: "-0.18em", marginRight: 6 }} />
                 {iWon ? "¡Ganaste!" : "Ganó " + game.winners.map((w) => w.name).join(" y ")} ·{" "}
-                {formatBs(game.winners.reduce((s, w) => s + w.amount, 0))}
+                {fmt(game.winners.reduce((s, w) => s + w.amount, 0))}
               </div>
             )}
 
@@ -493,7 +494,7 @@ function DominoContent() {
                   <p style={{ color: "var(--text-2)", marginBottom: 16 }}>Esperando jugadores…</p>
                 )}
                 <button className="btn btn-gold" onClick={() => action("start")} disabled={game.seats.length < 2}>
-                  Iniciar partida · {formatBs(game.stake)}
+                  Iniciar partida · {fmt(game.stake)}
                 </button>
               </div>
             ) : (

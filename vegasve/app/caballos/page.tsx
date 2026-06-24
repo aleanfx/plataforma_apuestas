@@ -8,7 +8,7 @@ import { Ticker } from "@/components/ticker";
 import { AuthGuard } from "@/components/auth-guard";
 import { Check } from "@/components/icons";
 import { useAuth } from "@/lib/auth-context";
-import { formatBs } from "@/lib/money";
+import { useCurrency } from "@/lib/currency-context";
 
 type Horse = { number: number; name: string; jockey: string; win: number; place: number; show: number };
 type Race = { id: number; name: string; hippodrome: string; time: string; horses: Horse[] };
@@ -64,6 +64,7 @@ const BET_LABEL: Record<BetType, string> = { win: "Ganador", place: "Place", sho
 
 function CaballosContent() {
   const { user } = useAuth();
+  const { fmt } = useCurrency();
   const balance = user?.balance ?? 0;
   const [mode, setMode] = React.useState<"carrera" | "polla">("carrera");
 
@@ -118,7 +119,7 @@ function CaballosContent() {
           <div className="bal-banner" style={{ marginBottom: 24 }}>
             <div className="cell">
               <div className="k">Tu saldo</div>
-              <div className="big">{formatBs(balance)}</div>
+              <div className="big">{fmt(balance)}</div>
             </div>
           </div>
 
@@ -227,7 +228,7 @@ function CaballosContent() {
                       </div>
                       <div className="hp-payout">
                         <span>Ganancia potencial</span>
-                        <strong>{formatBs(Math.round(potential * 100))}</strong>
+                        <strong>{fmt(Math.round(potential * 100))}</strong>
                       </div>
                     </div>
                   ) : (
