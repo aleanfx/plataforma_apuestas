@@ -354,6 +354,14 @@ export function WalletDialog({
                 min={1}
                 step={inputCurrency === "USD" ? 1 : 100}
                 value={amount}
+                style={{
+                  paddingLeft:
+                    inputCurrency === "COP"
+                      ? "90px"
+                      : inputCurrency === "VES"
+                      ? "75px"
+                      : "50px",
+                }}
                 onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
               />
             </div>
