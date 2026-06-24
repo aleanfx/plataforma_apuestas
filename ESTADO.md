@@ -46,7 +46,7 @@ plataforma_apuestas/
 > real) pero apostar de verdad espera **decisión del cliente** sobre la fuente de datos (ver sección 18/06).
 > Desplegado el 13/06/2026 (backend en Render free, frontend en Vercel). Guía usada:
 > [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
-> **Multi-moneda y depósitos manuales:** Configuración y persistencia en DB Neon de mínimos de depósito y tasas (editables desde panel admin), selección obligatoria de moneda nativa al primer inicio/registro (bloqueo forzado en AuthGuard), cambio exclusivo en la página de perfil, iconos vectoriales premium, botón de copiado de datos de pago e indicación de correo de soporte si se deposita menos del mínimo.
+> **Multi-moneda y depósitos manuales:** Configuración y persistencia en DB Neon de mínimos de depósito y tasas (editables desde panel admin), selección obligatoria de moneda nativa al primer inicio/registro (bloqueo forzado en AuthGuard), cambio exclusivo en la página de perfil (con texto de advertencia optimizado), logos oficiales de marcas (Tether USDT, Binance, Pago Móvil, DaviPlata y Nequi), botón de copiado de datos de pago e indicación de correo de soporte si se deposita menos del mínimo.
 
 ## Lo que YA funciona (probado end-to-end contra Neon real — 110 pruebas)
 

@@ -677,3 +677,23 @@ Se expandió el soporte de multi-moneda para hacerlo más seguro, dinámico y co
 **Lecciones nuevas:**
 - Centralizar las validaciones de negocio sensibles (como límites financieros) en base a configuraciones de base de datos disminuye el riesgo de depósitos fraudulentos o inviables por comisiones de pasarela.
 - El bloqueo forzado en `AuthGuard` garantiza que todos los usuarios tengan una moneda de presentación nativa en su perfil antes de interactuar con el ledger o las mesas de juego, preservando la integridad contable.
+
+## 19. Refinamiento de Multi-moneda y Logos Oficiales (24/06/2026)
+
+Se realizaron refinamientos visuales y de redacción solicitados para la moneda nativa y los logos de los métodos de pago.
+
+**Ajuste de Redacción (auth-guard.tsx):**
+- Se modificó la advertencia del selector de moneda nativa inicial para que sea más clara y amigable: se cambió `"Solo podrás cambiar esta preferencia desde tu perfil."` por `"Podrás cambiarlo luego desde tu perfil."`.
+
+**Logos Oficiales de Métodos de Pago (wallet-dialog.tsx):**
+- Se reemplazaron los iconos genéricos del modal de depósitos y retiros por los logos oficiales de las marcas:
+  - **Criptomonedas (USDT):** Logo oficial de Tether (USDT) extraído de Simple Icons.
+  - **Binance:** Logo oficial de Binance extraído de Simple Icons.
+  - **Pago Móvil:** Icono representativo e interactivo estilo Suiche 7B (diseño de teléfono y ondas de transmisión concéntricas azul/rojo).
+  - **Daviplata:** Logo oficial de DaviPlata.
+  - **Nequi:** Logomark oficial de Nequi (el icono de la N estilizada y el punto rosado de la marca).
+- Los logos de DaviPlata y Nequi se adaptaron como SVGs de relación de aspecto ancha/proporcional para asegurar que se muestren de forma nítida y alineada dentro de los botones de selección en el monedero.
+
+**Verificación:**
+- Compilación de producción con Next.js exitosa (`✓ Compiled successfully`).
+

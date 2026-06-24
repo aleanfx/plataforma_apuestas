@@ -68,7 +68,7 @@ function CurrencySetup({ onSelect }: { onSelect: (c: string) => Promise<void> })
         <p style={{ fontSize: "13.5px", color: "var(--text-2)", marginBottom: "24px", lineHeight: "1.4" }}>
           Para comenzar a jugar, elige la moneda en la que se mostrarán tus saldos y jugadas. 
           <strong style={{ display: "block", marginTop: "6px", color: "var(--gold)" }}>
-            Solo podrás cambiar esta preferencia desde tu perfil.
+            Podrás cambiarlo luego desde tu perfil.
           </strong>
         </p>
 
