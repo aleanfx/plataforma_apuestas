@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCurrency } from "@/lib/currency-context";
 import { api } from "@/lib/api";
 import { initialOf } from "@/lib/money";
+import { sfx } from "@/lib/sfx";
 import {
   Grid,
   User,
@@ -23,7 +24,13 @@ import {
   ArrowUpLine,
   ArrowDownLine,
   ArrowUpAlt,
+  Copy,
+  Lock,
+  Bell,
+  WalletCoins,
 } from "@/components/icons";
+
+type Section = "cartera" | "datos" | "seguridad" | "preferencias";
 
 type LedgerDTO = { id: string; type: string; delta: number; note: string | null; createdAt: string };
 
@@ -97,9 +104,58 @@ async function fileToAvatar(file: File): Promise<string> {
 }
 
 function ProfileContent() {
-  const { user, logout, updateAvatar, updateCurrency } = useAuth();
+  const { user, logout, updateAvatar, updateCurrency, changePassword } = useAuth();
   const { fmt, fmtEquiv } = useCurrency();
   const router = useRouter();
+  const [section, setSection] = React.useState<Section>("cartera");
+
+  // --- Seguridad: cambio de contraseña ---
+  const [curPw, setCurPw] = React.useState("");
+  const [newPw, setNewPw] = React.useState("");
+  const [confPw, setConfPw] = React.useState("");
+  const [showPw, setShowPw] = React.useState(false);
+  const [savingPw, setSavingPw] = React.useState(false);
+
+  // --- Preferencias: sonidos ---
+  const [soundOn, setSoundOn] = React.useState(true);
+  React.useEffect(() => {
+    setSoundOn(!sfx.isMuted());
+  }, []);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (savingPw) return;
+    if (newPw.length < 8) {
+      toast.error("La nueva contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (newPw !== confPw) {
+      toast.error("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+    setSavingPw(true);
+    try {
+      await changePassword(curPw, newPw);
+      toast.success("Contraseña actualizada con éxito.");
+      setCurPw("");
+      setNewPw("");
+      setConfPw("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo cambiar la contraseña.");
+    } finally {
+      setSavingPw(false);
+    }
+  }
+
+  function copyPlain(value: string, label: string) {
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copiado`);
+  }
+
+  function toggleSound() {
+    const muted = sfx.toggle();
+    setSoundOn(!muted);
+  }
 
   async function handleUpdateCurrency(code: string) {
     try {
@@ -201,79 +257,45 @@ function ProfileContent() {
                 <Link href="/lobby">
                   <Grid /> Volver al lobby
                 </Link>
-                <a>
+                <button
+                  type="button"
+                  className={section === "cartera" ? "active" : ""}
+                  onClick={() => setSection("cartera")}
+                >
+                  <WalletCoins /> Mi cartera
+                </button>
+                <button
+                  type="button"
+                  className={section === "datos" ? "active" : ""}
+                  onClick={() => setSection("datos")}
+                >
                   <User /> Datos personales
-                </a>
-                <a>
+                </button>
+                <button
+                  type="button"
+                  className={section === "seguridad" ? "active" : ""}
+                  onClick={() => setSection("seguridad")}
+                >
                   <Shield /> Seguridad
-                </a>
-                <a>
+                </button>
+                <button
+                  type="button"
+                  className={section === "preferencias" ? "active" : ""}
+                  onClick={() => setSection("preferencias")}
+                >
                   <Cog /> Preferencias
-                </a>
+                </button>
                 <button type="button" className="danger" onClick={handleLogout}>
                   <Logout /> Cerrar sesión
                 </button>
               </nav>
             </div>
-
-            <div className="pcard" style={{ marginTop: "16px", padding: "18px 24px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", borderBottom: "1px solid var(--line-soft)", paddingBottom: "10px" }}>
-                <Cog style={{ color: "var(--gold)", width: "16px", height: "16px" }} />
-                <h4 className="serif" style={{ fontSize: "16px", fontWeight: "600" }}>Moneda de la cuenta</h4>
-              </div>
-              <p style={{ fontSize: "12px", color: "var(--text-3)", marginBottom: "14px", lineHeight: "1.4" }}>
-                Define la moneda nativa en la que deseas ver e ingresar tus fondos.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {[
-                  { code: "USD", label: "🇺🇸 Dólares (USD)" },
-                  { code: "VES", label: "🇻🇪 Bolívares (VES)" },
-                  { code: "COP", label: "🇨🇴 Pesos Colombianos (COP)" }
-                ].map((opt) => {
-                  const active = user?.currency === opt.code;
-                  return (
-                    <button
-                      key={opt.code}
-                      onClick={() => handleUpdateCurrency(opt.code)}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "10px 12px",
-                        fontSize: "13px",
-                        background: active ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.03)",
-                        border: active ? "1px solid var(--gold)" : "1px solid var(--line-soft)",
-                        borderRadius: "8px",
-                        color: active ? "var(--gold)" : "var(--text-2)",
-                        fontWeight: active ? "600" : "400",
-                        cursor: "pointer",
-                        transition: "all 0.2s"
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.borderColor = "var(--line)";
-                          e.currentTarget.style.color = "var(--text)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.borderColor = "var(--line-soft)";
-                          e.currentTarget.style.color = "var(--text-2)";
-                        }
-                      }}
-                    >
-                      <span>{opt.label}</span>
-                      {active && <span style={{ fontSize: "11px" }}>✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </aside>
 
           {/* right column */}
           <div>
+            {section === "cartera" && (
+            <>
             {/* balance feature */}
             <div className="balance-feature">
               <div className="k">Saldo total disponible</div>
@@ -340,6 +362,195 @@ function ProfileContent() {
                 );
               })()}
             </div>
+            </>
+            )}
+
+            {/* DATOS PERSONALES */}
+            {section === "datos" && (
+              <div className="panel">
+                <div className="panel-head">
+                  <h3 className="serif">Datos personales</h3>
+                </div>
+                <div className="pdata-list">
+                  <div className="pdata-row">
+                    <span className="pdata-k">Nombre</span>
+                    <span className="pdata-v">{user?.name}</span>
+                  </div>
+                  <div className="pdata-row">
+                    <span className="pdata-k">Correo</span>
+                    <span className="pdata-v">
+                      {user?.email}
+                      <button
+                        type="button"
+                        className="pdata-copy"
+                        title="Copiar correo"
+                        onClick={() => copyPlain(user?.email ?? "", "Correo")}
+                      >
+                        <Copy />
+                      </button>
+                    </span>
+                  </div>
+                  <div className="pdata-row">
+                    <span className="pdata-k">ID de cuenta</span>
+                    <span className="pdata-v mono">
+                      {user?.id}
+                      <button
+                        type="button"
+                        className="pdata-copy"
+                        title="Copiar ID"
+                        onClick={() => copyPlain(user?.id ?? "", "ID")}
+                      >
+                        <Copy />
+                      </button>
+                    </span>
+                  </div>
+                  <div className="pdata-row">
+                    <span className="pdata-k">Usuario</span>
+                    <span className="pdata-v">{handle}</span>
+                  </div>
+                  <div className="pdata-row">
+                    <span className="pdata-k">Moneda</span>
+                    <span className="pdata-v">
+                      {user?.currency === "VES"
+                        ? "🇻🇪 Bolívares (VES)"
+                        : user?.currency === "COP"
+                          ? "🇨🇴 Pesos Colombianos (COP)"
+                          : "🇺🇸 Dólares (USD)"}
+                    </span>
+                  </div>
+                  <div className="pdata-row">
+                    <span className="pdata-k">Estado</span>
+                    <span className="pdata-v">
+                      <span className="verified-pill">
+                        <Check strokeWidth={2.5} /> Verificada
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <p className="pdata-note">
+                  Para cambiar tu nombre o correo, escríbenos a soporte.
+                </p>
+              </div>
+            )}
+
+            {/* SEGURIDAD */}
+            {section === "seguridad" && (
+              <div className="panel">
+                <div className="panel-head">
+                  <h3 className="serif">Seguridad</h3>
+                </div>
+                <form className="sec-form" onSubmit={handleChangePassword}>
+                  <div className="field">
+                    <label>Contraseña actual</label>
+                    <div className="input-wrap">
+                      <Lock />
+                      <input
+                        type={showPw ? "text" : "password"}
+                        value={curPw}
+                        onChange={(e) => setCurPw(e.target.value)}
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                      />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label>Nueva contraseña</label>
+                    <div className="input-wrap">
+                      <Lock />
+                      <input
+                        type={showPw ? "text" : "password"}
+                        value={newPw}
+                        onChange={(e) => setNewPw(e.target.value)}
+                        placeholder="Mínimo 8 caracteres"
+                        autoComplete="new-password"
+                      />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label>Confirmar nueva contraseña</label>
+                    <div className="input-wrap">
+                      <Lock />
+                      <input
+                        type={showPw ? "text" : "password"}
+                        value={confPw}
+                        onChange={(e) => setConfPw(e.target.value)}
+                        placeholder="Repite la nueva contraseña"
+                        autoComplete="new-password"
+                      />
+                    </div>
+                  </div>
+                  <label className="sec-show">
+                    <input
+                      type="checkbox"
+                      checked={showPw}
+                      onChange={(e) => setShowPw(e.target.checked)}
+                    />
+                    Mostrar contraseñas
+                  </label>
+                  <button className="btn btn-gold btn-block" type="submit" disabled={savingPw}>
+                    {savingPw ? "Guardando…" : "Actualizar contraseña"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* PREFERENCIAS */}
+            {section === "preferencias" && (
+              <div className="panel">
+                <div className="panel-head">
+                  <h3 className="serif">Preferencias</h3>
+                </div>
+
+                <div className="pref-group">
+                  <div className="pref-title">
+                    <Cog /> Moneda de la cuenta
+                  </div>
+                  <p className="pref-desc">
+                    Define la moneda nativa en la que ves e ingresas tus fondos.
+                  </p>
+                  <div className="pref-currencies">
+                    {[
+                      { code: "USD", label: "🇺🇸 Dólares (USD)" },
+                      { code: "VES", label: "🇻🇪 Bolívares (VES)" },
+                      { code: "COP", label: "🇨🇴 Pesos Colombianos (COP)" },
+                    ].map((opt) => {
+                      const on = user?.currency === opt.code;
+                      return (
+                        <button
+                          key={opt.code}
+                          className={`pref-cur${on ? " on" : ""}`}
+                          onClick={() => handleUpdateCurrency(opt.code)}
+                        >
+                          <span>{opt.label}</span>
+                          {on && <Check strokeWidth={2.5} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pref-group">
+                  <div className="pref-title">
+                    <Bell /> Sonidos del juego
+                  </div>
+                  <p className="pref-desc">
+                    Efectos de sonido en bingo, dominó y póker.
+                  </p>
+                  <button
+                    type="button"
+                    className={`pref-toggle${soundOn ? " on" : ""}`}
+                    onClick={toggleSound}
+                  >
+                    <span className="pref-toggle-k">
+                      {soundOn ? "Activados" : "Silenciados"}
+                    </span>
+                    <span className="pref-switch">
+                      <span className="knob" />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -25,6 +25,7 @@ type AuthContextValue = {
   loginWithGoogle: (credential: string) => Promise<AuthUser>;
   updateAvatar: (avatarUrl: string) => Promise<void>;
   updateCurrency: (currency: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -129,6 +130,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }, []);
 
+  const changePassword = React.useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      await api("/auth/password", {
+        method: "PATCH",
+        body: { currentPassword, newPassword },
+      });
+    },
+    [],
+  );
+
   const value = React.useMemo(
     () => ({
       user,
@@ -138,10 +149,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithGoogle,
       updateAvatar,
       updateCurrency,
+      changePassword,
       logout,
       refreshUser,
     }),
-    [user, loading, login, register, loginWithGoogle, updateAvatar, updateCurrency, logout, refreshUser],
+    [user, loading, login, register, loginWithGoogle, updateAvatar, updateCurrency, changePassword, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

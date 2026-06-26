@@ -97,6 +97,21 @@ authRouter.patch(
   }),
 );
 
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Ingresa tu contraseña actual"),
+  newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres"),
+});
+
+authRouter.patch(
+  "/password",
+  requireAuth,
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const { currentPassword, newPassword } = parseBody(passwordSchema, req.body);
+    await auth.changePassword(req.user!.sub, currentPassword, newPassword);
+    res.json({ ok: true });
+  }),
+);
+
 const currencySchema = z.object({
   currency: z.enum(["VES", "USD", "COP"]),
 });

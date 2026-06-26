@@ -22,6 +22,18 @@ import {
   methodCurrency,
   type CurrencyCode,
 } from "@/lib/money";
+import {
+  COINS,
+  useCryptoPrices,
+  usdToCrypto,
+  fmtCrypto,
+  type CryptoCoin,
+} from "@/lib/crypto";
+
+/** Limpia un número para pegar en el banco: sin espacios ni puntos. */
+function cleanForCopy(v: string): string {
+  return v.replace(/[\s.]/g, "");
+}
 
 type Method = {
   id: string;
@@ -182,6 +194,29 @@ const getMethodIcon = (id: string) => {
   }
 };
 
+// Glifo de marca para el disco del logo (la sigla va al lado en texto).
+const COIN_GLYPH: Record<string, string> = {
+  BTC: "₿",
+  ETH: "Ξ",
+  USDT: "₮",
+  USDC: "$",
+  LTC: "Ł",
+  BNB: "B",
+  TRX: "T",
+  SOL: "S",
+};
+
+function CoinLogo({ coin, size = 26 }: { coin: CryptoCoin; size?: number }) {
+  return (
+    <span
+      className="coin-logo"
+      style={{ background: coin.color, width: size, height: size, fontSize: Math.round(size * 0.5) }}
+    >
+      {COIN_GLYPH[coin.symbol] ?? coin.symbol[0]}
+    </span>
+  );
+}
+
 export function WalletDialog({
   children,
   kind,
@@ -198,6 +233,8 @@ export function WalletDialog({
   const [busy, setBusy] = React.useState(false);
   const [proofUrl, setProofUrl] = React.useState<string | null>(null);
   const [proofName, setProofName] = React.useState<string>("");
+  const [coinId, setCoinId] = React.useState<string>("");
+  const [coinPickOpen, setCoinPickOpen] = React.useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -208,11 +245,18 @@ export function WalletDialog({
       setBusy(false);
       setProofUrl(null);
       setProofName("");
+      setCoinId("");
+      setCoinPickOpen(false);
     }
   }, [open]);
 
   const isDep = kind === "deposit";
   const active = METHODS.find((m) => m.id === method)!;
+  const isCrypto = isDep && method === "nowpayments";
+
+  // Precios en vivo de las criptos (solo cuando el flujo cripto está activo).
+  const { prices, error: priceError } = useCryptoPrices(open && isCrypto);
+  const coin: CryptoCoin | null = COINS.find((c) => c.id === coinId) ?? null;
 
   // Moneda del monto según el método de pago
   const inputCurrency: CurrencyCode = isDep ? methodCurrency(method) : currency;
@@ -223,6 +267,10 @@ export function WalletDialog({
   const cents = localToCents(value, inputCurrency, rates);
   // Texto de equivalencia en las otras monedas
   const equivText = cents > 0 ? formatEquivalents(cents, inputCurrency, rates) : "";
+
+  // Conversión a cripto (para NowPayments). El monto del input es en USD.
+  const coinPrice = coin && prices ? prices[coin.id] : 0;
+  const cryptoAmount = isCrypto && coin ? usdToCrypto(value, coinPrice) : 0;
 
   const getDepSub = (methodId: string) => {
     if (methodId === "pagomovil") {
@@ -321,21 +369,39 @@ export function WalletDialog({
       toast.error("Adjunta la captura del comprobante de pago.");
       return;
     }
+    // Cripto: hay que elegir la moneda con la que se pagará
+    if (isCrypto && !coin) {
+      toast.error("Elige la criptomoneda con la que pagarás.");
+      return;
+    }
 
     setBusy(true);
     try {
       if (isDep) {
+        const cryptoNote = isCrypto && coin && cryptoAmount > 0
+          ? ` ≈ ${fmtCrypto(cryptoAmount)} ${coin.symbol}`
+          : "";
+        const reference =
+          isCrypto && coin
+            ? `Cripto ${coin.symbol} · $${value}${cryptoNote}`
+            : `${sym} ${value}`;
         await api("/wallet/deposit", {
           method: "POST",
           body: {
             method,
             amount: cents,
-            reference: `${sym} ${value}`,
+            reference,
             proofUrl: proofUrl ?? undefined,
           },
         });
         setOpen(false);
-        toast.success("Depósito en revisión — se acreditará al confirmar tu pago.");
+        toast.success(
+          isCrypto && coin
+            ? cryptoAmount > 0
+              ? `Orden cripto registrada — paga ${fmtCrypto(cryptoAmount)} ${coin.symbol} y se acreditará al confirmarse.`
+              : `Orden cripto registrada en ${coin.symbol} — te confirmaremos el monto exacto a pagar.`
+            : "Depósito en revisión — se acreditará al confirmar tu pago.",
+        );
       } else {
         await api("/wallet/withdraw", {
           method: "POST",
@@ -393,6 +459,68 @@ export function WalletDialog({
           </div>
 
           {isDep ? (
+            isCrypto ? (
+              <div className="crypto-pick">
+                <div className="crypto-pick-head">
+                  <span>Pagas con la cripto que prefieras</span>
+                  <button
+                    type="button"
+                    className="crypto-toggle"
+                    onClick={() => setCoinPickOpen((o) => !o)}
+                  >
+                    {coin ? "Cambiar" : "Elegir cripto"}
+                  </button>
+                </div>
+
+                {coin && !coinPickOpen && (
+                  <button
+                    type="button"
+                    className="crypto-current"
+                    onClick={() => setCoinPickOpen(true)}
+                  >
+                    <CoinLogo coin={coin} />
+                    <span className="cc-sym">{coin.symbol}</span>
+                    <span className="cc-name">
+                      {coin.name}
+                      {coin.net ? ` · ${coin.net}` : ""}
+                    </span>
+                    <span className="cc-chev">▾</span>
+                  </button>
+                )}
+
+                {(coinPickOpen || !coin) && (
+                  <div className="crypto-grid">
+                    {COINS.map((c) => {
+                      const p = prices?.[c.id] ?? 0;
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`crypto-opt${coinId === c.id ? " active" : ""}`}
+                          onClick={() => {
+                            setCoinId(c.id);
+                            setCoinPickOpen(false);
+                          }}
+                        >
+                          <CoinLogo coin={c} />
+                          <span className="cc-sym">{c.symbol}</span>
+                          {value > 0 && p > 0 ? (
+                            <span className="cc-amt">≈ {fmtCrypto(usdToCrypto(value, p))}</span>
+                          ) : (
+                            <span className="cc-amt dim">{c.net}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="crypto-hint">
+                  Elige entre USDT, BTC, ETH y más. El monto que ingreses abajo se
+                  convierte <strong>en vivo</strong> a la cripto seleccionada.
+                </div>
+              </div>
+            ) : (
             <div className="pay-details">
               <div className="pay-details-head">
                 Envía tu pago a <span className="gold">{active.name}</span>
@@ -410,8 +538,10 @@ export function WalletDialog({
                           className="copy-btn-small"
                           title={`Copiar ${d.k}`}
                           onClick={() => {
-                            navigator.clipboard.writeText(d.v);
-                            toast.success(`${d.k} copiado al portapapeles`);
+                            // Sin espacios ni puntos: listo para pegar en el banco.
+                            const clean = cleanForCopy(d.v);
+                            navigator.clipboard.writeText(clean);
+                            toast.success(`${d.k} copiado: ${clean}`);
                           }}
                           style={{
                             background: "none",
@@ -435,6 +565,7 @@ export function WalletDialog({
                 );
               })}
             </div>
+            )
           ) : (
             <div className="field">
               <label>Cuenta / billetera destino</label>
@@ -480,8 +611,33 @@ export function WalletDialog({
             </div>
           </div>
 
-          {/* Equivalencia en otras monedas */}
-          {equivText && <div className="equiv-line">≈ {equivText}</div>}
+          {/* Conversión a cripto en vivo (NowPayments) o equivalencia de monedas */}
+          {isCrypto ? (
+            <div className="crypto-convert">
+              {priceError ? (
+                <span className="cc-err">No se pudieron cargar las tasas en vivo. Intenta de nuevo.</span>
+              ) : !coin ? (
+                <span className="cc-muted">Elige una criptomoneda arriba para ver la conversión.</span>
+              ) : value <= 0 ? (
+                <span className="cc-muted">Ingresa un monto para ver cuánto pagarás en {coin.symbol}.</span>
+              ) : !prices ? (
+                <span className="cc-muted">Calculando tasa de {coin.symbol}…</span>
+              ) : coinPrice <= 0 ? (
+                <span className="cc-err">Tasa de {coin.symbol} no disponible ahora.</span>
+              ) : (
+                <>
+                  <div className="cc-pay">
+                    Pagarás aprox. <strong>{fmtCrypto(cryptoAmount)} {coin.symbol}</strong>
+                  </div>
+                  <div className="cc-rate">
+                    1 {coin.symbol} ≈ ${coinPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })} · tasa en vivo
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            equivText && <div className="equiv-line">≈ {equivText}</div>
+          )}
 
           {/* Upload de comprobante (solo para métodos manuales en depósito) */}
           {isDep && active.needsProof && (
@@ -533,12 +689,16 @@ export function WalletDialog({
             className={`btn ${isDep ? "btn-gold" : "btn-green"} btn-block`}
             style={{ marginTop: 14 }}
             onClick={confirm}
-            disabled={busy}
+            disabled={busy || (isCrypto && !coin)}
           >
             {busy
               ? "Procesando…"
               : isDep
-                ? "Confirmar depósito"
+                ? isCrypto
+                  ? coin
+                    ? `Pagar con ${coin.symbol}`
+                    : "Elige una cripto"
+                  : "Confirmar depósito"
                 : "Solicitar retiro"}
           </button>
         </div>

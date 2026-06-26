@@ -2882,3 +2882,149 @@ html, body { overflow-x: clip; max-width: 100%; }
   font-size: 12px; color: var(--text-3); margin-top: 4px; text-align: center;
 }
 
+/* ============================================================
+   Selector de criptomoneda (depósito NowPayments) — lógica pura
+   ============================================================ */
+.coin-logo {
+  display: inline-grid; place-items: center; border-radius: 50%;
+  color: #fff; font-weight: 700; flex-shrink: 0;
+  font-family: var(--serif); line-height: 1;
+}
+.crypto-pick {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(6, 182, 212, 0.05);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.crypto-pick-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: 13px; color: var(--text-2); margin-bottom: 12px;
+}
+.crypto-toggle {
+  background: none; border: 1px solid var(--gold); color: var(--gold);
+  border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+}
+.crypto-toggle:hover { background: rgba(212,175,55,0.12); }
+.crypto-current {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line-soft);
+  border-radius: 10px; padding: 11px 14px; cursor: pointer; transition: all .2s;
+  text-align: left;
+}
+.crypto-current:hover { border-color: var(--gold); }
+.crypto-current .cc-sym { font-weight: 700; font-size: 15px; color: var(--text); }
+.crypto-current .cc-name { font-size: 12px; color: var(--text-3); }
+.crypto-current .cc-chev { margin-left: auto; color: var(--text-3); font-size: 12px; }
+.crypto-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.crypto-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 11px 6px; border: 1px solid var(--line-soft); border-radius: 10px;
+  background: rgba(255,255,255,0.02); cursor: pointer; transition: all .2s;
+  text-align: center;
+}
+.crypto-opt:hover { border-color: var(--line); }
+.crypto-opt.active { border-color: var(--gold); background: rgba(212,175,55,0.08); }
+.crypto-opt .cc-sym { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.crypto-opt .cc-amt { font-size: 10.5px; color: var(--gold); font-family: var(--serif); }
+.crypto-opt .cc-amt.dim { color: var(--text-3); font-family: inherit; }
+.crypto-hint { font-size: 11.5px; color: var(--text-3); margin-top: 11px; line-height: 1.45; }
+.crypto-hint strong { color: var(--text-2); }
+.crypto-convert {
+  border: 1px solid var(--line-soft); border-radius: 10px;
+  background: rgba(6, 182, 212, 0.06);
+  padding: 11px 14px; margin-top: 6px; text-align: center;
+}
+.crypto-convert .cc-pay { font-size: 14px; color: var(--text-2); }
+.crypto-convert .cc-pay strong { color: var(--gold); font-family: var(--serif); font-size: 17px; }
+.crypto-convert .cc-rate { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+.crypto-convert .cc-muted { font-size: 12.5px; color: var(--text-3); }
+.crypto-convert .cc-err { font-size: 12.5px; color: var(--danger); }
+@media (max-width: 520px) {
+  .crypto-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ============================================================
+   Perfil — pestañas activas y secciones (datos / seguridad / preferencias)
+   ============================================================ */
+.menu-list a.active, .menu-list button.active {
+  background: rgba(212,175,55,0.10); color: var(--gold);
+}
+
+/* Datos personales */
+.pdata-list { display: flex; flex-direction: column; }
+.pdata-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 14px 4px; border-bottom: 1px solid var(--line-soft); font-size: 14px;
+}
+.pdata-row:last-child { border-bottom: none; }
+.pdata-k { color: var(--text-3); flex-shrink: 0; }
+.pdata-v {
+  color: var(--text); font-weight: 500; display: inline-flex; align-items: center;
+  gap: 8px; text-align: right; word-break: break-all;
+}
+.pdata-v.mono { font-family: var(--mono, ui-monospace, monospace); font-size: 12.5px; }
+.pdata-copy {
+  background: none; border: none; color: var(--text-3); cursor: pointer;
+  display: inline-flex; padding: 2px; border-radius: 4px; transition: color .2s; flex-shrink: 0;
+}
+.pdata-copy:hover { color: var(--gold); }
+.pdata-copy svg { width: 14px; height: 14px; }
+.pdata-note { font-size: 12px; color: var(--text-3); margin-top: 14px; }
+.verified-pill {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px;
+  color: #4ade80;
+}
+.verified-pill svg { width: 13px; height: 13px; }
+
+/* Seguridad — formulario de contraseña */
+.sec-form { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+.sec-show {
+  display: flex; align-items: center; gap: 8px; font-size: 13px;
+  color: var(--text-2); cursor: pointer; user-select: none;
+}
+.sec-show input { width: 15px; height: 15px; accent-color: var(--gold); cursor: pointer; }
+
+/* Preferencias */
+.pref-group { padding: 16px 0; border-bottom: 1px solid var(--line-soft); }
+.pref-group:last-child { border-bottom: none; }
+.pref-title {
+  display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600;
+  color: var(--text);
+}
+.pref-title svg { width: 16px; height: 16px; color: var(--gold); }
+.pref-desc { font-size: 12.5px; color: var(--text-3); margin: 6px 0 12px; }
+.pref-currencies { display: flex; flex-direction: column; gap: 8px; }
+.pref-cur {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 13px; font-size: 13.5px; border-radius: 9px; cursor: pointer;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line-soft);
+  color: var(--text-2); transition: all .2s;
+}
+.pref-cur:hover { border-color: var(--line); color: var(--text); }
+.pref-cur.on {
+  background: rgba(212,175,55,0.12); border-color: var(--gold); color: var(--gold); font-weight: 600;
+}
+.pref-cur svg { width: 15px; height: 15px; }
+.pref-toggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; transition: all .2s;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line-soft);
+}
+.pref-toggle .pref-toggle-k { font-size: 13.5px; color: var(--text-2); }
+.pref-toggle.on { border-color: rgba(74,222,128,0.5); }
+.pref-toggle.on .pref-toggle-k { color: #4ade80; }
+.pref-switch {
+  width: 42px; height: 24px; border-radius: 999px; background: rgba(255,255,255,0.12);
+  position: relative; transition: background .2s; flex-shrink: 0;
+}
+.pref-toggle.on .pref-switch { background: #4ade80; }
+.pref-switch .knob {
+  position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+}
+.pref-toggle.on .pref-switch .knob { transform: translateX(18px); }
+

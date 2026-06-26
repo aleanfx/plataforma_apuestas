@@ -187,6 +187,23 @@ export async function updateAvatar(userId: string, avatarUrl: string): Promise<P
   return toPublicUser(user, user.account);
 }
 
+/** Cambia la contraseña del usuario (verifica la actual). */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw unauthorized("Sesión inválida");
+  const ok = await verifyPassword(currentPassword, user.passwordHash);
+  if (!ok) throw badRequest("La contraseña actual no es correcta");
+  if (currentPassword === newPassword) {
+    throw badRequest("La nueva contraseña debe ser distinta a la actual");
+  }
+  const passwordHash = await hashPassword(newPassword);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+}
+
 /** Actualiza la moneda preferida del usuario. */
 export async function updateCurrency(userId: string, currency: string): Promise<PublicUser> {
   if (!["VES", "USD", "COP"].includes(currency)) {
