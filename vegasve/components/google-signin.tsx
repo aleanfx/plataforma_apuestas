@@ -5,7 +5,11 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/lib/auth-context";
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+// Client ID de Google (público; puede ir en el código). Se puede sobreescribir
+// con NEXT_PUBLIC_GOOGLE_CLIENT_ID en Vercel si algún día cambia.
+const CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  "218078853182-ui9cp46ca9li4t73tqq9v82rraf8027g.apps.googleusercontent.com";
 
 type GsiId = {
   initialize: (cfg: { client_id: string; callback: (r: { credential: string }) => void }) => void;

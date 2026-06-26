@@ -12,9 +12,11 @@ const schema = z.object({
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
   PORT: z.coerce.number().default(4000),
   BS_PER_USD: z.coerce.number().default(40),
-  // Client ID de Google (OAuth) para "Iniciar sesión con Google". Opcional:
-  // si falta, el endpoint /auth/google responde que no está configurado.
-  GOOGLE_CLIENT_ID: z.string().optional(),
+  // Client ID de Google (OAuth) para "Iniciar sesión con Google". Es público;
+  // se puede sobreescribir con la variable GOOGLE_CLIENT_ID en Render.
+  GOOGLE_CLIENT_ID: z
+    .string()
+    .default("218078853182-ui9cp46ca9li4t73tqq9v82rraf8027g.apps.googleusercontent.com"),
 });
 
 const parsed = schema.safeParse(process.env);
