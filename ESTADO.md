@@ -162,6 +162,14 @@ frontend salvo un cambio mínimo de backend** (límite de cartones de Bingo). Bu
 > En cualquiera de los dos, al elegir el modelo se construye el backend (tablas de eventos/apuestas +
 > liquidación por el ledger ya probado) y se valida con un smoke test **antes** de activar dinero real.
 
+### Pendientes abiertos (al 19/06/2026)
+- **Dominó "todos contra todos":** el cliente quiere el dominó **individual (sin parejas)**, cada quien para
+  sí. Mencionó además un **sistema de puntos casero** poco claro ("cada pase suma un punto al rival de la
+  derecha"); quedó en **grabar una partida**. Falta su video/aclaración para programar el conteo; la parte de
+  quitar parejas sí es clara. (Motor actual: `server/src/games/domino/`, 2-4 jugadores con parejas a 4.)
+- **Caballos/Parley:** el cliente **aún no decide** la fuente de datos (ver arriba).
+- **Multi-moneda:** Caballos y Parley ya usan `useCurrency`/`fmt` (cableado en el IDE Antigravity; build verde).
+
 ## Bingo "Royale" + fix de deploy (17-18/06/2026)
 
 Detalle técnico en [`BITACORA.md`](./BITACORA.md) §15.
