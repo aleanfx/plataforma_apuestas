@@ -67,7 +67,7 @@ const METHODS: Method[] = [
     depSub: "Binance Pay",
     wdSub: "Binance Pay",
     ic: "B",
-    icStyle: { background: "rgba(245,158,11,0.16)", color: "#f5b30b" },
+    icStyle: { background: "transparent" },
     details: [
       { k: "Binance ID", v: "184656251" },
       { k: "Acepta", v: "Cualquier cripto" },
@@ -156,9 +156,9 @@ const getMethodIcon = (id: string) => {
       );
     case "binance":
       return (
-        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 18, height: 18 }}>
-          <path d="M12 0L2.945 9.055 12 18.11l9.055-9.055L12 0zm5.228 12.001l-1.93 1.93-1.928-1.93 1.93-1.93 1.929 1.93zM8.702 12.001l-1.93 1.93-1.928-1.93 1.93-1.93 1.929 1.93zM12 15.258l-1.285 1.285 1.285 1.285 1.285-1.285L12 15.258zm5.228-6.514l1.93-1.93L21.085 8.7 12 17.785 2.915 8.7l1.928-1.929 1.93 1.93L8.701 8.7l1.93-1.93 1.929 1.93 1.93-1.93 1.928 1.93L17.228 8.7z"/>
-        </svg>
+        // Logo oficial de Binance (badge dorado).
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/coins/bnb.svg" alt="Binance" width={30} height={30} style={{ display: "block" }} />
       );
     case "pagomovil":
       return (
@@ -207,13 +207,29 @@ const COIN_GLYPH: Record<string, string> = {
 };
 
 function CoinLogo({ coin, size = 26 }: { coin: CryptoCoin; size?: number }) {
+  const [failed, setFailed] = React.useState(false);
+  if (failed) {
+    // Respaldo: disco de color con el glifo si el SVG no cargara.
+    return (
+      <span
+        className="coin-logo"
+        style={{ background: coin.color, width: size, height: size, fontSize: Math.round(size * 0.5) }}
+      >
+        {COIN_GLYPH[coin.symbol] ?? coin.symbol[0]}
+      </span>
+    );
+  }
   return (
-    <span
-      className="coin-logo"
-      style={{ background: coin.color, width: size, height: size, fontSize: Math.round(size * 0.5) }}
-    >
-      {COIN_GLYPH[coin.symbol] ?? coin.symbol[0]}
-    </span>
+    // Logo oficial de la marca (badge SVG a color en /public/coins).
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/coins/${coin.symbol.toLowerCase()}.svg`}
+      alt={coin.symbol}
+      width={size}
+      height={size}
+      className="coin-logo-img"
+      onError={() => setFailed(true)}
+    />
   );
 }
 
