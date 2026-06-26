@@ -29,7 +29,7 @@ export function AdminTables() {
   }, []);
 
   return (
-    <div className="a-card" style={{ marginTop: 22 }}>
+    <div className="a-card">
       <div className="a-card-head">
         <div>
           <h3 className="serif">Mesas en vivo</h3>

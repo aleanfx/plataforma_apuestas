@@ -16,10 +16,17 @@ type AdminUser = {
   balance: number;
 };
 
-export function AdminUsers() {
+export function AdminUsers({ query = "" }: { query?: string }) {
   const { fmt } = useCurrency();
   const [users, setUsers] = React.useState<AdminUser[] | null>(null);
   const [busy, setBusy] = React.useState<string | null>(null);
+
+  const q = query.trim().toLowerCase();
+  const shown = users
+    ? q
+      ? users.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+      : users
+    : null;
 
   const load = React.useCallback(() => {
     api<{ users: AdminUser[] }>("/admin/users").then((r) => setUsers(r.users)).catch(() => setUsers([]));
@@ -44,7 +51,9 @@ export function AdminUsers() {
       <div className="a-card-head">
         <div>
           <h3 className="serif">Usuarios</h3>
-          <div className="sub">{users ? `${users.length} registrados` : "Cargando…"}</div>
+          <div className="sub">
+            {users ? (q ? `${shown?.length ?? 0} de ${users.length}` : `${users.length} registrados`) : "Cargando…"}
+          </div>
         </div>
       </div>
       <div className="table-scroll">
@@ -58,7 +67,7 @@ export function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {users?.map((u) => (
+            {shown?.map((u) => (
               <tr key={u.id}>
                 <td>
                   <div className="u-cell">
@@ -96,8 +105,10 @@ export function AdminUsers() {
                 </td>
               </tr>
             ))}
-            {users && users.length === 0 && (
-              <tr><td colSpan={4} style={{ color: "var(--text-2)", padding: 20 }}>Sin usuarios aún.</td></tr>
+            {shown && shown.length === 0 && (
+              <tr><td colSpan={4} style={{ color: "var(--text-2)", padding: 20 }}>
+                {q ? "Ningún usuario coincide con la búsqueda." : "Sin usuarios aún."}
+              </td></tr>
             )}
           </tbody>
         </table>

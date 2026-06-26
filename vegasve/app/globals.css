@@ -3037,3 +3037,34 @@ html, body { overflow-x: clip; max-width: 100%; }
   .pref-group { padding: 18px 18px; }
 }
 
+/* ============================================================
+   Admin · Reportes (flujo de caja) + buscador
+   ============================================================ */
+.rep-bar {
+  display: flex; height: 14px; border-radius: 999px; overflow: hidden;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--line-soft);
+}
+.rep-seg { height: 100%; transition: width .4s ease; }
+.rep-seg.dep { background: var(--green-bright, #22c55e); }
+.rep-seg.wd { background: var(--danger, #f87171); }
+.rep-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 12px;
+  font-size: 13px; color: var(--text-2);
+}
+.rep-legend .rdot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.rep-legend .rdot.dep { background: var(--green-bright, #22c55e); }
+.rep-legend .rdot.wd { background: var(--danger, #f87171); }
+.rep-rows { margin-top: 20px; border-top: 1px solid var(--line-soft); }
+.rep-rows > div {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px;
+}
+.rep-rows > div:last-child { border-bottom: none; }
+.rep-rows span { color: var(--text-3); }
+.rep-rows strong { font-family: var(--serif); font-size: 16px; color: var(--text); }
+
+/* El buscador del top bar se oculta en pantallas pequeñas para no apretar la barra */
+@media (max-width: 720px) {
+  .admin-search { display: none !important; }
+}
+
