@@ -67,7 +67,7 @@ const METHODS: Method[] = [
     depSub: "Binance Pay",
     wdSub: "Binance Pay",
     ic: "B",
-    icStyle: { background: "transparent" },
+    icStyle: { background: "#0b0e11" },
     details: [
       { k: "Binance ID", v: "184656251" },
       { k: "Acepta", v: "Cualquier cripto" },
