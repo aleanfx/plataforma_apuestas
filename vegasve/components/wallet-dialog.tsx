@@ -209,9 +209,9 @@ function PagoMovilIcon() {
       <img
         src="/methods/pagomovil.png"
         alt="Pago Móvil"
-        width={34}
-        height={34}
-        style={{ display: "block", objectFit: "contain" }}
+        width={36}
+        height={36}
+        style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
         onError={() => setFailed(true)}
       />
     );

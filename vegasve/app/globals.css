@@ -667,7 +667,7 @@
   }
   .method:hover { border-color: var(--line); }
   .method.active { border-color: var(--gold); background: rgba(147,51,234,0.05); }
-  .method .m-ic { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; font-family: var(--serif); font-weight: 700; font-size: 15px; }
+  .method .m-ic { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; font-family: var(--serif); font-weight: 700; font-size: 15px; overflow: hidden; }
   .method .m-name { font-size: 14px; font-weight: 400; }
   .method .m-sub { font-size: 11px; color: var(--text-3); }
 
