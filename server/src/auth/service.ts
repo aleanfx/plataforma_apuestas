@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { OAuth2Client } from "google-auth-library";
 import type { Account, User } from "@prisma/client";
 import { prisma } from "../db.js";
-import { env } from "../env.js";
+import { env, isAdminEmail } from "../env.js";
 import { conflict, unauthorized, forbidden, badRequest } from "../errors.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { signAccess, newRefreshToken, hashToken } from "./jwt.js";
@@ -47,7 +47,7 @@ export async function register(input: { email: string; name: string; password: s
   if (existing) throw conflict("Ese correo ya está registrado");
 
   const passwordHash = await hashPassword(input.password);
-  const role = email === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+  const role = isAdminEmail(email) ? "admin" : "user";
 
   const user = await prisma.user.create({
     data: {
@@ -72,6 +72,12 @@ export async function login(input: { email: string; password: string }) {
 
   const ok = await verifyPassword(input.password, user.passwordHash);
   if (!ok) throw unauthorized("Correo o contraseña incorrectos");
+
+  // Auto-promoción a admin si el correo está en la lista de admins.
+  if (isAdminEmail(user.email) && user.role !== "admin") {
+    await prisma.user.update({ where: { id: user.id }, data: { role: "admin" } });
+    user.role = "admin";
+  }
 
   const session = await issueSession(user.id, user.role);
   return { user: toPublicUser(user, user.account), ...session };
@@ -148,7 +154,7 @@ export async function loginWithGoogle(credential: string) {
 
   let user = await prisma.user.findUnique({ where: { email }, include: { account: true } });
   if (!user) {
-    const role = email === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+    const role = isAdminEmail(email) ? "admin" : "user";
     // Sin contraseña usable: se genera un hash aleatorio (sólo entra por Google).
     const passwordHash = await hashPassword(crypto.randomBytes(32).toString("hex"));
     user = await prisma.user.create({
@@ -164,6 +170,15 @@ export async function loginWithGoogle(credential: string) {
         include: { account: true },
       });
     }
+  }
+
+  // Auto-promoción a admin si el correo está en la lista de admins.
+  if (isAdminEmail(user.email) && user.role !== "admin") {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { role: "admin" },
+      include: { account: true },
+    });
   }
 
   const session = await issueSession(user.id, user.role);

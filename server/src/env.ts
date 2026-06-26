@@ -7,6 +7,8 @@ const schema = z.object({
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
   ADMIN_EMAIL: z.string().email(),
+  // Admins adicionales (lista separada por comas). Opcional.
+  ADMIN_EMAILS: z.string().optional(),
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
   PORT: z.coerce.number().default(4000),
   BS_PER_USD: z.coerce.number().default(40),
@@ -22,7 +24,22 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+// Admins por defecto del proyecto (además de ADMIN_EMAIL y ADMIN_EMAILS del entorno).
+const DEFAULT_ADMIN_EMAILS = ["betm4r@gmail.com", "gutierrezalejandro551@gmail.com"];
+
+const adminEmails = new Set(
+  [parsed.data.ADMIN_EMAIL, ...(parsed.data.ADMIN_EMAILS ?? "").split(","), ...DEFAULT_ADMIN_EMAILS]
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+);
+
 export const env = {
   ...parsed.data,
   corsOrigins: parsed.data.CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean),
+  adminEmails,
 };
+
+/** ¿Este correo debe tener rol admin? */
+export function isAdminEmail(email: string): boolean {
+  return adminEmails.has(email.trim().toLowerCase());
+}
