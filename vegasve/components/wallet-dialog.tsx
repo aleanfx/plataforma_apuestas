@@ -80,7 +80,7 @@ const METHODS: Method[] = [
     depSub: "Banco Venezolano de Crédito",
     wdSub: "Bancos VE",
     ic: "Pm",
-    icStyle: { background: "rgba(147,51,234,0.16)", color: "#a855f7" },
+    icStyle: { background: "#fff" },
     details: [
       { k: "Teléfono", v: "0426 660 3848" },
       { k: "C.I.", v: "20.090.138" },
@@ -162,15 +162,7 @@ const getMethodIcon = (id: string) => {
         </svg>
       );
     case "pagomovil":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 18, height: 18 }}>
-          <path d="M6 7C4.7 8.5 4 10.4 4 12.5C4 14.6 4.7 16.5 6 18" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" />
-          <path d="M18 6C19.3 7.5 20 9.4 20 11.5C20 13.6 19.3 15.5 18 17" stroke="#3b82f6" strokeWidth="2.2" strokeLinecap="round" />
-          <rect x="8.5" y="4" width="7" height="16" rx="1.5" stroke="currentColor" strokeWidth="2" fill="none" />
-          <circle cx="12" cy="17.5" r="0.75" fill="currentColor" />
-          <line x1="10.5" y1="6" x2="13.5" y2="6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-        </svg>
-      );
+      return <PagoMovilIcon />;
     case "daviplata":
       return (
         <svg viewBox="5.88 9.87 291 157.1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style={{ width: 30, height: 16 }}>
@@ -206,6 +198,48 @@ const COIN_GLYPH: Record<string, string> = {
   TRX: "T",
   SOL: "S",
 };
+
+// Icono de Pago Móvil (Bancard). Usa la imagen oficial si está en
+// /public/methods/pagomovil.png; si no, dibuja la marca (burbuja azul + check).
+function PagoMovilIcon() {
+  const [failed, setFailed] = React.useState(false);
+  if (!failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/methods/pagomovil.png"
+        alt="Pago Móvil"
+        width={34}
+        height={34}
+        style={{ display: "block", objectFit: "contain" }}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <svg viewBox="0 0 48 48" width={28} height={28} style={{ display: "block" }}>
+      <path
+        d="M13 7H35a7 7 0 0 1 7 7v13a7 7 0 0 1-7 7H22l-9 9v-9a7 7 0 0 1-7-7V14a7 7 0 0 1 7-7z"
+        fill="#173F77"
+      />
+      <path
+        d="M15 21l6.5 6.5L34 14"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 14l3-3"
+        fill="none"
+        stroke="#3D9BE0"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function CoinLogo({ coin, size = 26 }: { coin: CryptoCoin; size?: number }) {
   const [failed, setFailed] = React.useState(false);
