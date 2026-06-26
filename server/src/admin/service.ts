@@ -1,10 +1,14 @@
 import { prisma } from "../db.js";
 import { badRequest, notFound } from "../errors.js";
 
+// Excluye los usuarios de PRUEBA (suite e2e + modo práctica) del panel admin.
+// Esos correos terminan en @betmarplay.test; los jugadores reales usan correos reales.
+const NOT_TEST = { NOT: { email: { endsWith: "@betmarplay.test" } } } as const;
+
 // Métricas globales para el panel admin. Montos en céntimos.
 export async function getMetrics() {
   const [users, pendingDep, pendingWd, balAgg, depAgg, wdAgg] = await Promise.all([
-    prisma.user.count(),
+    prisma.user.count({ where: NOT_TEST }),
     prisma.depositRequest.count({ where: { status: "pending" } }),
     prisma.withdrawRequest.count({ where: { status: "pending" } }),
     prisma.account.aggregate({ _sum: { balance: true } }),
@@ -23,6 +27,7 @@ export async function getMetrics() {
 
 export async function listUsers() {
   const users = await prisma.user.findMany({
+    where: NOT_TEST,
     orderBy: { createdAt: "desc" },
     take: 100,
     include: { account: true },
