@@ -38,7 +38,13 @@ async function main() {
 
   console.log("\n--- Usuarios ---");
   const users = await req("GET", "/admin/users", adminTok);
-  check("lista incluye al usuario de prueba", users.data.users.some((u: any) => u.id === userId));
+  check("lista de usuarios 200", users.status === 200, users.status);
+  // El panel oculta a propósito los correos @betmarplay.test (suite e2e + modo
+  // práctica) para que el admin vea solo jugadores reales.
+  check(
+    "oculta los usuarios de prueba (@betmarplay.test)",
+    !users.data.users.some((u: any) => String(u.email).endsWith("@betmarplay.test")),
+  );
 
   console.log("\n--- Suspensión ---");
   const susp = await req("POST", `/admin/users/${userId}/status`, adminTok, { status: "suspended" });

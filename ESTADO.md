@@ -1,8 +1,15 @@
 # ESTADO — BetmarPlay
 
-> Estado de avance del proyecto. Última actualización: **24 de junio de 2026**.
-> 🟢 **EN PRODUCCIÓN:** frontend https://plataforma-apuestas.vercel.app · backend
+> Estado de avance del proyecto. Última actualización: **27 de julio de 2026**.
+> 🟢 **EN PRODUCCIÓN (v1 · 3 juegos):** frontend https://plataforma-apuestas.vercel.app · backend
 > https://betmarplay-server.onrender.com (Render free) · DB Neon. Login y juegos funcionando.
+>
+> ⚠️ **DECISIÓN DEL CLIENTE (27/07/2026):** por presupuesto, la plataforma sale a producción con
+> **solo los 3 juegos terminados** (Bingo, Dominó, Póker). **Caballos y Parley pasaron a
+> "Próximamente"** y se irán agregando **uno a uno** cuando el cliente pueda pagarlos (junto con
+> otros juegos nuevos). Su código **NO se borró**: sigue en `app/parley/` y `app/caballos/`; para
+> reactivar uno basta con quitar su redirección de `vegasve/next.config.mjs` y devolverlo al array
+> `GAMES` en `vegasve/components/game-cards.tsx`.
 > Documento maestro de contexto: [`vegasve/CONTINUIDAD.md`](./vegasve/CONTINUIDAD.md).
 > **Bitácora completa de construcción (qué se hizo, errores y soluciones, lecciones):**
 > [`BITACORA.md`](./BITACORA.md) — léela si retomas sin contexto.
@@ -37,13 +44,17 @@ plataforma_apuestas/
 | 6 | Póker (Texas Hold'em, side pots, showdown) | ✅ Completo |
 | 7 | Admin real (métricas, usuarios, mesas) | ✅ Completo |
 | 8 | Hardening + deploy (rate-limit, helmet, logging) | ✅ Completo · **desplegado en Render + Vercel** |
-| 9 | Caballos (hípica) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
-| 10 | Parley (deportes) — UI PRO + login + saldo real | 🟡 UI lista · backend de liquidación = decisión del cliente |
+| 9 | Caballos (hípica) — UI PRO lista | ⏸️ **Fase 2** (aparece como "Próximamente"; ruta redirige al lobby) |
+| 10 | Parley (deportes) — UI PRO lista | ⏸️ **Fase 2** (aparece como "Próximamente"; ruta redirige al lobby) |
 | 11 | Sistema Multi-moneda (USD/Bs/COP) + captura de comprobante | ✅ Completo |
+| 12 | Perfil por secciones (datos, seguridad/contraseña, preferencias) | ✅ Completo |
+| 13 | Panel admin por secciones + Reportes + filtro de usuarios de prueba | ✅ Completo |
+| 14 | Login con Google + multi-admin (auto-promoción) | ✅ Completo |
+| 15 | Depósitos cripto: selector de moneda + conversión en vivo | ✅ UI/lógica · falta API key de NowPayments |
 
-> **MVP completo y EN VIVO.** Suite: **110 pruebas e2e en verde**. Los **3 juegos en vivo** (Bingo/Dominó/
-> Póker) están reales y al **nivel visual PRO**. **Caballos y Parley** tienen la **UI lista** (login + saldo
-> real) pero apostar de verdad espera **decisión del cliente** sobre la fuente de datos (ver sección 18/06).
+> **v1 EN PRODUCCIÓN con 3 juegos.** Suite: **112 pruebas e2e en verde** (27/07/2026). Los **3 juegos
+> en vivo** (Bingo/Dominó/Póker) están reales y al **nivel visual PRO**. **Caballos y Parley** quedaron
+> en **Fase 2** por decisión del cliente (presupuesto): su UI está lista y guardada para reactivarla.
 > Desplegado el 13/06/2026 (backend en Render free, frontend en Vercel). Guía usada:
 > [`server/DESPLIEGUE.md`](./server/DESPLIEGUE.md).
 > **Multi-moneda y depósitos manuales:** Configuración y persistencia en DB Neon de mínimos de depósito y tasas (editables desde panel admin), selección obligatoria de moneda nativa al primer inicio/registro (bloqueo forzado en AuthGuard), cambio exclusivo en la página de perfil (con texto de advertencia optimizado), logos oficiales de marcas (Tether USDT, Binance, Pago Móvil, DaviPlata y Nequi), botón de copiado de datos de pago e indicación de correo de soporte si se deposita menos del mínimo.

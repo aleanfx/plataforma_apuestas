@@ -159,6 +159,9 @@ function ParleyContent() {
   );
 }
 
+// FASE 2 — Parley está como "Próximamente". La ruta /parley redirige al lobby
+// desde next.config.mjs; esta página queda lista para reactivarla quitando esa
+// redirección cuando se contrate el módulo de apuestas deportivas.
 export default function ParleyPage() {
   return (
     <AuthGuard>

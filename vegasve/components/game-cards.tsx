@@ -29,12 +29,12 @@ const GAMES = [
   { slug: "domino", Icon: DominoIcon, name: "Dominó", desc: "El clásico venezolano. Partidas a 100, parejas o todos contra todos.", players: "1.240", stakes: "desde Bs. 50", href: "/domino", demo: null },
   { slug: "poker", Icon: PokerIcon, name: "Póker", desc: "Texas Hold'em en vivo. Cash games y torneos con premios diarios.", players: "860", stakes: "desde Bs. 200", href: "/poker", demo: null },
   { slug: "bingo", Icon: Gamepad, name: "Bingo", desc: "Cartones progresivos · Premios cada 2 minutos.", players: "456", stakes: "desde Bs. 20", href: "/bingo", demo: null },
-  { slug: "parley", Icon: Coins, name: "Parley", desc: "Pronósticos deportivos · Acumula y gana hasta 100x.", players: "892", stakes: "multiplica x100", href: "/parley", demo: null },
-  { slug: "caballos", Icon: Dice, name: "Caballos", desc: "Pollas hípicas · Apuesta y predice a los ganadores.", players: "623", stakes: "desde Bs. 100", href: "/caballos", demo: null },
 ] as const;
 
 /* Próximamente — se ven como juegos (con foto), atenuados y con sello "Pronto" */
 const SOON = [
+  { slug: "parley", name: "Parley", Icon: Coins },
+  { slug: "caballos", name: "Caballos", Icon: Dice },
   { slug: "ruleta", name: "Ruleta", Icon: Roulette },
   { slug: "blackjack", name: "Blackjack", Icon: Blackjack },
   { slug: "dados", name: "Dados", Icon: Dice },

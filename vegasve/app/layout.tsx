@@ -30,7 +30,7 @@ const script = Dancing_Script({
 
 const SITE_URL = "https://plataforma-apuestas.vercel.app";
 const DESCRIPTION =
-  "Casino premium en Venezuela. Dominó, Póker, Bingo, Parley y Pollas Hípicas en vivo. Mesas en bolívares y dólares, depósitos y retiros al instante.";
+  "Casino premium en Venezuela. Dominó, Póker y Bingo en vivo. Mesas en bolívares y dólares, depósitos y retiros al instante.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "BetmarPlay",
-  keywords: ["casino", "apuestas", "Venezuela", "Dominó", "Póker", "Bingo", "Parley", "Pollas Hípicas"],
+  keywords: ["casino", "apuestas", "Venezuela", "Dominó", "Póker", "Bingo"],
   openGraph: {
     type: "website",
     locale: "es_VE",
