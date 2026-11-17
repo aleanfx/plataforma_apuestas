@@ -103,3 +103,10 @@ npm run build    # debe quedar SIEMPRE en verde antes de subir
 - Mantén el estilo del código existente (mismas clases CSS, idioma español en la UI/copys).
 - Cambios solo de móvil → ajústalos en los `@media` de `globals.css`, sin tocar PC.
 - Antes de subir: `npm run build` en verde.
+
+## Contexto de la cuenta vieja de Claude (importado el 17/11/2026)
+
+Ale trabajó este proyecto en otra cuenta de Claude. Esas conversaciones completas, las instrucciones
+y documentos de su Proyecto de claude.ai están en `docs/cuenta-vieja-claude/`. Leelas cuando haga
+falta historia o el porqué de una decisión (no hace falta leerlas enteras en cada sesión).
+El resumen sintetizado y al día vive en su Segundo Cerebro: `D:\Movido de C\2do Cerebro\wiki\proyectos-desarrollo.md` (sección BetmarPlay).
